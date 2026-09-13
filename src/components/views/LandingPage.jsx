@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Brain, Sparkles, ArrowRight, Radar, Route, LayoutGrid, FileText,
+  Flame, Sparkles, ArrowRight, Radar, Route, LayoutGrid, FileText,
   Compass, ShieldCheck, AlertTriangle
 } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
@@ -24,11 +24,11 @@ export function LandingPage({ onStart, onExplore }) {
 
       {/* NAV */}
       <nav className="relative z-20 flex items-center justify-between px-6 md:px-12 py-6 max-w-7xl mx-auto">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg,#22d3ee,#8b5cf6)" }}>
-            <Brain size={17} color="#04121a" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg relative overflow-hidden" style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6 50%, #f97316)" }}>
+            <Flame size={20} color="#04121a" fill="#04121a" />
           </div>
-          <span className="lp-display font-semibold tracking-tight text-[15px]">Pathwise</span>
+          <span className="lp-display font-bold tracking-tight text-[17px] bg-gradient-to-r from-cyan-300 via-blue-200 to-orange-400 bg-clip-text text-transparent">PathForge</span>
         </div>
         <div className="hidden md:flex items-center gap-8 text-sm" style={{ color: "var(--text-dim)" }}>
           <a className="hover:text-white transition-colors cursor-pointer" onClick={onExplore}>Product</a>
@@ -122,7 +122,7 @@ export function LandingPage({ onStart, onExplore }) {
 
       {/* WHAT THE PLATFORM DOES */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-24">
-        <SectionHeader eyebrow="What Pathwise does" title="Everything between your last course and your first job" subtitle="One system that reads your profile and keeps every recommendation current as you learn." />
+        <SectionHeader eyebrow="What PathForge does" title="Everything between your last course and your first job" subtitle="One system that reads your profile and keeps every recommendation current as you learn." />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[
             { icon: Radar, title: "Skill profiling", desc: "Detects what you already know from courses, projects and certifications, then maps strengths and gaps." },

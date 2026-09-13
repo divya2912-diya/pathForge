@@ -1,5 +1,5 @@
 import React from "react";
-import { Brain, X } from "lucide-react";
+import { Flame, X } from "lucide-react";
 import { NAV_MENU } from "../../data/mockData";
 
 export function NavDrawer({ open, onClose, active, onNavigate }) {
@@ -17,11 +17,11 @@ export function NavDrawer({ open, onClose, active, onNavigate }) {
         style={{ transform: open ? "translateX(0)" : "translateX(-110%)" }}
       >
         <div className="flex items-center justify-between px-5 py-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg,#22d3ee,#8b5cf6)" }}>
-              <Brain size={17} color="#04121a" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-lg relative overflow-hidden" style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6 50%, #f97316)" }}>
+              <Flame size={18} color="#04121a" fill="#04121a" />
             </div>
-            <span className="lp-display font-semibold text-[15px]">Pathwise</span>
+            <span className="lp-display font-bold text-[16px] bg-gradient-to-r from-cyan-300 via-blue-200 to-orange-400 bg-clip-text text-transparent">PathForge</span>
           </div>
           <button onClick={onClose} className="cursor-pointer">
             <X size={18} style={{ color: "var(--text-dim)" }} />
