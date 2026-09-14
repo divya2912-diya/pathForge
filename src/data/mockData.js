@@ -1,5 +1,5 @@
 import {
-  Home, Radar, Route, LayoutGrid, Sparkles, FileText, FolderKanban, Award,
+  Home, LayoutDashboard, Radar, Route, LayoutGrid, Sparkles, FileText, FolderKanban, Award,
   Compass, User, Settings, Video, BookOpen, FileCode2
 } from "lucide-react";
 
@@ -162,7 +162,8 @@ export const ONBOARD_CAREERS = [
 ];
 
 export const NAV_MENU = [
-  { id: "dashboard", label: "Home", icon: Home },
+  { id: "home", label: "Home", icon: Home },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "build-path", label: "Build My Learning Path", icon: Sparkles },
   { id: "roadmap", label: "Learning Roadmap", icon: Route },
   { id: "resources", label: "Resources", icon: LayoutGrid },

@@ -70,12 +70,13 @@ export default function App() {
 
   const navigate = (id) => {
     setDrawerOpen(false);
+    if (id === "home") { setStage("landing"); return; }
     if (id === "build-path") { setStage("onboarding"); return; }
     go(id);
   };
 
   const titleMap = Object.fromEntries(NAV_MENU.map(n => [n.id, n.label]));
-  const activeDrawerId = stage === "onboarding" || stage === "analyzing" ? "build-path" : (stage === "app" ? active : null);
+  const activeDrawerId = stage === "landing" ? "home" : (stage === "onboarding" || stage === "analyzing" ? "build-path" : (stage === "app" ? active : null));
 
   return (
     <div className="lp-root min-h-screen bg-[#060911] text-[#eef1f7]">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  Home, Radar, Route, LayoutGrid, Sparkles, FileText, FolderKanban, Award,
+  Home, LayoutDashboard, Radar, Route, LayoutGrid, Sparkles, FileText, FolderKanban, Award,
   Compass, User, Settings, Send, X, ChevronRight, ChevronDown, Check,
   Clock, TrendingUp, Brain, Zap, ArrowRight, Menu, Search, Star,
   AlertTriangle, UploadCloud, BookOpen, Github, MessageCircle, Bot,
@@ -261,7 +261,8 @@ const ONBOARD_CAREERS = [
 ];
 
 const NAV_MENU = [
-  { id: "dashboard", label: "Home", icon: Home },
+  { id: "home", label: "Home", icon: Home },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "build-path", label: "Build My Learning Path", icon: Sparkles },
   { id: "roadmap", label: "Learning Roadmap", icon: Route },
   { id: "resources", label: "Resources", icon: LayoutGrid },
@@ -907,7 +908,7 @@ function NavDrawer({ open, onClose, active, onNavigate }) {
       <aside className="fixed top-0 left-0 h-screen z-50 w-72 lp-glass-strong flex flex-col transition-transform duration-300"
         style={{ transform: open ? "translateX(0)" : "translateX(-110%)" }}>
         <div className="flex items-center justify-between px-5 py-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => onNavigate("dashboard")} title="Go to Home">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => onNavigate("home")} title="Go to Home">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-lg relative overflow-hidden" style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6 50%, #f97316)" }}>
               <Flame size={18} color="#04121a" fill="#04121a" />
             </div>
@@ -2793,12 +2794,13 @@ export default function App() {
 
   const navigate = (id) => {
     setDrawerOpen(false);
+    if (id === "home") { setStage("landing"); return; }
     if (id === "build-path") { setStage("onboarding"); return; }
     go(id);
   };
 
   const titleMap = Object.fromEntries(NAV_MENU.map(n => [n.id, n.label]));
-  const activeDrawerId = stage === "onboarding" || stage === "analyzing" ? "build-path" : (stage === "app" ? active : null);
+  const activeDrawerId = stage === "landing" ? "home" : (stage === "onboarding" || stage === "analyzing" ? "build-path" : (stage === "app" ? active : null));
 
   return (
     <div className="lp-root">
