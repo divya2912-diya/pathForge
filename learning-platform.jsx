@@ -719,13 +719,16 @@ function LoginView({
                     Student Email / ID
                   </label>
                   <div className="relative">
-                    <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    {!email && (
+                      <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    )}
                     <input
                       type="text"
                       value={email}
                       onChange={(e) => { setEmail(e.target.value); setError(""); }}
                       placeholder="e.g. alex.chen@university.edu"
-                      className="lp-input w-full pl-10 pr-4 py-2.5 rounded-xl text-sm"
+                      className="lp-input w-full py-2.5 rounded-xl text-sm"
+                      style={{ paddingLeft: email ? "0.875rem" : "2.5rem", paddingRight: "1rem" }}
                     />
                   </div>
                 </div>
@@ -740,13 +743,16 @@ function LoginView({
                     </span>
                   </div>
                   <div className="relative">
-                    <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    {!password && (
+                      <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    )}
                     <input
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => { setPassword(e.target.value); setError(""); }}
                       placeholder="Enter your student password"
-                      className="lp-input w-full pl-10 pr-10 py-2.5 rounded-xl text-sm"
+                      className="lp-input w-full py-2.5 rounded-xl text-sm"
+                      style={{ paddingLeft: password ? "0.875rem" : "2.5rem", paddingRight: "2.5rem" }}
                     />
                     <button
                       type="button"
