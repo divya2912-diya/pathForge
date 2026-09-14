@@ -2,7 +2,6 @@
 
 > **AI-Powered Education-to-Employment Platform for Students**  
 > *Discover what you know, master what you're missing, and forge your path to career readiness.*
-Demo Link : https://path-forge-azure.vercel.app
 
 [![Deploy to GitHub Pages](https://github.com/divya2912-diya/pathForge/actions/workflows/deploy.yml/badge.svg)](https://github.com/divya2912-diya/pathForge/actions/workflows/deploy.yml)
 [![React](https://img.shields.io/badge/React-18.2.0-61DAFB?logo=react&logoColor=black)](https://react.dev/)
@@ -203,7 +202,7 @@ The project is pre-configured for seamless static deployment to any modern hosti
 
 - **GitHub Pages**: Automatically deployed via the included `.github/workflows/deploy.yml` on every push to `main`.
 - **Vercel**: Includes `vercel.json` for single-page application routing.
-
+Demo Link : https://path-forge-azure.vercel.app
 ---
 
 ## 🤝 Contributing
