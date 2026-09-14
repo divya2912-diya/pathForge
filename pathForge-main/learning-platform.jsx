@@ -3060,7 +3060,7 @@ function AIAssistant({ open, setOpen }) {
 /* ============================== ROOT APP ============================== */
 
 export default function App() {
-  const [stage, setStage] = useState("landing"); // landing | login | onboarding | analyzing | app
+  const [stage, setStage] = useState("login"); // landing | login | onboarding | analyzing | app
   const [active, setActive] = useState("dashboard");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
