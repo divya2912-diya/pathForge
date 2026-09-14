@@ -62,7 +62,8 @@ export default function App() {
   const handleDemoLogin = () => {
     setStudent(STUDENT);
     setToast("Welcome Hackathon Judge! Signed in as Alex Chen");
-    go("dashboard");
+    setStage("landing");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleStudentLogin = ({ email, rememberMe }) => {
@@ -77,7 +78,8 @@ export default function App() {
       } catch (e) {}
     }
     setToast(`Welcome back, ${updated.name}!`);
-    go("dashboard");
+    setStage("landing");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleAdded = (id) => {

@@ -682,7 +682,7 @@ function LoginView({
               onClick={onDemoLogin}
               className="lp-btn-primary w-full py-3.5 px-5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/35 transition-all"
             >
-              <Sparkles size={16} /> Enter PathForge as Judge <ArrowRight size={16} />
+              <Sparkles size={16} /> Enter pathForge <ArrowRight size={16} />
             </button>
           </div>
 
@@ -809,11 +809,6 @@ function LoginView({
           </GlassCard>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="relative z-20 py-5 text-center text-xs text-slate-500 max-w-7xl mx-auto w-full px-6">
-        PathForge · AI-Powered Education to Employment · Single User Role: Student
-      </footer>
     </div>
   );
 }
@@ -894,7 +889,7 @@ function LandingPage({ onStart, onExplore, onProfile, student, onLogin, onDemoLo
               }}
             >
               <Sparkles size={16} className="text-cyan-300 group-hover:rotate-12 transition-transform" />
-              Demo Login (Judge Mode)
+              Enter pathForge
             </button>
             <button onClick={onExplore} className="lp-btn-ghost px-5 py-3.5 rounded-xl text-[14px] text-slate-300 hover:text-white">
               Explore platform
@@ -3082,7 +3077,8 @@ export default function App() {
   const handleDemoLogin = () => {
     setStudent(STUDENT);
     setToast("Welcome Hackathon Judge! Signed in as Alex Chen");
-    go("dashboard");
+    setStage("landing");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleStudentLogin = ({ email, rememberMe }) => {
@@ -3097,7 +3093,8 @@ export default function App() {
       } catch (e) {}
     }
     setToast(`Welcome back, ${updated.name}!`);
-    go("dashboard");
+    setStage("landing");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleAdded = (id) => {

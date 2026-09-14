@@ -153,7 +153,7 @@ export default function LoginView({
               onClick={onDemoLogin}
               className="lp-btn-primary w-full py-3.5 px-5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/35 transition-all"
             >
-              <Sparkles size={16} /> Enter PathForge as Judge <ArrowRight size={16} />
+              <Sparkles size={16} /> Enter pathForge <ArrowRight size={16} />
             </button>
           </div>
 
@@ -280,11 +280,6 @@ export default function LoginView({
           </GlassCard>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="relative z-20 py-5 text-center text-xs text-slate-500 max-w-7xl mx-auto w-full px-6">
-        PathForge · AI-Powered Education to Employment · Single User Role: Student
-      </footer>
     </div>
   );
 }

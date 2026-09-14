@@ -96,7 +96,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
               }}
             >
               <Sparkles size={16} className="text-cyan-300 group-hover:rotate-12 transition-transform" />
-              Demo Login (Judge Mode)
+              Enter pathForge
             </button>
             <button onClick={onExplore} className="lp-btn-ghost px-5 py-3.5 rounded-xl text-[14px] text-slate-300 hover:text-white cursor-pointer">
               Explore platform
