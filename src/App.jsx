@@ -20,7 +20,7 @@ import ProfileView from "./components/views/ProfileView";
 import SettingsView from "./components/views/SettingsView";
 import AIAssistant from "./components/AIAssistant";
 
-import { NAV_MENU } from "./data/mockData";
+import { NAV_MENU, STUDENT } from "./data/mockData";
 
 export default function App() {
   const [stage, setStage] = useState("landing"); // landing | onboarding | analyzing | app
@@ -29,6 +29,12 @@ export default function App() {
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [added, setAdded] = useState(new Set());
   const [toast, setToast] = useState(null);
+  const [student, setStudent] = useState(STUDENT);
+
+  const handleUpdateStudent = (updated) => {
+    setStudent(updated);
+    setToast("Profile updated successfully");
+  };
 
   const toggleAdded = (id) => {
     setAdded(prev => {
@@ -56,7 +62,12 @@ export default function App() {
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} active={activeDrawerId} onNavigate={navigate} />
 
       {stage === "landing" && (
-        <LandingPage onStart={() => setStage("onboarding")} onExplore={() => go("dashboard")} />
+        <LandingPage
+          onStart={() => setStage("onboarding")}
+          onExplore={() => go("dashboard")}
+          onProfile={() => go("profile")}
+          student={student}
+        />
       )}
 
       {stage === "onboarding" && (
@@ -67,7 +78,7 @@ export default function App() {
 
       {stage === "app" && (
         <div>
-          <TopBar title={titleMap[active]} onProfileClick={() => go("profile")} />
+          <TopBar title={titleMap[active]} onProfileClick={() => go("profile")} student={student} />
           <main className="px-5 md:px-8 py-7 max-w-7xl mx-auto">
             {active === "dashboard" && <DashboardView go={go} />}
             {active === "roadmap" && <RoadmapView />}
@@ -76,7 +87,7 @@ export default function App() {
             {active === "projects" && <ProjectsView added={added} toggleAdded={toggleAdded} />}
             {active === "certifications" && <CertificationsView added={added} toggleAdded={toggleAdded} />}
             {active === "career" && <CareerView />}
-            {active === "profile" && <ProfileView />}
+            {active === "profile" && <ProfileView student={student} onUpdateStudent={handleUpdateStudent} />}
             {active === "settings" && <SettingsView />}
           </main>
           <AIAssistant open={assistantOpen} setOpen={setAssistantOpen} />

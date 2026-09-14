@@ -4,10 +4,17 @@ import {
 } from "lucide-react";
 
 export const STUDENT = {
-  name: "Alex",
+  name: "Alex Chen",
+  email: "alex.chen@university.edu",
   degree: "B.Tech Computer Science",
   year: "3rd Year",
   targetCareer: "AI/ML Engineer",
+  bio: "Aspiring AI/ML engineer focused on deep learning, neural architectures, and building intelligent web applications.",
+  phone: "+1 (555) 234-5678",
+  location: "San Francisco, CA",
+  github: "github.com/alexchen-dev",
+  linkedin: "linkedin.com/in/alexchen-ai",
+  avatarColor: "linear-gradient(135deg, #22d3ee, #8b5cf6)",
 };
 
 export const SKILL_GROUPS = [

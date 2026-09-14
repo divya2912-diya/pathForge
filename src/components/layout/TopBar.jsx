@@ -1,7 +1,7 @@
 import React from "react";
 import { Search } from "lucide-react";
 
-export function TopBar({ title, onProfileClick }) {
+export function TopBar({ title, onProfileClick, student }) {
   return (
     <div
       className="flex items-center justify-between pl-36 sm:pl-40 pr-5 md:pr-8 py-5 sticky top-0 z-20"
@@ -15,10 +15,12 @@ export function TopBar({ title, onProfileClick }) {
         </div>
         <button
           onClick={onProfileClick}
-          className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 cursor-pointer"
-          style={{ background: "linear-gradient(135deg,#22d3ee,#8b5cf6)", color: "#04121a" }}
+          aria-label="Open Profile"
+          title={`${student?.name || "Alex"}'s Profile`}
+          className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 cursor-pointer hover:ring-2 hover:ring-cyan-400/50 hover:scale-105 active:scale-95 transition-all"
+          style={{ background: student?.avatarColor || "linear-gradient(135deg,#22d3ee,#8b5cf6)", color: "#04121a" }}
         >
-          A
+          {student?.name ? student.name.charAt(0) : "A"}
         </button>
       </div>
     </div>

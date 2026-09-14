@@ -1,14 +1,14 @@
 import React from "react";
 import {
   Flame, Sparkles, ArrowRight, Radar, Route, LayoutGrid, FileText,
-  Compass, ShieldCheck, AlertTriangle
+  Compass, ShieldCheck, AlertTriangle, User
 } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import FloatingCard from "../ui/FloatingCard";
 import SectionHeader from "../ui/SectionHeader";
 import Pill from "../ui/Pill";
 
-export function LandingPage({ onStart, onExplore }) {
+export function LandingPage({ onStart, onExplore, onProfile, student }) {
   return (
     <div className="relative overflow-hidden">
       <div className="lp-noise" />
@@ -35,8 +35,19 @@ export function LandingPage({ onStart, onExplore }) {
           <a className="hover:text-white transition-colors cursor-pointer" onClick={onExplore}>How it works</a>
           <a className="hover:text-white transition-colors cursor-pointer" onClick={onExplore}>Career paths</a>
         </div>
-        <button onClick={onStart} className="lp-btn-primary text-sm px-4 py-2 rounded-lg cursor-pointer">
-          Get started
+        <button
+          onClick={onProfile}
+          aria-label="View Profile"
+          title={`${student?.name || "Alex"}'s Profile`}
+          className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative cursor-pointer group shrink-0"
+          style={{
+            background: "linear-gradient(135deg, rgba(34,211,238,0.18), rgba(139,92,246,0.18))",
+            border: "1px solid rgba(34,211,238,0.35)",
+            boxShadow: "0 0 15px -3px rgba(34,211,238,0.25)",
+          }}
+        >
+          <User size={18} className="text-cyan-300 group-hover:scale-110 transition-transform" />
+          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#060911]" />
         </button>
       </nav>
 
