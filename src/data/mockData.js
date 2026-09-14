@@ -5,6 +5,7 @@ import {
 
 export const STUDENT = {
   name: "Alex Chen",
+  username: "alexchen",
   email: "alex.chen@university.edu",
   degree: "B.Tech Computer Science",
   year: "3rd Year",
@@ -15,6 +16,7 @@ export const STUDENT = {
   github: "github.com/alexchen-dev",
   linkedin: "linkedin.com/in/alexchen-ai",
   avatarColor: "linear-gradient(135deg, #22d3ee, #8b5cf6)",
+  profilePicture: null,
 };
 
 export const SKILL_GROUPS = [

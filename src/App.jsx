@@ -29,11 +29,33 @@ export default function App() {
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [added, setAdded] = useState(new Set());
   const [toast, setToast] = useState(null);
-  const [student, setStudent] = useState(STUDENT);
+  const loadStoredProfile = () => {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        const stored = localStorage.getItem("pathforge_user_profile");
+        if (stored) {
+          return { ...STUDENT, ...JSON.parse(stored) };
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load profile from localStorage:", e);
+    }
+    return STUDENT;
+  };
 
-  const handleUpdateStudent = (updated) => {
-    setStudent(updated);
-    setToast("Profile updated successfully");
+  const [student, setStudent] = useState(loadStoredProfile);
+
+  const handleUpdateStudent = (updated, msg = "Profile updated successfully") => {
+    const merged = { ...student, ...updated };
+    setStudent(merged);
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.setItem("pathforge_user_profile", JSON.stringify(merged));
+      }
+    } catch (e) {
+      console.warn("Failed to save profile to localStorage:", e);
+    }
+    setToast(msg);
   };
 
   const toggleAdded = (id) => {
@@ -87,7 +109,7 @@ export default function App() {
             {active === "projects" && <ProjectsView added={added} toggleAdded={toggleAdded} />}
             {active === "certifications" && <CertificationsView added={added} toggleAdded={toggleAdded} />}
             {active === "career" && <CareerView />}
-            {active === "profile" && <ProfileView student={student} onUpdateStudent={handleUpdateStudent} />}
+            {active === "profile" && <ProfileView student={student} onUpdateStudent={handleUpdateStudent} onBack={() => go("dashboard")} />}
             {active === "settings" && <SettingsView />}
           </main>
           <AIAssistant open={assistantOpen} setOpen={setAssistantOpen} />

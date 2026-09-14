@@ -17,10 +17,14 @@ export function TopBar({ title, onProfileClick, student }) {
           onClick={onProfileClick}
           aria-label="Open Profile"
           title={`${student?.name || "Alex"}'s Profile`}
-          className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 cursor-pointer hover:ring-2 hover:ring-cyan-400/50 hover:scale-105 active:scale-95 transition-all"
+          className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 cursor-pointer hover:ring-2 hover:ring-cyan-400/50 hover:scale-105 active:scale-95 transition-all overflow-hidden"
           style={{ background: student?.avatarColor || "linear-gradient(135deg,#22d3ee,#8b5cf6)", color: "#04121a" }}
         >
-          {student?.name ? student.name.charAt(0) : "A"}
+          {student?.profilePicture ? (
+            <img src={student.profilePicture} alt={student.name || "Profile"} className="w-full h-full object-cover rounded-full" />
+          ) : (
+            <span>{student?.name ? student.name.charAt(0) : "A"}</span>
+          )}
         </button>
       </div>
     </div>

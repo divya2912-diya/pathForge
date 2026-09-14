@@ -39,14 +39,18 @@ export function LandingPage({ onStart, onExplore, onProfile, student }) {
           onClick={onProfile}
           aria-label="View Profile"
           title={`${student?.name || "Alex"}'s Profile`}
-          className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative cursor-pointer group shrink-0"
+          className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative cursor-pointer group shrink-0 overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, rgba(34,211,238,0.18), rgba(139,92,246,0.18))",
+            background: student?.profilePicture ? "transparent" : "linear-gradient(135deg, rgba(34,211,238,0.18), rgba(139,92,246,0.18))",
             border: "1px solid rgba(34,211,238,0.35)",
             boxShadow: "0 0 15px -3px rgba(34,211,238,0.25)",
           }}
         >
-          <User size={18} className="text-cyan-300 group-hover:scale-110 transition-transform" />
+          {student?.profilePicture ? (
+            <img src={student.profilePicture} alt={student.name || "Profile"} className="w-full h-full object-cover rounded-full" />
+          ) : (
+            <User size={18} className="text-cyan-300 group-hover:scale-110 transition-transform" />
+          )}
           <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#060911]" />
         </button>
       </nav>
