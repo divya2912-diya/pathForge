@@ -132,19 +132,19 @@ export default function LoginView({
                 Designed specifically for <strong>Hackathon Judges</strong> to enter instantly without registration or typing credentials.
               </p>
 
-              {/* Pre-loaded features */}
-              <div className="space-y-2.5 mb-8">
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Pre-configured Student</span>
-                  <span className="text-cyan-300 font-medium">Alex Chen (3rd Year CS)</span>
+              {/* Feature checklist */}
+              <div className="space-y-3 mb-8 p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                <div className="flex items-center gap-2.5 text-xs text-slate-300">
+                  <Check size={15} className="text-emerald-400 shrink-0" />
+                  <span>Instant Access to Full Student Portal</span>
                 </div>
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-xs">
-                  <span className="text-slate-400">AI Career Target</span>
-                  <span className="text-violet-300 font-medium">AI/ML Engineer · 94% Match</span>
+                <div className="flex items-center gap-2.5 text-xs text-slate-300">
+                  <Check size={15} className="text-emerald-400 shrink-0" />
+                  <span>Pre-configured Student Persona</span>
                 </div>
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Action Plan</span>
-                  <span className="text-amber-300 font-medium">Role Gap-to-Hire (3 milestones)</span>
+                <div className="flex items-center gap-2.5 text-xs text-slate-300">
+                  <Check size={15} className="text-emerald-400 shrink-0" />
+                  <span>No sign-up or typing required</span>
                 </div>
               </div>
             </div>
