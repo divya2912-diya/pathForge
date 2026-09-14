@@ -607,13 +607,6 @@ function LoginView({
             PathForge
           </span>
         </div>
-
-        <button
-          onClick={onBackToHome}
-          className="lp-btn-ghost px-4 py-2 rounded-xl text-xs sm:text-sm text-slate-300 hover:text-white flex items-center gap-2 cursor-pointer transition-all"
-        >
-          <ArrowLeft size={16} /> Back to Home
-        </button>
       </header>
 
       {/* Main Login Container */}
