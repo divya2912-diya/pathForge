@@ -461,11 +461,6 @@ function LandingPage({ onStart, onExplore, onProfile, student }) {
           </div>
           <span className="lp-display font-bold tracking-tight text-[17px] bg-gradient-to-r from-cyan-300 via-blue-200 to-orange-400 bg-clip-text text-transparent">PathForge</span>
         </div>
-        <div className="hidden md:flex items-center gap-8 text-sm" style={{ color: "var(--text-dim)" }}>
-          <a className="hover:text-white transition-colors cursor-pointer" onClick={onExplore}>Product</a>
-          <a className="hover:text-white transition-colors cursor-pointer" onClick={onExplore}>How it works</a>
-          <a className="hover:text-white transition-colors cursor-pointer" onClick={onExplore}>Career paths</a>
-        </div>
         <button
           onClick={onProfile}
           aria-label="View Profile"
