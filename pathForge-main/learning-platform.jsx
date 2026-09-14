@@ -262,7 +262,7 @@ const ONBOARD_CAREERS = [
 
 const NAV_MENU = [
   { id: "build-path", label: "Build My Learning Path", icon: Sparkles },
-  { id: "dashboard", label: "Home", icon: Home },
+  { id: "dashboard", label: "Dashboard", icon: Home },
   { id: "roadmap", label: "Learning Roadmap", icon: Route },
   { id: "resources", label: "Resources", icon: LayoutGrid },
   { id: "resume", label: "Resume Intelligence", icon: FileText },
@@ -557,16 +557,7 @@ function LandingPage({ onStart, onExplore, onProfile, student }) {
             PathForge
           </span>
         </div>
-        <div className="flex items-center gap-3 sm:gap-4">
-          <button
-            onClick={onExplore}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/[0.08] hover:border-cyan-400/30"
-            title="Go to Home / Dashboard"
-          >
-            <Home size={16} className="text-cyan-400" />
-            <span>Home</span>
-          </button>
-          <button
+        <button
           onClick={onProfile}
           aria-label="View Profile"
           title={`${student?.name || "Alex"}'s Profile`}
@@ -584,7 +575,6 @@ function LandingPage({ onStart, onExplore, onProfile, student }) {
           )}
           <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#060911]" />
         </button>
-        </div>
       </nav>
 
       {/* HERO */}
@@ -902,20 +892,10 @@ function HamburgerButton({ onClick }) {
   );
 }
 
-function HomeButton({ onClick, active }) {
+function HomeButton({ onClick }) {
   return (
-    <button
-      onClick={onClick}
-      className={`lp-glass-strong fixed top-4 sm:top-5 left-[68px] z-50 h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
-        active
-          ? "border-cyan-400/50 bg-cyan-500/20 text-cyan-300 shadow-[0_0_15px_-3px_rgba(34,211,238,0.3)]"
-          : "text-slate-300 hover:text-white hover:border-cyan-400/30 hover:bg-white/[0.06]"
-      }`}
-      aria-label="Navigate to Home / Dashboard"
-      title="Home / Dashboard"
-    >
-      <Home size={16} className={active ? "text-cyan-300" : "text-slate-400"} />
-      <span className="hidden sm:inline font-medium">Home</span>
+    <button onClick={onClick} className="lp-glass-strong fixed top-5 left-[68px] z-50 h-11 px-4 rounded-xl flex items-center gap-2 text-sm">
+      <ArrowLeft size={16} /> <span className="hidden sm:inline">Home</span>
     </button>
   );
 }
@@ -950,7 +930,7 @@ function NavDrawer({ open, onClose, active, onNavigate }) {
   );
 }
 
-function TopBar({ title, active, onHomeClick, onProfileClick, student }) {
+function TopBar({ title, onProfileClick, student }) {
   return (
     <div className="flex items-center justify-between pl-36 sm:pl-40 pr-5 md:pr-8 py-5 sticky top-0 z-20" style={{ background: "rgba(6,9,17,0.7)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
       <h1 className="lp-display text-lg font-semibold">{title}</h1>
@@ -2824,7 +2804,7 @@ export default function App() {
     <div className="lp-root">
       <GlobalStyle />
       <HamburgerButton onClick={() => setDrawerOpen(true)} />
-      {stage === "app" && <HomeButton onClick={() => go("dashboard")} active={active === "dashboard"} />}
+      {stage === "app" && <HomeButton onClick={() => setStage("landing")} />}
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} active={activeDrawerId} onNavigate={navigate} />
 
       {stage === "landing" && (
@@ -2844,7 +2824,7 @@ export default function App() {
 
       {stage === "app" && (
         <div>
-          <TopBar title={titleMap[active] || "Home"} active={active} onHomeClick={() => go("dashboard")} onProfileClick={() => go("profile")} student={student} />
+          <TopBar title={titleMap[active]} onProfileClick={() => go("profile")} student={student} />
           <main className="px-5 md:px-8 py-7 max-w-7xl mx-auto">
             {active === "dashboard" && <DashboardView go={go} />}
             {active === "roadmap" && <RoadmapView />}
