@@ -5,6 +5,7 @@ import NavDrawer from "./components/layout/NavDrawer";
 import TopBar from "./components/layout/TopBar";
 import Toast from "./components/ui/Toast";
 
+import LoginView from "./components/views/LoginView";
 import LandingPage from "./components/views/LandingPage";
 import OnboardingFlow from "./components/views/OnboardingFlow";
 import AnalyzingScreen from "./components/views/AnalyzingScreen";
@@ -23,7 +24,7 @@ import AIAssistant from "./components/AIAssistant";
 import { NAV_MENU, STUDENT } from "./data/mockData";
 
 export default function App() {
-  const [stage, setStage] = useState("landing"); // landing | onboarding | analyzing | app
+  const [stage, setStage] = useState("landing"); // landing | login | onboarding | analyzing | app
   const [active, setActive] = useState("dashboard");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
@@ -58,6 +59,27 @@ export default function App() {
     setToast(msg);
   };
 
+  const handleDemoLogin = () => {
+    setStudent(STUDENT);
+    setToast("Welcome Hackathon Judge! Signed in as Alex Chen");
+    go("dashboard");
+  };
+
+  const handleStudentLogin = ({ email, rememberMe }) => {
+    const current = loadStoredProfile();
+    const updated = { ...current, email: email || current.email };
+    setStudent(updated);
+    if (rememberMe) {
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem("pathforge_user_profile", JSON.stringify(updated));
+        }
+      } catch (e) {}
+    }
+    setToast(`Welcome back, ${updated.name}!`);
+    go("dashboard");
+  };
+
   const toggleAdded = (id) => {
     setAdded(prev => {
       const next = new Set(prev);
@@ -71,12 +93,13 @@ export default function App() {
   const navigate = (id) => {
     setDrawerOpen(false);
     if (id === "home") { setStage("landing"); return; }
+    if (id === "login") { setStage("login"); return; }
     if (id === "build-path") { setStage("onboarding"); return; }
     go(id);
   };
 
   const titleMap = Object.fromEntries(NAV_MENU.map(n => [n.id, n.label]));
-  const activeDrawerId = stage === "landing" ? "home" : (stage === "onboarding" || stage === "analyzing" ? "build-path" : (stage === "app" ? active : null));
+  const activeDrawerId = stage === "landing" ? "home" : (stage === "login" ? "login" : (stage === "onboarding" || stage === "analyzing" ? "build-path" : (stage === "app" ? active : null)));
 
   return (
     <div className="lp-root min-h-screen bg-[#060911] text-[#eef1f7]">
@@ -90,6 +113,17 @@ export default function App() {
           onExplore={() => go("dashboard")}
           onProfile={() => go("profile")}
           student={student}
+          onLogin={() => setStage("login")}
+          onDemoLogin={handleDemoLogin}
+        />
+      )}
+
+      {stage === "login" && (
+        <LoginView
+          onDemoLogin={handleDemoLogin}
+          onStudentLogin={handleStudentLogin}
+          onBackToHome={() => setStage("landing")}
+          onStartOnboarding={() => setStage("onboarding")}
         />
       )}
 

@@ -3,6 +3,14 @@ import {
   Compass, User, Settings, Video, BookOpen, FileCode2
 } from "lucide-react";
 
+
+export const DEMO_STUDENT_CREDENTIALS = {
+  email: "alex.chen@university.edu",
+  studentId: "STU-2026-8941",
+  password: "demoPassword123",
+  role: "student",
+};
+
 export const STUDENT = {
   name: "Alex Chen",
   username: "alexchen",

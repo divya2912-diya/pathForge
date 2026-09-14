@@ -1,5 +1,5 @@
 import React from "react";
-import { Flame, X } from "lucide-react";
+import { Flame, X, LogIn } from "lucide-react";
 import { NAV_MENU } from "../../data/mockData";
 
 export function NavDrawer({ open, onClose, active, onNavigate }) {
@@ -40,6 +40,16 @@ export function NavDrawer({ open, onClose, active, onNavigate }) {
             </button>
           ))}
         </nav>
+        <div className="p-3 border-t border-white/5">
+          <button
+            onClick={() => onNavigate("login")}
+            className={`lp-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left cursor-pointer ${active === "login" ? "active" : ""}`}
+            style={{ color: active === "login" ? "#fff" : "var(--text-dim)" }}
+          >
+            <LogIn size={17} className="shrink-0 text-cyan-400" />
+            <span>Login / Switch</span>
+          </button>
+        </div>
       </aside>
     </>
   );

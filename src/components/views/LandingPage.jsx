@@ -1,14 +1,14 @@
 import React from "react";
 import {
   Flame, Sparkles, ArrowRight, Radar, Route, LayoutGrid, FileText,
-  Compass, ShieldCheck, AlertTriangle, User
+  Compass, ShieldCheck, AlertTriangle, User, LogIn
 } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import FloatingCard from "../ui/FloatingCard";
 import SectionHeader from "../ui/SectionHeader";
 import Pill from "../ui/Pill";
 
-export function LandingPage({ onStart, onExplore, onProfile, student }) {
+export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, onDemoLogin }) {
   return (
     <div className="relative overflow-hidden">
       <div className="lp-noise" />
@@ -40,24 +40,32 @@ export function LandingPage({ onStart, onExplore, onProfile, student }) {
             PathForge
           </span>
         </div>
-        <button
-          onClick={onProfile}
-          aria-label="View Profile"
-          title={`${student?.name || "Alex"}'s Profile`}
-          className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative cursor-pointer group shrink-0 overflow-hidden"
-          style={{
-            background: student?.profilePicture ? "transparent" : "linear-gradient(135deg, rgba(34,211,238,0.18), rgba(139,92,246,0.18))",
-            border: "1px solid rgba(34,211,238,0.35)",
-            boxShadow: "0 0 15px -3px rgba(34,211,238,0.25)",
-          }}
-        >
-          {student?.profilePicture ? (
-            <img src={student.profilePicture} alt={student.name || "Profile"} className="w-full h-full object-cover rounded-full" />
-          ) : (
-            <User size={18} className="text-cyan-300 group-hover:scale-110 transition-transform" />
-          )}
-          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#060911]" />
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onLogin}
+            className="lp-btn-ghost px-3.5 py-2 rounded-xl text-xs sm:text-sm text-cyan-300 hover:text-white border border-cyan-400/30 hover:border-cyan-400/60 flex items-center gap-1.5 cursor-pointer transition-all shadow-sm shadow-cyan-500/10"
+          >
+            <LogIn size={15} /> Sign In
+          </button>
+          <button
+            onClick={onProfile}
+            aria-label="View Profile"
+            title={`${student?.name || "Alex"}'s Profile`}
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative cursor-pointer group shrink-0 overflow-hidden"
+            style={{
+              background: student?.profilePicture ? "transparent" : "linear-gradient(135deg, rgba(34,211,238,0.18), rgba(139,92,246,0.18))",
+              border: "1px solid rgba(34,211,238,0.35)",
+              boxShadow: "0 0 15px -3px rgba(34,211,238,0.25)",
+            }}
+          >
+            {student?.profilePicture ? (
+              <img src={student.profilePicture} alt={student.name || "Profile"} className="w-full h-full object-cover rounded-full" />
+            ) : (
+              <User size={18} className="text-cyan-300 group-hover:scale-110 transition-transform" />
+            )}
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#060911]" />
+          </button>
+        </div>
       </nav>
 
       {/* HERO */}
@@ -74,11 +82,23 @@ export function LandingPage({ onStart, onExplore, onProfile, student }) {
           <p className="mt-6 text-base md:text-lg max-w-lg" style={{ color: "var(--text-dim)" }}>
             Discover what you know, understand what you're missing, and follow an AI-guided path from learning to career readiness.
           </p>
-          <div className="mt-9 flex flex-wrap items-center gap-4">
+          <div className="mt-9 flex flex-wrap items-center gap-3.5">
             <button onClick={onStart} className="lp-btn-primary px-6 py-3.5 rounded-xl flex items-center gap-2 text-[15px] cursor-pointer">
               Build my learning path <ArrowRight size={17} />
             </button>
-            <button onClick={onExplore} className="lp-btn-ghost px-6 py-3.5 rounded-xl text-[15px] text-slate-200 cursor-pointer">
+            <button
+              onClick={onDemoLogin}
+              className="px-5 py-3.5 rounded-xl text-[14px] text-cyan-300 font-medium flex items-center gap-2 cursor-pointer transition-all group"
+              style={{
+                background: "linear-gradient(135deg, rgba(34,211,238,0.12), rgba(139,92,246,0.12))",
+                border: "1px solid rgba(34,211,238,0.35)",
+                boxShadow: "0 0 20px -3px rgba(34,211,238,0.2)",
+              }}
+            >
+              <Sparkles size={16} className="text-cyan-300 group-hover:rotate-12 transition-transform" />
+              Demo Login (Judge Mode)
+            </button>
+            <button onClick={onExplore} className="lp-btn-ghost px-5 py-3.5 rounded-xl text-[14px] text-slate-300 hover:text-white cursor-pointer">
               Explore platform
             </button>
           </div>
