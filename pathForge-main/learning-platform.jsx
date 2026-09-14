@@ -2158,7 +2158,7 @@ function ProfileView({ student = STUDENT, onUpdateStudent, onBack }) {
             </ResponsiveContainer>
           </div>
         </div>
-      </div>
+      </GlassCard>
 
       {/* Projects */}
       <GlassCard className="p-6" hover>
