@@ -502,14 +502,6 @@ function LandingPage({ onStart, onExplore, onProfile, student }) {
               Explore platform
             </button>
           </div>
-          <div className="mt-12 flex items-center gap-8">
-            {[["12k+", "students mapped"], ["340+", "curated resources"], ["94%", "avg. match accuracy"]].map(([n, l]) => (
-              <div key={l}>
-                <p className="lp-display text-xl font-semibold">{n}</p>
-                <p className="text-xs mt-0.5" style={{ color: "var(--text-dim)" }}>{l}</p>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* HERO VISUAL */}
