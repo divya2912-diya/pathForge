@@ -24,11 +24,21 @@ export function LandingPage({ onStart, onExplore, onProfile, student }) {
 
       {/* NAV */}
       <nav className="relative z-20 flex items-center justify-between px-6 md:px-12 py-6 max-w-7xl mx-auto">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg relative overflow-hidden" style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6 50%, #f97316)" }}>
-            <Flame size={20} color="#04121a" fill="#04121a" />
+        <div className="flex items-center gap-3 sm:gap-3.5">
+          <div
+            className="w-10 h-10 sm:w-11 sm:h-11 md:w-[50px] md:h-[50px] rounded-xl sm:rounded-[14px] md:rounded-[16px] flex items-center justify-center shadow-lg relative overflow-hidden shrink-0"
+            style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6 50%, #f97316)" }}
+          >
+            <Flame
+              size={28}
+              className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7"
+              color="#04121a"
+              fill="#04121a"
+            />
           </div>
-          <span className="lp-display font-bold tracking-tight text-[17px] bg-gradient-to-r from-cyan-300 via-blue-200 to-orange-400 bg-clip-text text-transparent">PathForge</span>
+          <span className="lp-display font-bold tracking-tight text-xl sm:text-[22px] md:text-[26px] leading-none bg-gradient-to-r from-cyan-300 via-blue-200 to-orange-400 bg-clip-text text-transparent select-none">
+            PathForge
+          </span>
         </div>
         <button
           onClick={onProfile}
