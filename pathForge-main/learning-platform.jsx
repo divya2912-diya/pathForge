@@ -879,18 +879,6 @@ function LandingPage({ onStart, onExplore, onProfile, student, onLogin, onDemoLo
             <button onClick={onStart} className="lp-btn-primary px-6 py-3.5 rounded-xl flex items-center gap-2 text-[15px]">
               Build my learning path <ArrowRight size={17} />
             </button>
-            <button
-              onClick={onDemoLogin}
-              className="px-5 py-3.5 rounded-xl text-[14px] text-cyan-300 font-medium flex items-center gap-2 cursor-pointer transition-all group"
-              style={{
-                background: "linear-gradient(135deg, rgba(34,211,238,0.12), rgba(139,92,246,0.12))",
-                border: "1px solid rgba(34,211,238,0.35)",
-                boxShadow: "0 0 20px -3px rgba(34,211,238,0.2)",
-              }}
-            >
-              <Sparkles size={16} className="text-cyan-300 group-hover:rotate-12 transition-transform" />
-              Enter pathForge
-            </button>
             <button onClick={onExplore} className="lp-btn-ghost px-5 py-3.5 rounded-xl text-[14px] text-slate-300 hover:text-white">
               Explore platform
             </button>
