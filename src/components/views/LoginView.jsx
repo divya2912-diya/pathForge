@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  Flame, Sparkles, ArrowRight, ArrowLeft, Lock, Mail, CheckCircle2,
+  Flame, Sparkles, ArrowRight, ArrowLeft, Lock, Mail, CheckCircle2, Check,
   AlertCircle, GraduationCap, Eye, EyeOff, ShieldCheck, UserCheck
 } from "lucide-react";
 import GlassCard from "../ui/GlassCard";

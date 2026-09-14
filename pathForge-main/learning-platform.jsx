@@ -7,7 +7,7 @@ import {
   CircleDot, Flame, Target, ShieldCheck, Database, GraduationCap,
   ArrowLeft, PlayCircle, Lock, CheckCircle2, XCircle, Loader2, Video,
   FileCode2, Layers, RefreshCw, Mail, Edit3, Camera, MapPin, ExternalLink,
-  Phone, Globe, Trash2, Briefcase, DollarSign, LogIn, Eye, EyeOff, UserCheck
+  Phone, Globe, Trash2, Briefcase, DollarSign, LogIn, Eye, EyeOff, UserCheck, AlertCircle
 } from "lucide-react";
 import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar as RechartsRadar,
