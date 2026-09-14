@@ -1,4 +1,4 @@
-# 🔥 PathForge
+#  PathForge
 Demo Link : https://path-forge-azure.vercel.app
 
 > **AI-Powered Education-to-Employment Platform for Students**  
@@ -25,60 +25,60 @@ PathForge bridges this gap with:
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
-### 🚀 1. Seamless Access & Dual Login
+### 1. Seamless Access & Dual Login
 - **Demo / Judge Instant Access**: One-click **"Enter pathForge"** demo login enabling hackathon evaluators and mentors to inspect the full platform immediately without credential barriers.
 - **Student Authentication**: Streamlined student login with smart input dynamics (icons gracefully yield space when credentials are typed), credential validation, and device retention.
 
-### 🧭 2. Personalized AI Learning Roadmap (`RoadmapView`)
+###  2. Personalized AI Learning Roadmap (`RoadmapView`)
 - Visual progression through core foundational milestones, advanced frameworks, and architecture patterns.
 - Interactive status rings (Completed, In Progress, Next Up, Locked).
 - Detailed curriculum breakdown with estimated completion timelines, video modules, and practice sandboxes.
 
-### 📊 3. Intelligent Analytics Dashboard (`DashboardView`)
+###  3. Intelligent Analytics Dashboard (`DashboardView`)
 - **Career Readiness Index**: Live percentage gauge tracking overall preparedness for your dream role.
 - **Skill Radar Matrix**: Multi-axis radar chart powered by **Recharts** displaying frontend, backend, system architecture, DevOps, and cloud proficiencies.
 - **Weekly Momentum & Goals**: Interactive tracking of weekly study streaks, hours spent, and concepts mastered.
 
-### 🎯 4. Real-time Skill Matrix & Gap Analysis (`SkillsView`)
+###  4. Real-time Skill Matrix & Gap Analysis (`SkillsView`)
 - Granular breakdown of individual competencies (e.g., React, TypeScript, Node.js, Docker, System Design).
 - Visual gap identification tags highlighting the highest-ROI skills needed to reach target hireability.
 - One-click links to immediate remedial learning materials.
 
-### 📝 5. Adaptive Technical Assessments (`AssessmentView`)
+###  5. Adaptive Technical Assessments (`AssessmentView`)
 - Interactive technical quizzes with time tracking, question progression, and instant answer evaluations.
 - Real-time roadmap calibration based on assessment results.
 
-### 💼 6. Career Readiness & Target Roles (`CareerView`)
+###  6. Career Readiness & Target Roles (`CareerView`)
 - Target role matching algorithm (e.g., Full Stack Engineer, Cloud Architect, AI Systems Engineer).
 - Side-by-side comparison of required skills versus your acquired skills.
 - Industry salary benchmarks, demand trends, and direct job match indicators.
 
-### 🛠️ 7. Hands-on Portfolio Projects (`ProjectsView`)
+###  7. Hands-on Portfolio Projects (`ProjectsView`)
 - Industry-aligned engineering projects ranging from Beginner to Advanced.
 - Includes technology badges, system architecture challenges, GitHub template links, and verifiable evaluation rubrics.
 
-### 📄 8. ATS Resume Builder & Analyzer (`ResumeView`)
+###  8. ATS Resume Builder & Analyzer (`ResumeView`)
 - Comprehensive ATS compatibility scoring.
 - Keyword matching against job descriptions to optimize resume keyword density.
 - Actionable recommendations for section formatting, impact statements, and metric quantification.
 
-### 🏆 9. Verifiable Micro-Credentials (`CertificationsView`)
+###  9. Verifiable Micro-Credentials (`CertificationsView`)
 - Achievement badges earned upon mastering modules and passing technical assessments.
 - Shareable digital credentials that showcase verified competency to recruiters.
 
-### 👤 10. Student Profile & Customization (`ProfileView`)
+###  10. Student Profile & Customization (`ProfileView`)
 - Fully customizable student profile featuring instant photo uploads, university details, degree, graduation year, and career aspirations.
 - Modal-based editing with real-time UI state synchronization.
 
-### 🤖 11. PathForge AI Assistant (`AIAssistant`)
+###  11. PathForge AI Assistant (`AIAssistant`)
 - Slide-out AI mentor available from any screen.
 - Answers complex technical questions, breaks down system design concepts, and suggests next learning steps.
 
 ---
 
-## 🎨 Design System & Aesthetics
+##  Design System & Aesthetics
 
 PathForge is built using a modern design language designed for maximum visual appeal:
 - **Deep Void Background**: Ultra-sleek `#060911` dark surface minimizing eye strain.
@@ -89,7 +89,7 @@ PathForge is built using a modern design language designed for maximum visual ap
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+##  Tech Stack & Architecture
 
 | Layer | Technology |
 | :--- | :--- |
@@ -102,7 +102,7 @@ PathForge is built using a modern design language designed for maximum visual ap
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
 pathForge/
@@ -159,7 +159,7 @@ pathForge/
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (version **18.x** or higher recommended)
@@ -197,7 +197,7 @@ pathForge/
 
 ---
 
-## 🚢 Deployment
+##  Deployment
 
 The project is pre-configured for seamless static deployment to any modern hosting provider:
 
@@ -205,7 +205,7 @@ The project is pre-configured for seamless static deployment to any modern hosti
 - **Vercel**: Includes `vercel.json` for single-page application routing.
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are warmly welcome! If you'd like to improve PathForge:
 
@@ -217,12 +217,12 @@ Contributions are warmly welcome! If you'd like to improve PathForge:
 
 ---
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
-  <sub>Crafted with 🔥 for students forging their future in tech.</sub>
+  <sub>Crafted for students forging their future in tech.</sub>
 </div>
