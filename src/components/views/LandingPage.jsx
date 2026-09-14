@@ -1,7 +1,7 @@
 import React from "react";
 import {
   Flame, Sparkles, ArrowRight, Radar, Route, LayoutGrid, FileText,
-  Compass, ShieldCheck, AlertTriangle, User
+  Compass, ShieldCheck, AlertTriangle, User, Home
 } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import FloatingCard from "../ui/FloatingCard";
@@ -40,7 +40,16 @@ export function LandingPage({ onStart, onExplore, onProfile, student }) {
             PathForge
           </span>
         </div>
-        <button
+        <div className="flex items-center gap-3 sm:gap-4">
+          <button
+            onClick={onExplore}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer text-slate-300 hover:text-white hover:bg-white/[0.08] border border-white/[0.08] hover:border-cyan-400/30"
+            title="Go to Home / Dashboard"
+          >
+            <Home size={16} className="text-cyan-400" />
+            <span>Home</span>
+          </button>
+          <button
           onClick={onProfile}
           aria-label="View Profile"
           title={`${student?.name || "Alex"}'s Profile`}
@@ -58,6 +67,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student }) {
           )}
           <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#060911]" />
         </button>
+        </div>
       </nav>
 
       {/* HERO */}

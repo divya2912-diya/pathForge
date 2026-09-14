@@ -80,7 +80,7 @@ export default function App() {
   return (
     <div className="lp-root min-h-screen bg-[#060911] text-[#eef1f7]">
       <HamburgerButton onClick={() => setDrawerOpen(true)} />
-      {stage === "app" && <HomeButton onClick={() => setStage("landing")} />}
+      {stage === "app" && <HomeButton onClick={() => go("dashboard")} active={active === "dashboard"} />}
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} active={activeDrawerId} onNavigate={navigate} />
 
       {stage === "landing" && (
@@ -100,7 +100,7 @@ export default function App() {
 
       {stage === "app" && (
         <div>
-          <TopBar title={titleMap[active]} onProfileClick={() => go("profile")} student={student} />
+          <TopBar title={titleMap[active] || "Home"} active={active} onHomeClick={() => go("dashboard")} onProfileClick={() => go("profile")} student={student} />
           <main className="px-5 md:px-8 py-7 max-w-7xl mx-auto">
             {active === "dashboard" && <DashboardView go={go} />}
             {active === "roadmap" && <RoadmapView />}
