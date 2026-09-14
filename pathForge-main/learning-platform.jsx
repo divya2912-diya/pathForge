@@ -7,7 +7,7 @@ import {
   CircleDot, Flame, Target, ShieldCheck, Database, GraduationCap,
   ArrowLeft, PlayCircle, Lock, CheckCircle2, XCircle, Loader2, Video,
   FileCode2, Layers, RefreshCw, Mail, Edit3, Camera, MapPin, ExternalLink,
-  Phone, Globe, Trash2
+  Phone, Globe, Trash2, Briefcase, DollarSign
 } from "lucide-react";
 import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar as RechartsRadar,
@@ -102,6 +102,92 @@ const ROADMAP = [
   { id: 9, title: "Internship / Job Readiness", status: "locked", duration: "Ongoing", difficulty: "All levels",
     desc: "Resume polish, mock interviews, system design basics, applications.", relevance: "The final step from learner to hire-ready candidate." },
 ];
+
+const GAP_TO_HIRE_PLAN = {
+  roleOverview: {
+    targetRole: "AI/ML Engineer",
+    baselineScore: 72,
+    projectedScore: 94,
+    avgSalary: "$142,000 / yr",
+    marketDemand: "Very High (3,400+ active roles)",
+    timeline: "8-10 weeks at 6 hrs/week",
+  },
+  milestones: [
+    {
+      id: 1,
+      step: 1,
+      title: "Deep Learning & Neural Architectures",
+      status: "in-progress",
+      progress: 45,
+      boost: "+8%",
+      scoreRange: "72% → 80%",
+      priority: "Critical Gap",
+      priorityTone: "amber",
+      gap: "Neural networks, CNNs, Transformers, PyTorch model optimization",
+      project: "Multi-modal Image & Text Classifier with PyTorch",
+      skills: ["PyTorch", "Transfer Learning", "TensorRT", "CNNs"],
+      whyCompaniesTest: "Over 85% of AI/ML Engineer postings require direct experience training, profiling, and fine-tuning neural architectures.",
+      duration: "3 weeks",
+      difficulty: "Advanced",
+    },
+    {
+      id: 2,
+      step: 2,
+      title: "Docker & Containerized Model Serving",
+      status: "upcoming",
+      progress: 0,
+      boost: "+7%",
+      scoreRange: "80% → 87%",
+      priority: "High Impact",
+      priorityTone: "cyan",
+      gap: "Docker containerization, GPU CUDA runtimes, FastAPI inference endpoints",
+      project: "Scalable ML Model Serving API with Docker & FastAPI",
+      skills: ["Docker", "FastAPI", "Triton Server", "GPU CUDA Runtime"],
+      whyCompaniesTest: "Production AI roles require packaging models as reliable, portable containerized microservices ready for cloud deployment.",
+      duration: "2 weeks",
+      difficulty: "Intermediate",
+    },
+    {
+      id: 3,
+      step: 3,
+      title: "Production System Design & RAG Architecture",
+      status: "locked",
+      progress: 0,
+      boost: "+4%",
+      scoreRange: "87% → 91%",
+      priority: "Specialization",
+      priorityTone: "violet",
+      gap: "Low-latency vector indexing, cache hierarchies, distributed inference",
+      project: "Enterprise Document Search with Pinecone & LangChain",
+      skills: ["Vector DBs", "RAG Pipelines", "Embedding Indexes", "System Design"],
+      whyCompaniesTest: "RAG is the primary enterprise generative AI workload; validating unhallucinated answer retrieval distinguishes senior candidates.",
+      duration: "2.5 weeks",
+      difficulty: "Advanced",
+    },
+    {
+      id: 4,
+      step: 4,
+      title: "Interview Simulation & Portfolio Verification",
+      status: "locked",
+      progress: 0,
+      boost: "+3%",
+      scoreRange: "91% → 94%",
+      priority: "Final Polish",
+      priorityTone: "green",
+      gap: "Live algorithmic coding, architecture defense, production code review",
+      project: "Verified GitHub Portfolio Showcase & Architecture Deck",
+      skills: ["Live Coding", "System Architecture Defense", "Code Review"],
+      whyCompaniesTest: "Ensures you can clearly articulate architectural trade-offs and code clean, testable models under real interview scrutiny.",
+      duration: "1.5 weeks",
+      difficulty: "Advanced",
+    },
+  ],
+  foundationalCompleted: [
+    { id: 101, title: "Python Programming Fundamentals", status: "done", score: "100%", duration: "3 weeks", provider: "University Coursework" },
+    { id: 102, title: "Data Structures & Algorithms", status: "done", score: "96%", duration: "4 weeks", provider: "University Coursework" },
+  ],
+};
+
 
 const RESOURCES = [
   { id: 1, title: "Python for Data Science", type: "Course", icon: "video", difficulty: "Beginner", time: "6h", match: 96,
@@ -870,16 +956,25 @@ function DashboardView({ go }) {
     { label: "Skills mastered", value: 18, icon: Radar, tone: "green", raw: true },
     { label: "Current streak", value: 12, icon: Flame, tone: "amber", raw: true, suffix: " days" },
   ];
+
+  const plan = GAP_TO_HIRE_PLAN;
+
   return (
     <div className="space-y-8">
+      {/* Greeting Banner */}
       <GlassCard strong className="p-6 md:p-7 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="lp-display text-xl md:text-2xl font-semibold">Good morning, {STUDENT.name} 👋</h2>
-          <p className="text-sm mt-1" style={{ color: "var(--text-dim)" }}>Your AI learning companion has identified 4 priority areas for you today.</p>
+          <p className="text-sm mt-1" style={{ color: "var(--text-dim)" }}>
+            Your AI career companion identified 3 high-impact gaps to unlock 94% hireability for <span className="text-cyan-300 font-medium">{STUDENT.targetCareer}</span>.
+          </p>
         </div>
-        <button onClick={() => go("profile")} className="lp-btn-primary px-5 py-2.5 rounded-lg text-sm whitespace-nowrap">Take today's assessment</button>
+        <button onClick={() => go("profile")} className="lp-btn-primary px-5 py-2.5 rounded-xl text-sm whitespace-nowrap cursor-pointer">
+          {"Take today's assessment"}
+        </button>
       </GlassCard>
 
+      {/* Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(s => (
           <GlassCard key={s.label} hover className="p-5">
@@ -888,46 +983,118 @@ function DashboardView({ go }) {
                 <s.icon size={16} color="#67e8f9" />
               </div>
             </div>
-            <p className="lp-display text-2xl font-semibold"><AnimatedCounter to={s.value} suffix={s.raw ? (s.suffix || "") : "%"} /></p>
+            <p className="lp-display text-2xl font-semibold">
+              <AnimatedCounter to={s.value} suffix={s.raw ? (s.suffix || "") : "%"} />
+            </p>
             <p className="text-xs mt-1" style={{ color: "var(--text-dim)" }}>{s.label}</p>
           </GlassCard>
         ))}
       </div>
 
+      {/* Role Gap-to-Hire Action Plan Card + Skill Gap Analysis */}
       <div className="grid lg:grid-cols-3 gap-6">
         <GlassCard className="p-6 lg:col-span-2" hover>
-          <SectionHeader title="Your personalized roadmap" subtitle="AI/ML Engineer track" action={
-            <button onClick={() => go("roadmap")} className="text-xs flex items-center gap-1" style={{ color: "#67e8f9" }}>View full roadmap <ChevronRight size={13} /></button>
-          } />
+          <SectionHeader
+            eyebrow="CAREER GAP CLOSER"
+            title="Role Gap-to-Hire Action Plan"
+            subtitle={`Close 3 critical skill gaps to boost your ${STUDENT.targetCareer} hireability from 72% to 94%.`}
+            action={
+              <button
+                onClick={() => go("roadmap")}
+                className="text-xs font-medium flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-colors cursor-pointer"
+              >
+                View full action plan <ChevronRight size={13} />
+              </button>
+            }
+          />
+
+          {/* Hireability Stepper Tracker */}
+          <div className="my-5 p-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span className="text-slate-400">Current Readiness: <strong className="text-white">72%</strong></span>
+              <span className="text-cyan-400 font-medium flex items-center gap-1">
+                <Target size={13} /> Target Hireability: <strong>94%</strong>
+              </span>
+            </div>
+            <div className="relative h-2.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="absolute top-0 left-0 bottom-0 rounded-full transition-all duration-1000"
+                style={{ width: "72%", background: "linear-gradient(90deg, #22d3ee, #8b5cf6)" }}
+              />
+            </div>
+            <div className="flex justify-between items-center text-[11px] text-slate-400 mt-2">
+              <span>Baseline: 72%</span>
+              <span className="text-cyan-300">+8% Deep Learning</span>
+              <span className="text-violet-300">+7% Docker/FastAPI</span>
+              <span className="text-emerald-400 font-semibold">94% Hired</span>
+            </div>
+          </div>
+
+          {/* Priority Gap Items */}
           <div className="space-y-3">
-            {ROADMAP.slice(2, 6).map(m => (
-              <div key={m.id} className="flex items-center gap-3 py-2.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                <StatusDot status={m.status} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{m.title}</p>
-                  <p className="text-xs" style={{ color: "var(--text-dim)" }}>{m.duration} · {m.difficulty}</p>
+            {plan.milestones.slice(0, 3).map((m) => (
+              <div
+                key={m.id}
+                onClick={() => go("roadmap")}
+                className="p-3.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-cyan-400/30 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 mt-0.5" style={{ background: "rgba(34,211,238,0.12)", color: "#67e8f9" }}>
+                    0{m.step}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-white truncate">{m.title}</p>
+                      <Pill tone={m.priorityTone}>{m.priority}</Pill>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5 truncate">{m.project}</p>
+                  </div>
                 </div>
-                {m.status === "in-progress" && <span className="text-xs shrink-0" style={{ color: "#67e8f9" }}>{m.progress}%</span>}
+
+                <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+                  <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: "rgba(52,211,153,0.12)", color: "#6ee7b7", border: "1px solid rgba(52,211,153,0.25)" }}>
+                    {m.boost} boost
+                  </span>
+                  <StatusDot status={m.status} />
+                </div>
               </div>
             ))}
           </div>
         </GlassCard>
 
+        {/* Skill Gap Analysis */}
         <GlassCard className="p-6" hover>
           <SectionHeader title="Skill gap analysis" />
-          <p className="text-xs font-medium mb-2 flex items-center gap-1.5" style={{ color: "#6ee7b7" }}><CheckCircle2 size={13} /> Strengths</p>
-          <div className="flex flex-wrap gap-1.5 mb-4">{STRENGTHS.map(s => <Pill key={s} tone="green">{s}</Pill>)}</div>
-          <p className="text-xs font-medium mb-2 flex items-center gap-1.5" style={{ color: "#fbbf24" }}><AlertTriangle size={13} /> Gaps</p>
-          <div className="flex flex-wrap gap-1.5">{GAPS.map(s => <Pill key={s} tone="amber">{s}</Pill>)}</div>
-          <button onClick={() => go("profile")} className="text-xs flex items-center gap-1 mt-5" style={{ color: "#67e8f9" }}>Full skill profile <ChevronRight size={13} /></button>
+          <p className="text-xs font-medium mb-2 flex items-center gap-1.5" style={{ color: "#6ee7b7" }}>
+            <CheckCircle2 size={13} /> Strengths
+          </p>
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {STRENGTHS.map(s => <Pill key={s} tone="green">{s}</Pill>)}
+          </div>
+          <p className="text-xs font-medium mb-2 flex items-center gap-1.5" style={{ color: "#fbbf24" }}>
+            <AlertTriangle size={13} /> High-Priority Gaps
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {GAPS.map(s => <Pill key={s} tone="amber">{s}</Pill>)}
+          </div>
+          <button onClick={() => go("profile")} className="text-xs flex items-center gap-1 mt-6 text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer">
+            Full skill profile <ChevronRight size={13} />
+          </button>
         </GlassCard>
       </div>
 
+      {/* AI Recommendations & Upcoming Assessment */}
       <div className="grid lg:grid-cols-3 gap-6">
         <GlassCard className="p-6 lg:col-span-2" hover>
-          <SectionHeader title="AI recommendations" subtitle="Matched to your current skill gaps" action={
-            <button onClick={() => go("resources")} className="text-xs flex items-center gap-1" style={{ color: "#67e8f9" }}>All resources <ChevronRight size={13} /></button>
-          } />
+          <SectionHeader
+            title="AI recommendations"
+            subtitle="Matched to your current skill gaps"
+            action={
+              <button onClick={() => go("resources")} className="text-xs flex items-center gap-1 cursor-pointer" style={{ color: "#67e8f9" }}>
+                All resources <ChevronRight size={13} />
+              </button>
+            }
+          />
           <div className="grid sm:grid-cols-2 gap-3">
             {RESOURCES.slice(0, 4).map(r => (
               <div key={r.id} className="p-3.5 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
@@ -935,7 +1102,7 @@ function DashboardView({ go }) {
                   <Pill tone="cyan">{r.match}% match</Pill>
                   <span className="text-xs" style={{ color: "var(--text-dim)" }}>{r.time}</span>
                 </div>
-                <p className="text-sm font-medium lp-line-clamp-2">{r.title}</p>
+                <p className="text-sm font-medium lp-line-clamp-2 text-white">{r.title}</p>
               </div>
             ))}
           </div>
@@ -945,21 +1112,31 @@ function DashboardView({ go }) {
           <SectionHeader title="Upcoming assessment" />
           <div className="flex-1 flex flex-col items-center justify-center text-center py-2">
             <Sparkles size={26} color="#67e8f9" className="mb-3" />
-            <p className="text-sm font-medium mb-1">Adaptive Knowledge Check</p>
+            <p className="text-sm font-medium mb-1 text-white">Adaptive Knowledge Check</p>
             <p className="text-xs mb-5" style={{ color: "var(--text-dim)" }}>6 questions · ~10 minutes · Statistics & ML focus</p>
-            <button onClick={() => go("profile")} className="lp-btn-primary px-5 py-2.5 rounded-lg text-sm w-full">Start assessment</button>
+            <button onClick={() => go("profile")} className="lp-btn-primary px-5 py-2.5 rounded-xl text-sm w-full cursor-pointer">
+              Start assessment
+            </button>
           </div>
         </GlassCard>
       </div>
 
+      {/* Recommended Projects & Career Readiness */}
       <div className="grid lg:grid-cols-2 gap-6">
         <GlassCard className="p-6" hover>
-          <SectionHeader title="Recommended projects" action={<button onClick={() => go("projects")} className="text-xs flex items-center gap-1" style={{ color: "#67e8f9" }}>All projects <ChevronRight size={13} /></button>} />
+          <SectionHeader
+            title="Recommended projects"
+            action={
+              <button onClick={() => go("projects")} className="text-xs flex items-center gap-1 cursor-pointer" style={{ color: "#67e8f9" }}>
+                All projects <ChevronRight size={13} />
+              </button>
+            }
+          />
           {PROJECTS.slice(0, 2).map(p => (
             <div key={p.id} className="flex items-center justify-between py-2.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
               <div>
-                <p className="text-sm font-medium">{p.title}</p>
-                <p className="text-xs" style={{ color: "var(--text-dim)" }}>{p.skills.slice(0, 3).join(" • ")}</p>
+                <p className="text-sm font-medium text-white">{p.title}</p>
+                <p className="text-xs" style={{ color: "var(--text-dim)" }}>{p.skills.slice(0, 3).join(" · ")}</p>
               </div>
               <Pill tone="cyan">{p.match}%</Pill>
             </div>
@@ -967,11 +1144,18 @@ function DashboardView({ go }) {
         </GlassCard>
 
         <GlassCard className="p-6" hover>
-          <SectionHeader title="Career readiness" action={<button onClick={() => go("career")} className="text-xs flex items-center gap-1" style={{ color: "#67e8f9" }}>Details <ChevronRight size={13} /></button>} />
+          <SectionHeader
+            title="Career readiness"
+            action={
+              <button onClick={() => go("career")} className="text-xs flex items-center gap-1 cursor-pointer" style={{ color: "#67e8f9" }}>
+                Details <ChevronRight size={13} />
+              </button>
+            }
+          />
           <div className="flex items-center gap-6">
             <ProgressRing value={72} size={96} stroke={8} sublabel="ready" />
             <div className="flex-1 space-y-2">
-              <p className="text-sm">Target: <span className="font-medium">{STUDENT.targetCareer}</span></p>
+              <p className="text-sm text-white">Target: <span className="font-semibold text-cyan-300">{STUDENT.targetCareer}</span></p>
               <p className="text-xs" style={{ color: "var(--text-dim)" }}>18 of 25 required skills matched</p>
               <p className="text-xs" style={{ color: "#fbbf24" }}>Focus: Docker, System Design, Deep Learning</p>
             </div>
@@ -981,6 +1165,7 @@ function DashboardView({ go }) {
     </div>
   );
 }
+
 
 function StatusDot({ status }) {
   const map = {
@@ -1057,39 +1242,197 @@ function SkillsView() {
 /* ============================== ROADMAP VIEW ============================== */
 
 function RoadmapView() {
-  const [expanded, setExpanded] = useState(3);
+  const [expanded, setExpanded] = useState(1);
+  const [tab, setTab] = useState("all"); // all | active | foundational
+
+  const plan = GAP_TO_HIRE_PLAN;
+  const overview = plan.roleOverview;
+
+  const displayMilestones = tab === "foundational"
+    ? []
+    : tab === "active"
+      ? plan.milestones.filter(m => m.status !== "done")
+      : plan.milestones;
+
   return (
-    <div className="space-y-6">
-      <SectionHeader eyebrow="Personalized path" title={`Roadmap to ${STUDENT.targetCareer}`} subtitle="Built from your skills, gaps and performance. Click a milestone to expand it." />
-      <div className="relative pl-8">
-        <div className="absolute left-[15px] top-2 bottom-2 w-px" style={{ background: "linear-gradient(180deg, rgba(34,211,238,0.5), rgba(139,92,246,0.5), rgba(255,255,255,0.08))" }} />
-        <div className="space-y-4">
-          {ROADMAP.map(m => {
+    <div className="space-y-7">
+      {/* Header */}
+      <SectionHeader
+        eyebrow="CAREER ACCELERATOR BLUEPRINT"
+        title={`Role Gap-to-Hire Action Plan: ${overview.targetRole}`}
+        subtitle={`A prioritized hiring roadmap bridging your current skills (${STUDENT.name}) directly to top-tier ${overview.targetRole} job postings.`}
+      />
+
+      {/* Market Intelligence Hero Card */}
+      <GlassCard strong className="p-6 md:p-8 relative overflow-hidden" hover>
+        <div
+          className="absolute -top-24 -right-24 w-80 h-80 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(34,211,238,0.14), transparent 70%)" }}
+        />
+        <div className="relative z-10 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                  Target Role: {overview.targetRole}
+                </span>
+                <span className="text-xs text-slate-400">· Timeline: {overview.timeline}</span>
+              </div>
+              <h2 className="lp-display text-2xl font-bold text-white">4 Actionable Steps to Reach 94% Hireability</h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-right">
+                <p className="text-[11px] text-slate-400">Avg. Market Salary</p>
+                <p className="lp-display text-lg font-bold text-emerald-400">{overview.avgSalary}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stepper Progress Bar */}
+          <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-2">
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-300 font-medium">Readiness Trajectory</span>
+              <span className="text-cyan-400 font-semibold">{overview.baselineScore}% Baseline → {overview.projectedScore}% Fully Qualified</span>
+            </div>
+            <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="absolute top-0 left-0 bottom-0 rounded-full transition-all duration-1000"
+                style={{ width: "72%", background: "linear-gradient(90deg, #22d3ee, #8b5cf6)" }}
+              />
+            </div>
+            <div className="flex justify-between items-center text-[11px] text-slate-400 pt-1">
+              <span>Current: 72%</span>
+              <span>Step 1: +8%</span>
+              <span>Step 2: +7%</span>
+              <span>Step 3: +4%</span>
+              <span className="text-emerald-400 font-bold">Target: 94%</span>
+            </div>
+          </div>
+        </div>
+      </GlassCard>
+
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+        <button
+          onClick={() => setTab("all")}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+            tab === "all" ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "text-slate-400 hover:text-white"
+          }`}
+        >
+          All Milestones ({plan.milestones.length})
+        </button>
+        <button
+          onClick={() => setTab("active")}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+            tab === "active" ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "text-slate-400 hover:text-white"
+          }`}
+        >
+          Active Gaps ({plan.milestones.filter(m => m.status !== "done").length})
+        </button>
+        <button
+          onClick={() => setTab("foundational")}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
+            tab === "foundational" ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" : "text-slate-400 hover:text-white"
+          }`}
+        >
+          Foundational Credits ({plan.foundationalCompleted.length})
+        </button>
+      </div>
+
+      {/* Action Milestones Timeline */}
+      {tab !== "foundational" && (
+        <div className="relative pl-8 space-y-5">
+          <div
+            className="absolute left-[15px] top-4 bottom-4 w-0.5"
+            style={{ background: "linear-gradient(180deg, rgba(34,211,238,0.7), rgba(139,92,246,0.6), rgba(255,255,255,0.1))" }}
+          />
+
+          {displayMilestones.map((m) => {
             const isOpen = expanded === m.id;
             return (
               <div key={m.id} className="relative">
-                <div className="absolute -left-[29px] top-5"><StatusDot status={m.status} /></div>
-                <GlassCard hover className={`p-5 ${m.status === "locked" ? "opacity-60" : ""}`}>
-                  <button onClick={() => setExpanded(isOpen ? null : m.id)} className="w-full flex items-center justify-between text-left">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="lp-display text-sm shrink-0" style={{ color: "var(--text-dim)" }}>{String(m.id).padStart(2, "0")}</span>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{m.title}</p>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <Pill tone={m.difficulty === "Advanced" ? "violet" : m.difficulty === "Intermediate" ? "cyan" : "default"}>{m.difficulty}</Pill>
-                          <span className="text-xs flex items-center gap-1" style={{ color: "var(--text-dim)" }}><Clock size={11} /> {m.duration}</span>
+                <div className="absolute -left-[29px] top-5 z-10">
+                  <StatusDot status={m.status} />
+                </div>
+
+                <GlassCard hover className={`p-5 md:p-6 transition-all ${m.status === "locked" ? "opacity-75" : ""}`}>
+                  <div
+                    onClick={() => setExpanded(isOpen ? null : m.id)}
+                    className="w-full flex items-start justify-between gap-4 text-left cursor-pointer"
+                  >
+                    <div className="flex items-start gap-4 min-w-0">
+                      <span className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 mt-0.5" style={{ background: "rgba(34,211,238,0.12)", color: "#67e8f9", border: "1px solid rgba(34,211,238,0.25)" }}>
+                        0{m.step}
+                      </span>
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <h3 className="lp-display text-base font-semibold text-white">{m.title}</h3>
+                          <Pill tone={m.priorityTone}>{m.priority}</Pill>
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                            {m.boost} Hireability ({m.scoreRange})
+                          </span>
                         </div>
+                        <p className="text-xs text-slate-400 flex items-center gap-2 flex-wrap">
+                          <span className="flex items-center gap-1"><Clock size={12} /> {m.duration}</span>
+                          <span>·</span>
+                          <span className="text-cyan-300 font-medium">Required Project: {m.project}</span>
+                        </p>
                       </div>
                     </div>
-                    <ChevronDown size={18} className="shrink-0 ml-2" style={{ color: "var(--text-dim)", transform: isOpen ? "rotate(180deg)" : "none", transition: "transform .3s" }} />
-                  </button>
+
+                    <ChevronDown
+                      size={20}
+                      className="shrink-0 text-slate-400 transition-transform duration-300"
+                      style={{ transform: isOpen ? "rotate(180deg)" : "none" }}
+                    />
+                  </div>
+
                   {m.status === "in-progress" && (
-                    <div className="mt-3"><ProgressBar value={m.progress} tone="cyan" height={6} /></div>
+                    <div className="mt-4 pt-3 border-t border-white/5 space-y-1.5">
+                      <div className="flex justify-between text-xs text-slate-300">
+                        <span>Milestone Progress</span>
+                        <span className="text-cyan-400 font-semibold">{m.progress}%</span>
+                      </div>
+                      <ProgressBar value={m.progress} tone="cyan" height={6} />
+                    </div>
                   )}
+
                   {isOpen && (
-                    <div className="mt-4 pt-4 lp-fade-up" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                      <p className="text-sm mb-3" style={{ color: "#c7cede" }}>{m.desc}</p>
-                      <p className="text-xs flex items-start gap-1.5" style={{ color: "#67e8f9" }}><Target size={13} className="mt-0.5 shrink-0" /> {m.relevance}</p>
+                    <div className="mt-5 pt-4 space-y-4 lp-fade-up" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                          <p className="text-xs font-semibold text-amber-300 mb-1 flex items-center gap-1.5">
+                            <Target size={13} /> Identified Skill Gap
+                          </p>
+                          <p className="text-xs text-slate-300 leading-relaxed">{m.gap}</p>
+                        </div>
+                        <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                          <p className="text-xs font-semibold text-cyan-300 mb-1 flex items-center gap-1.5">
+                            <Briefcase size={13} /> Why Top Companies Test This
+                          </p>
+                          <p className="text-xs text-slate-300 leading-relaxed">{m.whyCompaniesTest}</p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-medium text-slate-300 mb-2">Key Skills Unlocked</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {m.skills.map((sk) => (
+                            <Pill key={sk} tone="cyan">{sk}</Pill>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 flex items-center justify-between flex-wrap gap-3">
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                          <FolderKanban size={14} className="text-violet-400" />
+                          <span>Deliverable: <strong>{m.project}</strong></span>
+                        </div>
+                        <button className="lp-btn-primary px-4 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 cursor-pointer">
+                          <span>{m.status === "in-progress" ? "Continue Sprint" : "Start Milestone"}</span>
+                          <ArrowRight size={13} />
+                        </button>
+                      </div>
                     </div>
                   )}
                 </GlassCard>
@@ -1097,12 +1440,35 @@ function RoadmapView() {
             );
           })}
         </div>
-      </div>
+      )}
+
+      {/* Foundational Completed Credits View */}
+      {(tab === "foundational" || tab === "all") && (
+        <div className="space-y-3 pt-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+            <CheckCircle2 size={14} className="text-emerald-400" /> Foundational Credits Completed
+          </h3>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {plan.foundationalCompleted.map((f) => (
+              <GlassCard key={f.id} className="p-4" hover>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-white">{f.title}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{f.provider} · {f.duration}</p>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                    {f.score}
+                  </span>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-/* ============================== RESOURCES VIEW ============================== */
 
 const RESOURCE_ICONS = { video: Video, doc: FileText, code: FileCode2, book: BookOpen };
 
