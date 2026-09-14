@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   ArrowLeft, CheckCircle2, AlertTriangle, Award, Mail, Edit3, Camera,
-  MapPin, ExternalLink, Phone, Globe, CheckCircle, ShieldCheck, Check, X,
+  MapPin, ExternalLink, Phone, Globe, ShieldCheck, Check, X,
   FolderKanban
 } from "lucide-react";
 import {
@@ -337,7 +337,7 @@ export function ProfileView({ student = STUDENT, onUpdateStudent }) {
             <div className="flex justify-between py-1.5">
               <span style={{ color: "var(--text-dim)" }}>Enrollment status</span>
               <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
-                <CheckCircle size={13} /> Active Student
+                <CheckCircle2 size={13} /> Active Student
               </span>
             </div>
           </div>
