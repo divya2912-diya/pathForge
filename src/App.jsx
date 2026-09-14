@@ -80,7 +80,7 @@ export default function App() {
   return (
     <div className="lp-root min-h-screen bg-[#060911] text-[#eef1f7]">
       <HamburgerButton onClick={() => setDrawerOpen(true)} />
-      {stage === "app" && <HomeButton onClick={() => setStage("landing")} />}
+      
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} active={activeDrawerId} onNavigate={navigate} />
 
       {stage === "landing" && (

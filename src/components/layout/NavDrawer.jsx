@@ -17,7 +17,7 @@ export function NavDrawer({ open, onClose, active, onNavigate }) {
         style={{ transform: open ? "translateX(0)" : "translateX(-110%)" }}
       >
         <div className="flex items-center justify-between px-5 py-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => onNavigate("dashboard")} title="Go to Home">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-lg relative overflow-hidden" style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6 50%, #f97316)" }}>
               <Flame size={18} color="#04121a" fill="#04121a" />
             </div>

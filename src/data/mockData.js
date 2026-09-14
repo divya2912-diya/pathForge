@@ -162,8 +162,8 @@ export const ONBOARD_CAREERS = [
 ];
 
 export const NAV_MENU = [
+  { id: "dashboard", label: "Home", icon: Home },
   { id: "build-path", label: "Build My Learning Path", icon: Sparkles },
-  { id: "dashboard", label: "Dashboard", icon: Home },
   { id: "roadmap", label: "Learning Roadmap", icon: Route },
   { id: "resources", label: "Resources", icon: LayoutGrid },
   { id: "resume", label: "Resume Intelligence", icon: FileText },

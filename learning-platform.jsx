@@ -259,8 +259,8 @@ const ONBOARD_CAREERS = [
 ];
 
 const NAV_MENU = [
+  { id: "dashboard", label: "Home", icon: Home },
   { id: "build-path", label: "Build My Learning Path", icon: Sparkles },
-  { id: "dashboard", label: "Dashboard", icon: Home },
   { id: "roadmap", label: "Learning Roadmap", icon: Route },
   { id: "resources", label: "Resources", icon: LayoutGrid },
   { id: "resume", label: "Resume Intelligence", icon: FileText },
@@ -901,7 +901,7 @@ function NavDrawer({ open, onClose, active, onNavigate }) {
       <aside className="fixed top-0 left-0 h-screen z-50 w-72 lp-glass-strong flex flex-col transition-transform duration-300"
         style={{ transform: open ? "translateX(0)" : "translateX(-110%)" }}>
         <div className="flex items-center justify-between px-5 py-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => onNavigate("dashboard")} title="Go to Home">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-lg relative overflow-hidden" style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6 50%, #f97316)" }}>
               <Flame size={18} color="#04121a" fill="#04121a" />
             </div>
@@ -926,7 +926,7 @@ function NavDrawer({ open, onClose, active, onNavigate }) {
 
 function TopBar({ title, onProfileClick, student }) {
   return (
-    <div className="flex items-center justify-between pl-36 sm:pl-40 pr-5 md:pr-8 py-5 sticky top-0 z-20" style={{ background: "rgba(6,9,17,0.7)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+    <div className="flex items-center justify-between pl-20 sm:pl-24 pr-5 md:pr-8 py-5 sticky top-0 z-20" style={{ background: "rgba(6,9,17,0.7)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
       <h1 className="lp-display text-lg font-semibold">{title}</h1>
       <div className="flex items-center gap-3">
         <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -2794,7 +2794,7 @@ export default function App() {
     <div className="lp-root">
       <GlobalStyle />
       <HamburgerButton onClick={() => setDrawerOpen(true)} />
-      {stage === "app" && <HomeButton onClick={() => setStage("landing")} />}
+      
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} active={activeDrawerId} onNavigate={navigate} />
 
       {stage === "landing" && (
