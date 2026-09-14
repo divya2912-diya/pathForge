@@ -1,4 +1,5 @@
 # 🔥 PathForge
+Demo Link : https://path-forge-azure.vercel.app
 
 > **AI-Powered Education-to-Employment Platform for Students**  
 > *Discover what you know, master what you're missing, and forge your path to career readiness.*
@@ -202,7 +203,6 @@ The project is pre-configured for seamless static deployment to any modern hosti
 
 - **GitHub Pages**: Automatically deployed via the included `.github/workflows/deploy.yml` on every push to `main`.
 - **Vercel**: Includes `vercel.json` for single-page application routing.
-Demo Link : https://path-forge-azure.vercel.app
 ---
 
 ## 🤝 Contributing
