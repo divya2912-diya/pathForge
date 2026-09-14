@@ -621,9 +621,6 @@ function LoginView({
       {/* Main Login Container */}
       <main className="relative z-10 max-w-5xl mx-auto px-5 py-8 w-full lp-fade-up flex-1 flex flex-col justify-center">
         <div className="text-center max-w-xl mx-auto mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-3" style={{ background: "rgba(34,211,238,0.08)", border: "1px solid rgba(34,211,238,0.25)", color: "#67e8f9" }}>
-            <GraduationCap size={14} /> Student & Judge Access Portal
-          </div>
           <h1 className="lp-display text-3xl sm:text-4xl font-semibold tracking-tight text-white">
             Welcome to <span className="lp-gradient-text">PathForge</span>
           </h1>
