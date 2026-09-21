@@ -159,12 +159,7 @@ export const NAV_MENU = [
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
-export const PREVIOUS_LEARNING = [
-  { title: "Python Programming Fundamentals", provider: "University coursework", when: "Completed · Year 1" },
-  { title: "Data Structures & Algorithms", provider: "University coursework", when: "Completed · Year 2" },
-  { title: "Intro to Machine Learning", provider: "Self-paced online course", when: "Completed · Year 3" },
-  { title: "Relational Databases & SQL", provider: "University coursework", when: "Completed · Year 2" },
-];
+export const PREVIOUS_LEARNING = [];
 
 export const OWNED_PROJECTS = [
   { title: "AI Chatbot", desc: "A rule-based + intent-classification chatbot for campus FAQs." },
@@ -172,12 +167,9 @@ export const OWNED_PROJECTS = [
   { title: "Movie Recommendation System", desc: "Content-based recommender using cosine similarity." },
 ];
 
-export const OWNED_CERTIFICATIONS = [
-  { title: "Python (Basic)", provider: "HackerRank" },
-  { title: "Cloud Fundamentals", provider: "Google Cloud Skills Boost" },
-];
+export const OWNED_CERTIFICATIONS = [];
 
-export const INTERESTS = ["Artificial Intelligence", "Backend Development", "Cloud & DevOps"];
+export const INTERESTS = [];
 
 export const RESOURCE_ICONS = { video: Video, doc: FileText, code: FileCode2, book: BookOpen };
 export const ONBOARD_STEPS = ["Academic Background", "Current Skills", "Projects & Certifications", "Interests", "Target Career", "Learning Preferences"];

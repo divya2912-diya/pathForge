@@ -281,12 +281,7 @@ const NAV_MENU = [
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
-const PREVIOUS_LEARNING = [
-  { title: "Python Programming Fundamentals", provider: "University coursework", when: "Completed · Year 1" },
-  { title: "Data Structures & Algorithms", provider: "University coursework", when: "Completed · Year 2" },
-  { title: "Intro to Machine Learning", provider: "Self-paced online course", when: "Completed · Year 3" },
-  { title: "Relational Databases & SQL", provider: "University coursework", when: "Completed · Year 2" },
-];
+const PREVIOUS_LEARNING = [];
 
 const OWNED_PROJECTS = [
   { title: "AI Chatbot", desc: "A rule-based + intent-classification chatbot for campus FAQs." },
@@ -294,12 +289,9 @@ const OWNED_PROJECTS = [
   { title: "Movie Recommendation System", desc: "Content-based recommender using cosine similarity." },
 ];
 
-const OWNED_CERTIFICATIONS = [
-  { title: "Python (Basic)", provider: "HackerRank" },
-  { title: "Cloud Fundamentals", provider: "Google Cloud Skills Boost" },
-];
+const OWNED_CERTIFICATIONS = [];
 
-const INTERESTS = ["Artificial Intelligence", "Backend Development", "Cloud & DevOps"];
+const INTERESTS = [];
 
 /* ============================== GLOBAL STYLE ============================== */
 
