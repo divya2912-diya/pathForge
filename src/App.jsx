@@ -239,7 +239,7 @@ export default function App() {
             {active === "resume" && <ResumeView student={student} />}
             {active === "projects" && <ProjectsView added={added} toggleAdded={toggleAdded} />}
             {active === "certifications" && <CertificationsView added={added} toggleAdded={toggleAdded} />}
-            {active === "career" && <CareerView student={student} />}
+            {active === "career" && <CareerView student={student} onUpdateStudent={handleUpdateStudent} />}
             {active === "profile" && (
               <ProfileView
                 student={student}
