@@ -9,33 +9,21 @@ import ProgressRing from "../ui/ProgressRing";
 import ProgressBar from "../ui/ProgressBar";
 import Pill from "../ui/Pill";
 import { SKILL_REQUIREMENTS } from "../../data/userProfile";
+import { extractTextFromPDF } from "../../utils/pdfParser";
 
 export function ResumeView({ student }) {
   const [phase, setPhase] = useState("idle"); // idle | analyzing | results
   const [fileInfo, setFileInfo] = useState(null);
+  const [rawFile, setRawFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState(null);
   const inputRef = useRef(null);
 
   const targetCareer = student?.targetCareer || "Software Engineer";
   const userSkills = student?.skills || [];
   const required = SKILL_REQUIREMENTS[targetCareer] || [];
 
-  // Calculate personalized analysis results
-  const matched = userSkills.filter(s =>
-    required.some(r =>
-      r.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(r.toLowerCase())
-    )
-  );
-  const missing = required.filter(r =>
-    !userSkills.some(s =>
-      r.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(r.toLowerCase())
-    )
-  );
-
-  const atsScore = Math.min(95, Math.max(30, Math.round(
-    (matched.length / Math.max(required.length, 1)) * 100 * 0.8 + 15
-  )));
-  const techScore = Math.round((matched.length / Math.max(required.length, 1)) * 100);
+  // Previous static mock logic is removed; we now calculate this dynamically on analyze().
 
   const handleFile = (file) => {
     if (!file) return;
@@ -55,6 +43,7 @@ export function ResumeView({ student }) {
     }
     const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
     const sizeKB = (file.size / 1024).toFixed(0);
+    setRawFile(file);
     setFileInfo({
       name: file.name,
       size: file.size > 1024 * 1024 ? `${sizeMB} MB` : `${sizeKB} KB`,
@@ -69,25 +58,67 @@ export function ResumeView({ student }) {
     if (file) handleFile(file);
   };
 
-  const analyze = () => {
+  const analyze = async () => {
+    if (!rawFile) return;
     setPhase("analyzing");
-    setTimeout(() => setPhase("results"), 2000);
+    
+    try {
+      let text = "";
+      if (fileInfo.type === "PDF") {
+        text = await extractTextFromPDF(rawFile);
+      } else {
+        // Fallback for docx/txt
+        text = await rawFile.text(); 
+      }
+      
+      const textLower = text.toLowerCase();
+      
+      // Genuine matching
+      const actualMatched = required.filter(r => textLower.includes(r.toLowerCase()));
+      const actualMissing = required.filter(r => !textLower.includes(r.toLowerCase()));
+      
+      // Best practices checks
+      const hasMetrics = /\\b\\d{1,3}%\\b|\\$\\d+/.test(textLower) || /\\b(increased|decreased) by\\b/.test(textLower);
+      const hasActionVerbs = /\\b(developed|led|architected|managed|optimized|implemented|designed|created)\\b/i.test(text);
+      const hasContact = /\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b/.test(text) || /\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b/.test(text);
+      
+      const atsScore = Math.min(95, Math.max(30, Math.round(
+        (actualMatched.length / Math.max(required.length, 1)) * 100 * 0.7 + 
+        (hasMetrics ? 10 : 0) + 
+        (hasActionVerbs ? 10 : 0) +
+        (hasContact ? 10 : 0)
+      )));
+      
+      const dynamicSuggestions = [];
+      if (actualMissing.length > 0) dynamicSuggestions.push(`Add these missing keywords to pass ATS: ${actualMissing.slice(0, 3).join(", ")}`);
+      if (!hasMetrics) dynamicSuggestions.push("Add measurable outcomes to your project descriptions (e.g., '↑ accuracy by 12%', '$50k saved')");
+      if (!hasActionVerbs) dynamicSuggestions.push("Start bullet points with strong action verbs (e.g., 'Developed', 'Led', 'Optimized')");
+      if (!hasContact) dynamicSuggestions.push("Ensure your email and phone number are clearly listed and machine-readable");
+      if (actualMatched.length < 3) dynamicSuggestions.push("Expand your technical skills section with more technologies");
+      
+      setAnalysisResults({
+        matched: actualMatched,
+        missing: actualMissing,
+        atsScore,
+        techScore: Math.round((actualMatched.length / Math.max(required.length, 1)) * 100),
+        suggestions: dynamicSuggestions.length > 0 ? dynamicSuggestions.slice(0, 4) : ["Your resume looks great!"]
+      });
+      
+      setPhase("results");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to analyze resume. Make sure it's a valid readable PDF.");
+      setPhase("idle");
+    }
   };
 
   const reset = () => {
     setPhase("idle");
     setFileInfo(null);
+    setRawFile(null);
+    setAnalysisResults(null);
     if (inputRef.current) inputRef.current.value = "";
   };
-
-  // Suggestions based on missing skills
-  const suggestions = [
-    missing.length > 0 && `Add these missing skills to your resume: ${missing.slice(0, 3).join(", ")}`,
-    "Add measurable outcomes to your project descriptions (e.g., '↑ accuracy by 12%')",
-    "Include links to GitHub repositories and live demo URLs",
-    userSkills.length < 5 && "Expand your technical skills section with more technologies",
-    "Add a brief professional summary targeting your role as a " + targetCareer,
-  ].filter(Boolean).slice(0, 4);
 
   if (phase === "idle") {
     return (
@@ -172,9 +203,9 @@ export function ResumeView({ student }) {
 
         {/* Target career info */}
         <div className="mt-6 p-4 rounded-xl" style={{ background: "rgba(34,211,238,0.05)", border: "1px solid rgba(34,211,238,0.15)" }}>
-          <p className="text-xs text-slate-400">Analyzing against your target role:</p>
+          <p className="text-xs text-slate-400">Genuine ATS Scan against your target role:</p>
           <p className="text-sm font-semibold text-cyan-300 mt-1">{targetCareer}</p>
-          <p className="text-xs text-slate-500 mt-1">{required.length} required skills · {matched.length} already in your profile</p>
+          <p className="text-xs text-slate-500 mt-1">We will extract text from your file and perform a real keyword analysis against {required.length} required industry skills.</p>
         </div>
       </div>
     );
@@ -201,6 +232,9 @@ export function ResumeView({ student }) {
   }
 
   // Results
+  if (!analysisResults) return null;
+  const { matched, missing, atsScore, techScore, suggestions } = analysisResults;
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -220,14 +254,14 @@ export function ResumeView({ student }) {
           </p>
         </GlassCard>
         <GlassCard className="p-6 flex flex-col justify-center">
-          <p className="text-xs mb-1" style={{ color: "var(--text-dim)" }}>Technical skills</p>
+          <p className="text-xs mb-1" style={{ color: "var(--text-dim)" }}>Technical keywords</p>
           <p className="lp-display text-2xl font-semibold mb-2">
             {matched.length}<span className="text-base" style={{ color: "var(--text-dim)" }}>/{required.length} required</span>
           </p>
           <ProgressBar value={techScore} tone="cyan" height={6} />
         </GlassCard>
         <GlassCard className="p-6 flex flex-col justify-center">
-          <p className="text-xs mb-1" style={{ color: "var(--text-dim)" }}>Skills missing</p>
+          <p className="text-xs mb-1" style={{ color: "var(--text-dim)" }}>Keywords missing</p>
           <p className="lp-display text-2xl font-semibold mb-2 text-amber-400">
             {missing.length}<span className="text-base text-slate-400">/{required.length} required</span>
           </p>
@@ -238,7 +272,7 @@ export function ResumeView({ student }) {
       <div className="grid sm:grid-cols-2 gap-4">
         <GlassCard className="p-6">
           <p className="text-xs font-medium mb-3 flex items-center gap-1.5" style={{ color: "#fbbf24" }}>
-            <AlertTriangle size={14} /> Missing skills
+            <AlertTriangle size={14} /> Missing keywords (ATS Gaps)
           </p>
           {missing.length > 0
             ? <div className="flex flex-wrap gap-1.5">{missing.slice(0, 6).map(s => <Pill key={s} tone="amber">{s}</Pill>)}</div>
@@ -247,11 +281,11 @@ export function ResumeView({ student }) {
         </GlassCard>
         <GlassCard className="p-6">
           <p className="text-xs font-medium mb-3 flex items-center gap-1.5" style={{ color: "#67e8f9" }}>
-            <Sparkles size={14} /> Suggested improvements
+            <Sparkles size={14} /> Resume development advice
           </p>
           <ul className="space-y-2 text-sm" style={{ color: "#c7cede" }}>
-            {suggestions.map(t => (
-              <li key={t} className="flex items-start gap-2">
+            {suggestions.map((t, i) => (
+              <li key={i} className="flex items-start gap-2">
                 <ChevronRight size={13} className="mt-0.5 shrink-0" style={{ color: "#67e8f9" }} />
                 {t}
               </li>
