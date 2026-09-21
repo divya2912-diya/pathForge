@@ -385,7 +385,7 @@ export function buildInitialProfile(onboardingData, existingUser) {
     pace: pace || "Balanced",
     careerReadiness: readinessPct,
     onboardingComplete: true,
-    bio: existingUser?.bio || `Aspiring ${targetCareer} focused on building real-world skills.`,
+    bio: existingUser?.bio || "",
   };
 }
 
