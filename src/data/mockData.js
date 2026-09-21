@@ -75,18 +75,37 @@ export const ROADMAP = [
 ];
 
 export const RESOURCES = [
+  // AI / Data Science
   { id: 1, title: "Python for Data Science", type: "Course", icon: "video", difficulty: "Beginner", time: "6h", match: 96,
-    reason: "You have strong Python fundamentals but limited NumPy/Pandas exposure." },
+    reason: "You have strong Python fundamentals but limited NumPy/Pandas exposure.", domain: "Data Science", url: "https://www.youtube.com/embed/LHBE6Q9XlzI" },
   { id: 2, title: "Probability & Statistics for ML", type: "Course", icon: "video", difficulty: "Intermediate", time: "8h", match: 93,
-    reason: "Probability is your lowest-scoring assessment topic — this closes it fast." },
+    reason: "Probability is your lowest-scoring assessment topic — this closes it fast.", domain: "Data Science", url: "https://www.youtube.com/embed/v9qA2ZgD-oA" },
   { id: 3, title: "Deep Learning Specialization Notes", type: "Documentation", icon: "doc", difficulty: "Advanced", time: "10h", match: 89,
-    reason: "Directly maps to the next roadmap milestone: Deep Learning." },
-  { id: 4, title: "SQL Joins & Window Functions", type: "Practice Problems", icon: "code", difficulty: "Intermediate", time: "3h", match: 87,
-    reason: "You missed 3 of 4 SQL join questions in your last assessment." },
-  { id: 5, title: "Hands-On PyTorch", type: "Book", icon: "book", difficulty: "Intermediate", time: "12h", match: 84,
-    reason: "Practical companion for the upcoming Deep Learning module." },
-  { id: 6, title: "Docker for Beginners", type: "Course", icon: "video", difficulty: "Beginner", time: "4h", match: 81,
-    reason: "Docker appears in 78% of AI/ML Engineer job listings you're targeting." },
+    reason: "Directly maps to the next roadmap milestone: Deep Learning.", domain: "Data Science", url: "https://www.deeplearning.ai/" },
+  
+  // Web Development
+  { id: 4, title: "React Crash Course 2024", type: "Course", icon: "video", difficulty: "Beginner", time: "2h", match: 95,
+    reason: "Essential for modern frontend development.", domain: "Web Development", url: "https://www.youtube.com/embed/w7ejDZ8SWv8" },
+  { id: 5, title: "Next.js Official Documentation", type: "Documentation", icon: "doc", difficulty: "Intermediate", time: "12h", match: 92,
+    reason: "The industry standard for production React apps.", domain: "Web Development", url: "https://nextjs.org/docs" },
+  { id: 6, title: "Full Stack Web Developer Roadmap", type: "Book", icon: "book", difficulty: "All levels", time: "24h", match: 85,
+    reason: "Comprehensive guide to mastering the modern web.", domain: "Web Development", url: "https://roadmap.sh/full-stack" },
+    
+  // Cybersecurity
+  { id: 7, title: "Ethical Hacking Full Course", type: "Course", icon: "video", difficulty: "Beginner", time: "14h", match: 98,
+    reason: "Foundational knowledge for a career in InfoSec.", domain: "Cybersecurity", url: "https://www.youtube.com/embed/dz7Ntp7KQGA" },
+  { id: 8, title: "OWASP Top 10 Explained", type: "Documentation", icon: "doc", difficulty: "Intermediate", time: "4h", match: 90,
+    reason: "Critical web application vulnerabilities you must know.", domain: "Cybersecurity", url: "https://owasp.org/www-project-top-ten/" },
+  { id: 9, title: "CTF Practice Problems", type: "Practice Problems", icon: "code", difficulty: "Advanced", time: "20h+", match: 87,
+    reason: "Hands-on experience bypassing security controls.", domain: "Cybersecurity", url: "https://ctftime.org/" },
+    
+  // Cloud & DevOps
+  { id: 10, title: "Docker for Beginners", type: "Course", icon: "video", difficulty: "Beginner", time: "4h", match: 88,
+    reason: "Docker appears in 78% of engineering job listings you're targeting.", domain: "Cloud Computing", url: "https://www.youtube.com/embed/3c-iBn73dDE" },
+  { id: 11, title: "AWS Certified Cloud Practitioner", type: "Course", icon: "video", difficulty: "Beginner", time: "13h", match: 94,
+    reason: "The most demanded entry-level cloud certification.", domain: "Cloud Computing", url: "https://www.youtube.com/embed/SOTamWNgDKc" },
+  { id: 12, title: "Kubernetes Official Docs", type: "Documentation", icon: "doc", difficulty: "Advanced", time: "15h", match: 82,
+    reason: "Essential for enterprise scale orchestration.", domain: "Cloud Computing", url: "https://kubernetes.io/docs/home/" },
 ];
 
 export const PROJECTS = [
