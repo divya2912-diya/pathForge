@@ -850,19 +850,44 @@ export function ProfileView({ student, onUpdateStudent, onBack }) {
     if (!["image/jpeg","image/jpg","image/png","image/webp"].includes(file.type.toLowerCase())) {
       setUploadError("Please select a valid image file (JPG, PNG, or WEBP)."); return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError("Image size exceeds 5MB. Please choose a smaller image."); return;
+    if (file.size > 8 * 1024 * 1024) {
+      setUploadError("Image size exceeds 8MB. Please choose a smaller image."); return;
     }
+
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const result = ev.target?.result;
-      if (result) {
-        setPendingImage(result);
-        const size = file.size < 1024*1024 ? `${(file.size/1024).toFixed(1)} KB` : `${(file.size/(1024*1024)).toFixed(2)} MB`;
-        setPendingFileInfo({ name: file.name, size });
-        setPreviewOpen(true);
-        setUploadError(null);
-      }
+      const src = ev.target?.result;
+      if (!src) return;
+
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          const dim = 250;
+          canvas.width = dim;
+          canvas.height = dim;
+          const ctx = canvas.getContext("2d");
+
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, dim, dim);
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.88);
+
+          setPendingImage(compressedDataUrl);
+          const sizeKB = `${(compressedDataUrl.length * 0.75 / 1024).toFixed(1)} KB`;
+          setPendingFileInfo({ name: file.name, size: sizeKB });
+          setPreviewOpen(true);
+          setUploadError(null);
+        } catch {
+          setPendingImage(src);
+          setPendingFileInfo({ name: file.name, size: `${(file.size / 1024).toFixed(0)} KB` });
+          setPreviewOpen(true);
+        }
+      };
+      img.onerror = () => setUploadError("Failed to process image.");
+      img.src = src;
     };
     reader.onerror = () => setUploadError("Failed to read image file.");
     reader.readAsDataURL(file);

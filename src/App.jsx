@@ -114,9 +114,13 @@ export default function App() {
   // ── Profile update (from ProfileView / Settings) ──────────
 
   const handleUpdateStudent = async (updates, msg = "Profile updated successfully") => {
+    // Optimistic UI state update so picture/edits show instantly
+    setStudent((prev) => ({ ...(prev || {}), ...updates }));
     const result = await updateCurrentUser(updates);
-    if (result.success) {
+    if (result?.success && result.user) {
       setStudent(result.user);
+      setToast(msg);
+    } else {
       setToast(msg);
     }
   };

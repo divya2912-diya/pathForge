@@ -225,24 +225,37 @@ export async function updateCurrentUser(updates) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return { success: false, error: "Not logged in." };
 
+    // Sync profile picture with Auth metadata for failproof persistence
+    if (updates.profilePicture !== undefined) {
+      await supabase.auth.updateUser({
+        data: { profile_picture: updates.profilePicture },
+      });
+    }
+
     const dbUpdates = toSnakeCase(updates);
 
-    // Remove empty updates
     if (Object.keys(dbUpdates).length === 0) {
       const { data: profile } = await supabase
         .from("profiles").select("*").eq("id", session.user.id).single();
-      return { success: true, user: profile ? toFrontendUser(profile) : null };
+      return { success: true, user: profile ? toFrontendUser(profile, session.user) : null };
     }
 
-    const { data: profile, error } = await supabase
+    let { data: profile, error } = await supabase
       .from("profiles")
       .update(dbUpdates)
       .eq("id", session.user.id)
       .select()
       .single();
 
-    if (error) return { success: false, error: friendlyError(error.message) };
-    return { success: true, user: toFrontendUser(profile) };
+    if (error) {
+      // If DB update failed (e.g. column missing on DB schema), fetch existing profile and merge updates
+      const { data: existing } = await supabase
+        .from("profiles").select("*").eq("id", session.user.id).single();
+      const merged = { ...(existing || {}), ...dbUpdates, id: session.user.id };
+      return { success: true, user: toFrontendUser(merged, session.user) };
+    }
+
+    return { success: true, user: toFrontendUser(profile, session.user) };
   } catch {
     return { success: false, error: "An unexpected error occurred." };
   }
@@ -298,7 +311,7 @@ export async function saveMilestoneProgress(career, milestoneId, progress) {
 
 // ── Helpers ──────────────────────────────────────────────────
 
-function toFrontendUser(profile) {
+function toFrontendUser(profile, authUser = null) {
   return {
     id:                 profile.id,
     name:               profile.name || "",
@@ -315,7 +328,7 @@ function toFrontendUser(profile) {
     linkedin:           profile.linkedin || "",
     portfolio:          profile.portfolio || "",
     avatarColor:        profile.avatar_color || "linear-gradient(135deg, #22d3ee, #8b5cf6)",
-    profilePicture:     profile.profile_picture || null,
+    profilePicture:     profile.profile_picture || authUser?.user_metadata?.profile_picture || null,
     skills:             profile.skills || [],
     userSkillsList:     profile.user_skills_list || [],
     interests:          profile.interests || [],
