@@ -390,25 +390,123 @@ export function buildInitialProfile(onboardingData, existingUser) {
 }
 
 /**
- * Calculate career readiness % based on user's skills vs. target career requirements.
+ * Proficiency score mapping.
  */
-export function calculateCareerReadiness(userSkills = [], targetCareer) {
-  const required = SKILL_REQUIREMENTS[targetCareer] || [];
-  if (required.length === 0) return 50;
-
-  const matched = userSkills.filter((s) =>
-    required.some(
-      (r) =>
-        r.toLowerCase().includes(s.toLowerCase()) ||
-        s.toLowerCase().includes(r.toLowerCase())
-    )
-  );
-
-  return Math.min(
-    95,
-    Math.max(20, Math.round((matched.length / required.length) * 100 * 0.75 + 20))
-  );
+export function getProficiencyScore(level) {
+  switch ((level || "").toLowerCase()) {
+    case "beginner": return 25;
+    case "intermediate": return 50;
+    case "advanced": return 75;
+    case "expert": return 100;
+    default: return 50;
+  }
 }
+
+/**
+ * Compute user skill groups dynamically from user's actual skills list or skill strings.
+ */
+export function computeUserSkillGroups(userSkillsList = [], plainSkills = []) {
+  // Combine structured list and plain strings
+  const items = [...userSkillsList];
+  plainSkills.forEach((s) => {
+    if (!items.some((i) => i.name.toLowerCase() === s.toLowerCase())) {
+      items.push({ name: s, category: inferCategory(s), proficiency: "Intermediate" });
+    }
+  });
+
+  if (items.length === 0) return [];
+
+  const groups = {};
+  items.forEach((item) => {
+    const cat = item.category || inferCategory(item.name);
+    groups[cat] = groups[cat] || [];
+    groups[cat].push(item);
+  });
+
+  return Object.entries(groups).map(([name, skills]) => {
+    const totalScore = skills.reduce((acc, s) => acc + getProficiencyScore(s.proficiency), 0);
+    const level = Math.round(totalScore / skills.length);
+    return {
+      name,
+      level,
+      matched: skills.map((s) => s.name),
+    };
+  });
+}
+
+/**
+ * Infer category for plain skill string.
+ */
+function inferCategory(skillName = "") {
+  const s = skillName.toLowerCase();
+  if (["python", "java", "c++", "c", "javascript", "typescript", "golang", "rust"].some((k) => s.includes(k)))
+    return "Programming";
+  if (["sql", "pandas", "numpy", "statistics", "postgresql", "mongodb"].some((k) => s.includes(k)))
+    return "Data & Databases";
+  if (["react", "node.js", "html/css", "vue", "next.js", "express"].some((k) => s.includes(k)))
+    return "Web & Frameworks";
+  if (["docker", "aws", "git", "linux", "kubernetes", "ci/cd"].some((k) => s.includes(k)))
+    return "Tools & Systems";
+  if (["machine learning", "deep learning", "nlp", "tensorflow", "pytorch", "rag"].some((k) => s.includes(k)))
+    return "AI / Machine Learning";
+  return "Other";
+}
+
+/**
+ * Compute Radar Data for user profile.
+ */
+export function computeUserRadarData(userSkillsList = [], plainSkills = []) {
+  const groups = computeUserSkillGroups(userSkillsList, plainSkills);
+  if (groups.length === 0) return null;
+
+  const categories = [
+    { subject: "Programming", key: "Programming" },
+    { subject: "Data", key: "Data & Databases" },
+    { subject: "Web", key: "Web & Frameworks" },
+    { subject: "Tools", key: "Tools & Systems" },
+    { subject: "AI/ML", key: "AI / Machine Learning" },
+  ];
+
+  return categories.map((cat) => {
+    const found = groups.find((g) => g.name === cat.key);
+    return {
+      subject: cat.subject,
+      value: found ? found.level : 0,
+    };
+  });
+}
+
+/**
+ * Compute dynamic profile readiness & career match based strictly on user data.
+ */
+export function calculateDynamicReadiness(student) {
+  if (!student) return null;
+  const userSkills = student.skills || [];
+  const userSkillsList = student.userSkillsList || [];
+  const projects = student.projectsList || [];
+  const certs = student.certificationsList || [];
+  const targetCareer = student.targetCareer || "Software Engineer";
+
+  const totalSkills = Math.max(userSkills.length, userSkillsList.length);
+
+  // If user has virtually no data added
+  if (totalSkills === 0 && projects.length === 0 && certs.length === 0) {
+    return null;
+  }
+
+  const required = SKILL_REQUIREMENTS[targetCareer] || [];
+  const matchedCount = userSkills.filter((s) =>
+    required.some((r) => r.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(r.toLowerCase()))
+  ).length;
+
+  const skillScore = required.length > 0 ? (matchedCount / required.length) * 50 : 25;
+  const projectScore = Math.min(20, projects.length * 10);
+  const certScore = Math.min(15, certs.length * 7.5);
+  const profileScore = (student.degree ? 5 : 0) + (student.location ? 5 : 0) + (student.github ? 5 : 0);
+
+  return Math.min(98, Math.max(15, Math.round(skillScore + projectScore + certScore + profileScore)));
+}
+
 
 /**
  * Get a personalized roadmap for the user's career, adjusting status
