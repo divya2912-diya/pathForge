@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Clock, ChevronDown, Target, Sparkles, CheckCircle2,
   FolderKanban, ArrowRight, Briefcase, DollarSign
@@ -9,20 +9,25 @@ import StatusDot from "../ui/StatusDot";
 import Pill from "../ui/Pill";
 import ProgressBar from "../ui/ProgressBar";
 import { getGapToHirePlan, getPersonalizedRoadmap } from "../../data/userProfile";
-import { updateCurrentUser } from "../../data/authStore";
+import { loadMilestoneProgress, saveMilestoneProgress } from "../../data/supabaseAuth";
 
 export function RoadmapView({ student, onUpdateStudent }) {
   const [expanded, setExpanded] = useState(1);
   const [tab, setTab] = useState("all"); // all | active | foundational
+  const [milestoneProgress, setMilestoneProgress] = useState({});
 
   const targetCareer = student?.targetCareer || "Software Engineer";
   const userSkills = student?.skills || [];
   const careerReadiness = student?.careerReadiness ?? 50;
-  const milestoneProgress = student?.milestoneProgress || {};
 
   const plan = getGapToHirePlan(targetCareer);
   const roadmap = getPersonalizedRoadmap(targetCareer, userSkills);
   const overview = plan.roleOverview;
+
+  // Load milestone progress from Supabase on mount / career change
+  useEffect(() => {
+    loadMilestoneProgress(targetCareer).then(setMilestoneProgress);
+  }, [targetCareer]);
 
   const displayMilestones = tab === "foundational"
     ? []
@@ -30,16 +35,19 @@ export function RoadmapView({ student, onUpdateStudent }) {
       ? plan.milestones.filter(m => m.status !== "done")
       : plan.milestones;
 
-  const handleStartMilestone = (milestoneId) => {
-    const updatedProgress = { ...milestoneProgress, [milestoneId]: 10 };
-    onUpdateStudent?.({ milestoneProgress: updatedProgress }, "Milestone started! Keep going 🚀");
+  const handleStartMilestone = async (milestoneId) => {
+    const newProgress = 10;
+    setMilestoneProgress(prev => ({ ...prev, [milestoneId]: newProgress }));
+    await saveMilestoneProgress(targetCareer, milestoneId, newProgress);
+    onUpdateStudent?.({}, "Milestone started! Keep going 🚀");
   };
 
-  const handleContinueMilestone = (milestoneId) => {
+  const handleContinueMilestone = async (milestoneId) => {
     const current = milestoneProgress[milestoneId] || 45;
     const newProgress = Math.min(100, current + 15);
-    const updatedProgress = { ...milestoneProgress, [milestoneId]: newProgress };
-    onUpdateStudent?.({ milestoneProgress: updatedProgress }, `Progress updated: ${newProgress}%`);
+    setMilestoneProgress(prev => ({ ...prev, [milestoneId]: newProgress }));
+    await saveMilestoneProgress(targetCareer, milestoneId, newProgress);
+    onUpdateStudent?.({}, `Progress updated: ${newProgress}%`);
   };
 
   return (

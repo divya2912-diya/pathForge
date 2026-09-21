@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { LogOut, Shield, Bell, Gauge, User, KeyRound, AlertCircle, Check } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import SectionHeader from "../ui/SectionHeader";
-import { changePassword } from "../../data/authStore";
+import { changePassword } from "../../data/supabaseAuth";
 
 export function SettingsView({ student, onLogout, onUpdateStudent }) {
   const [prefs, setPrefs] = useState({
@@ -21,24 +21,21 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
   const [cpSuccess, setCpSuccess] = useState(false);
   const [cpLoading, setCpLoading] = useState(false);
 
-  const handleChangePassword = (e) => {
+  const handleChangePassword = async (e) => {
     e.preventDefault();
     setCpError("");
     setCpSuccess(false);
-    if (!cpCurrent) { setCpError("Enter your current password."); return; }
     if (cpNew.length < 8) { setCpError("New password must be at least 8 characters."); return; }
     if (cpNew !== cpConfirm) { setCpError("New passwords do not match."); return; }
     setCpLoading(true);
-    setTimeout(() => {
-      const result = changePassword({ currentPassword: cpCurrent, newPassword: cpNew });
-      setCpLoading(false);
-      if (result.success) {
-        setCpSuccess(true);
-        setCpCurrent(""); setCpNew(""); setCpConfirm("");
-      } else {
-        setCpError(result.error || "Failed to change password.");
-      }
-    }, 500);
+    const result = await changePassword({ newPassword: cpNew });
+    setCpLoading(false);
+    if (result.success) {
+      setCpSuccess(true);
+      setCpCurrent(""); setCpNew(""); setCpConfirm("");
+    } else {
+      setCpError(result.error || "Failed to change password.");
+    }
   };
 
   const handlePaceChange = (pace) => {

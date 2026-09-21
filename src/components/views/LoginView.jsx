@@ -33,7 +33,7 @@ export default function LoginView({ onLogin, onRegister }) {
   const [suLoading, setSuLoading] = useState(false);
 
   // ── Sign-In Submit ─────────────────────────────────────────
-  const handleSignIn = (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
     setSiError("");
     if (!siEmail.trim()) { setSiError("Please enter your email address."); return; }
@@ -41,17 +41,15 @@ export default function LoginView({ onLogin, onRegister }) {
     if (!siPassword) { setSiError("Please enter your password."); return; }
 
     setSiLoading(true);
-    setTimeout(() => {
-      const result = onLogin({ email: siEmail, password: siPassword, remember: siRemember });
-      setSiLoading(false);
-      if (!result?.success) {
-        setSiError(result?.error || "Sign in failed. Please try again.");
-      }
-    }, 500);
+    const result = await onLogin({ email: siEmail, password: siPassword, remember: siRemember });
+    setSiLoading(false);
+    if (!result?.success) {
+      setSiError(result?.error || "Sign in failed. Please try again.");
+    }
   };
 
   // ── Sign-Up Submit ─────────────────────────────────────────
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
     setSuError("");
     if (!suName.trim()) { setSuError("Please enter your full name."); return; }
@@ -60,20 +58,18 @@ export default function LoginView({ onLogin, onRegister }) {
     if (suPassword !== suConfirm) { setSuError("Passwords do not match."); return; }
 
     setSuLoading(true);
-    setTimeout(() => {
-      const result = onRegister({
-        name: suName,
-        email: suEmail,
-        password: suPassword,
-        degree: suDegree,
-        year: suYear,
-        targetCareer: suCareer,
-      });
-      setSuLoading(false);
-      if (!result?.success) {
-        setSuError(result?.error || "Registration failed. Please try again.");
-      }
-    }, 500);
+    const result = await onRegister({
+      name: suName,
+      email: suEmail,
+      password: suPassword,
+      degree: suDegree,
+      year: suYear,
+      targetCareer: suCareer,
+    });
+    setSuLoading(false);
+    if (!result?.success) {
+      setSuError(result?.error || "Registration failed. Please try again.");
+    }
   };
 
   return (

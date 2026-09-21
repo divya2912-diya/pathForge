@@ -22,16 +22,17 @@ import AIAssistant from "./components/AIAssistant";
 
 import { NAV_MENU } from "./data/mockData";
 import {
-  getCurrentUser,
   loginUser,
   registerUser,
   logoutUser,
   updateCurrentUser,
-} from "./data/authStore";
+  getCurrentUser,
+} from "./data/supabaseAuth";
+import { supabase } from "./lib/supabaseClient";
 import { buildInitialProfile } from "./data/userProfile";
 
 export default function App() {
-  const [stage, setStage] = useState("login"); // login | landing | onboarding | analyzing | app
+  const [stage, setStage] = useState("loading"); // loading | login | landing | onboarding | analyzing | app
   const [active, setActive] = useState("dashboard");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
@@ -39,26 +40,36 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [student, setStudent] = useState(null);
 
-  // ── On mount: check for existing session ──────────────────
+  // ── On mount: listen to Supabase auth state changes ──────────
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      setStudent(user);
-      if (user.onboardingComplete) {
-        setStage("landing");
+    // Initial session check
+    getCurrentUser().then((user) => {
+      if (user) {
+        setStudent(user);
+        setStage(user.onboardingComplete ? "landing" : "onboarding");
       } else {
-        // Registered but never finished onboarding
-        setStage("onboarding");
+        setStage("login");
       }
-    } else {
-      setStage("login");
-    }
+    });
+
+    // Subscribe to auth changes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_OUT" || !session) {
+          setStudent(null);
+          setStage("login");
+        }
+        // On sign-in, profile is fetched explicitly in handlers below
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
   // ── Auth handlers ─────────────────────────────────────────
 
-  const handleRegister = ({ name, email, password, degree, year, targetCareer }) => {
-    const result = registerUser({ name, email, password, degree, year, targetCareer });
+  const handleRegister = async ({ name, email, password, degree, year, targetCareer }) => {
+    const result = await registerUser({ name, email, password, degree, year, targetCareer });
     if (result.success) {
       setStudent(result.user);
       setToast(`Welcome to PathForge, ${result.user.name}! Let's build your learning path.`);
@@ -69,24 +80,20 @@ export default function App() {
     return { success: false, error: result.error };
   };
 
-  const handleLogin = ({ email, password, remember }) => {
-    const result = loginUser({ email, password, remember });
+  const handleLogin = async ({ email, password, remember }) => {
+    const result = await loginUser({ email, password, remember });
     if (result.success) {
       setStudent(result.user);
       setToast(`Welcome back, ${result.user.name}!`);
-      if (result.user.onboardingComplete) {
-        setStage("landing");
-      } else {
-        setStage("onboarding");
-      }
+      setStage(result.user.onboardingComplete ? "landing" : "onboarding");
       window.scrollTo({ top: 0, behavior: "smooth" });
       return { success: true };
     }
     return { success: false, error: result.error };
   };
 
-  const handleLogout = () => {
-    logoutUser();
+  const handleLogout = async () => {
+    await logoutUser();
     setStudent(null);
     setStage("login");
     setActive("dashboard");
@@ -96,20 +103,20 @@ export default function App() {
 
   // ── Onboarding complete ───────────────────────────────────
 
-  const handleOnboardingComplete = (onboardingData) => {
+  const handleOnboardingComplete = async (onboardingData) => {
     const profileUpdates = buildInitialProfile(onboardingData, student);
-    const updated = updateCurrentUser(profileUpdates);
-    if (updated) setStudent(updated);
+    const result = await updateCurrentUser(profileUpdates);
+    if (result.success) setStudent(result.user);
     setStage("analyzing");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // ── Profile update (from ProfileView / Settings) ──────────
 
-  const handleUpdateStudent = (updates, msg = "Profile updated successfully") => {
-    const updated = updateCurrentUser(updates);
-    if (updated) {
-      setStudent(updated);
+  const handleUpdateStudent = async (updates, msg = "Profile updated successfully") => {
+    const result = await updateCurrentUser(updates);
+    if (result.success) {
+      setStudent(result.user);
       setToast(msg);
     }
   };
@@ -157,8 +164,20 @@ export default function App() {
       ? active
       : null;
 
-  // Show nothing while detecting session (avoids flash)
-  if (stage === "login" && student) return null;
+  // Loading screen while checking session
+  if (stage === "loading") {
+    return (
+      <div className="min-h-screen bg-[#060911] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg animate-pulse"
+            style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6 50%, #f97316)" }}
+          />
+          <p className="text-slate-500 text-sm">Loading PathForge…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lp-root min-h-screen bg-[#060911] text-[#eef1f7]">

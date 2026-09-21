@@ -160,14 +160,27 @@ body {
 
 .lp-input {
   width: 100%;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
   border-radius: 10px;
   padding: 10px 12px;
   color: #eef1f7;
   font-size: 14px;
   outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.lp-input::placeholder {
+  color: rgba(148, 163, 184, 0.7);
+  font-style: normal;
 }
 .lp-input:focus {
   border-color: rgba(34,211,238,0.5);
+  background: rgba(255,255,255,0.08);
+}
+.lp-input:focus::placeholder {
+  color: rgba(148, 163, 184, 0.4);
+}
+select.lp-input {
+  cursor: pointer;
+  appearance: auto;
 }
