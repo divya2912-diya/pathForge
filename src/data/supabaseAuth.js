@@ -8,7 +8,7 @@ function friendlyError(msg = "") {
   if (msg.includes("Invalid login credentials"))
     return "Incorrect email or password. Please try again.";
   if (msg.includes("Email not confirmed"))
-    return "Please check your email and confirm your account first.";
+    return "Please check your email inbox to confirm your account, or turn off 'Confirm Email' in Supabase Authentication settings.";
   if (msg.includes("User already registered") || msg.includes("already been registered"))
     return "An account with this email already exists. Try signing in instead.";
   if (msg.includes("Password should be"))
