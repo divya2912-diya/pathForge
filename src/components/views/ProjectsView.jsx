@@ -9,6 +9,7 @@ import { getCatalogProjects, getSavedProjects, toggleSavedProject } from "../../
 
 export function ProjectsView({ student, added, toggleAdded }) {
   const [selectedProject, setSelectedProject] = useState(null);
+  const [activeDomain, setActiveDomain] = useState("Recommended");
   const [catalog, setCatalog] = useState([]);
   const [savedIds, setSavedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
@@ -32,10 +33,41 @@ export function ProjectsView({ student, added, toggleAdded }) {
     return () => { mounted = false; };
   }, []);
 
-  // Compute Recommendations
-  const recommendations = useMemo(() => {
-    return rankProjects(catalog, student);
-  }, [catalog, student]);
+  const DOMAIN_TABS = [
+    { id: "Recommended", label: "Recommended for You" },
+    { id: "All", label: "All Projects" },
+    { id: "Web", label: "Web / Full Stack" },
+    { id: "Data", label: "Data Science & AI" },
+    { id: "Cloud", label: "Cloud & DevOps" },
+    { id: "Cyber", label: "Cybersecurity" }
+  ];
+
+  // Compute Recommendations & Filter
+  const displayedProjects = useMemo(() => {
+    if (activeDomain === "Recommended") {
+      return rankProjects(catalog, student);
+    }
+    
+    // For other tabs, just filter the catalog directly without strict match scoring,
+    // but maybe still calculate match score so the UI has it.
+    let filtered = catalog;
+    if (activeDomain === "Web") {
+      filtered = catalog.filter(p => (p.career_tags || []).some(t => t.toLowerCase().includes("full stack") || t.toLowerCase().includes("web") || t.toLowerCase().includes("frontend") || t.toLowerCase().includes("backend")));
+    } else if (activeDomain === "Data") {
+      filtered = catalog.filter(p => (p.career_tags || []).some(t => t.toLowerCase().includes("data") || t.toLowerCase().includes("ai") || t.toLowerCase().includes("machine learning")));
+    } else if (activeDomain === "Cloud") {
+      filtered = catalog.filter(p => (p.career_tags || []).some(t => t.toLowerCase().includes("cloud") || t.toLowerCase().includes("devops")));
+    } else if (activeDomain === "Cyber") {
+      filtered = catalog.filter(p => (p.career_tags || []).some(t => t.toLowerCase().includes("cyber") || t.toLowerCase().includes("security")));
+    }
+    
+    // Just map them to have a base match score for the UI if they don't go through the engine
+    return filtered.map(p => ({
+      ...p,
+      match: p.match || 50, // Default if not calculated
+      reason: "Browsing by domain category."
+    })).sort((a, b) => b.impact - a.impact);
+  }, [catalog, student, activeDomain]);
 
   // Handlers
   const handleToggleSave = async (e, projectId) => {
@@ -64,7 +96,28 @@ export function ProjectsView({ student, added, toggleAdded }) {
 
   return (
     <div className="space-y-6">
-      <SectionHeader eyebrow="Build to prove it" title="Recommended projects" subtitle="Chosen to close your current skill gaps and strengthen your portfolio." />
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <SectionHeader eyebrow="Build to prove it" title="Projects Portfolio" subtitle="Discover projects to strengthen your skills across any domain." />
+        
+        {/* Domain Tabs */}
+        <div className="flex overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0 hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 w-max">
+            {DOMAIN_TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveDomain(tab.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                  activeDomain === tab.id 
+                    ? "bg-cyan-500 text-[#060911] shadow-lg shadow-cyan-500/20" 
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
       
       {loading ? (
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -75,9 +128,9 @@ export function ProjectsView({ student, added, toggleAdded }) {
             </GlassCard>
           ))}
         </div>
-      ) : recommendations.length > 0 ? (
+      ) : displayedProjects.length > 0 ? (
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {recommendations.map(p => (
+          {displayedProjects.map(p => (
             <GlassCard key={p.id} hover className="p-5 flex flex-col">
               <div className="flex items-start justify-between mb-3 relative z-10">
                 <div className="flex flex-col gap-1.5">
