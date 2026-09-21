@@ -163,12 +163,22 @@ body {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 10px;
-  padding: 10px 12px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 12px;
+  padding-right: 12px;
   color: #eef1f7;
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s ease, background 0.2s ease;
 }
+/* Icon-padded inputs: left icon clearance (40px) */
+.lp-input.pl-10 { padding-left: 2.5rem !important; }
+/* Right icon clearance (40px) */
+.lp-input.pr-10 { padding-right: 2.5rem !important; }
+.lp-input.pr-4  { padding-right: 1rem !important; }
+/* Small left icon (e.g. graduation cap) */
+.lp-input.pl-8  { padding-left: 2rem !important; }
 .lp-input::placeholder {
   color: rgba(148, 163, 184, 0.7);
   font-style: normal;
