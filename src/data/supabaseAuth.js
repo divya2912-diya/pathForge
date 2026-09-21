@@ -309,6 +309,65 @@ export async function saveMilestoneProgress(career, milestoneId, progress) {
   }
 }
 
+// ── Certifications Catalog & Saved ──────────────────────────────
+
+export async function getCatalogCertifications() {
+  try {
+    const { data, error } = await supabase
+      .from("certifications")
+      .select("*")
+      .order("name", { ascending: true });
+    
+    if (error) {
+      console.error("Error fetching catalog certifications:", error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.error("Exception fetching catalog certifications:", err);
+    return [];
+  }
+}
+
+export async function getSavedCertifications() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return new Set();
+
+    const { data, error } = await supabase
+      .from("saved_certifications")
+      .select("certification_id")
+      .eq("user_id", session.user.id);
+      
+    if (error) return new Set();
+    return new Set((data || []).map(r => r.certification_id));
+  } catch {
+    return new Set();
+  }
+}
+
+export async function toggleSavedCertification(certificationId, isCurrentlySaved) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return { success: false, error: "Not logged in" };
+
+    if (isCurrentlySaved) {
+      const { error } = await supabase
+        .from("saved_certifications")
+        .delete()
+        .match({ user_id: session.user.id, certification_id: certificationId });
+      return { success: !error };
+    } else {
+      const { error } = await supabase
+        .from("saved_certifications")
+        .insert([{ user_id: session.user.id, certification_id: certificationId }]);
+      return { success: !error };
+    }
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
 // ── Helpers ──────────────────────────────────────────────────
 
 function toFrontendUser(profile, authUser = null) {
