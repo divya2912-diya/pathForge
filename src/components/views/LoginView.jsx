@@ -468,10 +468,7 @@ export default function LoginView({ onLogin, onRegister }) {
             </GlassCard>
           )}
 
-          {/* Footer note */}
-          <p className="text-center text-[11px] text-slate-600 mt-6">
-            PathForge — AI-powered career guidance for students · Data stored locally on your device
-          </p>
+
         </div>
       </main>
     </div>

@@ -181,7 +181,9 @@ export default function App() {
 
   return (
     <div className="lp-root min-h-screen bg-[#060911] text-[#eef1f7]">
-      <HamburgerButton onClick={() => setDrawerOpen(true)} />
+      {stage !== "login" && stage !== "loading" && (
+        <HamburgerButton onClick={() => setDrawerOpen(true)} />
+      )}
 
       <NavDrawer
         open={drawerOpen}
