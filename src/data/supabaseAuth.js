@@ -97,20 +97,75 @@ export async function loginUser({ email, password }) {
     return { success: false, error: friendlyError(error.message) };
   }
 
-  // Update last_login
-  await supabase
-    .from("profiles")
-    .update({ last_login: new Date().toISOString() })
-    .eq("id", data.user.id);
-
-  const { data: profile, error: profileError } = await supabase
+  // Fetch or create user profile
+  let { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", data.user.id)
     .single();
 
-  if (profileError || !profile) {
-    return { success: false, error: "Could not load your profile. Please try again." };
+  if (!profile) {
+    // Missing profile row — auto-create via upsert
+    const name = data.user.user_metadata?.name || email.split("@")[0] || "User";
+    const username =
+      data.user.user_metadata?.username ||
+      name.toLowerCase().replace(/\s+/g, "") + Math.floor(Math.random() * 999);
+
+    const newProfile = {
+      id: data.user.id,
+      name,
+      email: data.user.email,
+      username,
+      degree: data.user.user_metadata?.degree || "",
+      year: data.user.user_metadata?.year || "",
+      target_career: data.user.user_metadata?.target_career || "Software Engineer",
+      avatar_color: "linear-gradient(135deg, #22d3ee, #8b5cf6)",
+      skills: [],
+      interests: [],
+      projects: "",
+      pace: "Balanced",
+      onboarding_complete: false,
+      created_at: new Date().toISOString(),
+      last_login: new Date().toISOString(),
+    };
+
+    const { data: created } = await supabase
+      .from("profiles")
+      .upsert(newProfile)
+      .select()
+      .single();
+
+    if (created) {
+      profile = created;
+    } else {
+      // Fallback in-memory user object
+      return {
+        success: true,
+        user: {
+          id: data.user.id,
+          name,
+          email: data.user.email,
+          username,
+          degree: "",
+          year: "",
+          targetCareer: "Software Engineer",
+          bio: "",
+          skills: [],
+          interests: [],
+          projects: "",
+          pace: "Balanced",
+          onboardingComplete: false,
+          careerReadiness: null,
+          avatarColor: "linear-gradient(135deg, #22d3ee, #8b5cf6)",
+        },
+      };
+    }
+  } else {
+    // Update last_login
+    await supabase
+      .from("profiles")
+      .update({ last_login: new Date().toISOString() })
+      .eq("id", data.user.id);
   }
 
   return { success: true, user: toFrontendUser(profile) };
@@ -126,16 +181,37 @@ export async function logoutUser() {
 
 export async function getCurrentUser() {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session?.user) return null;
 
-    const { data: profile, error } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", session.user.id)
       .single();
 
-    if (error || !profile) return null;
+    if (!profile) {
+      const name = session.user.user_metadata?.name || session.user.email?.split("@")[0] || "User";
+      return {
+        id: session.user.id,
+        name,
+        email: session.user.email,
+        username: session.user.user_metadata?.username || name.toLowerCase(),
+        degree: "",
+        year: "",
+        targetCareer: "Software Engineer",
+        bio: "",
+        skills: [],
+        interests: [],
+        projects: "",
+        pace: "Balanced",
+        onboardingComplete: false,
+        careerReadiness: null,
+        avatarColor: "linear-gradient(135deg, #22d3ee, #8b5cf6)",
+      };
+    }
     return toFrontendUser(profile);
   } catch {
     return null;
