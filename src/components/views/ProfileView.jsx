@@ -1222,20 +1222,36 @@ export function ProfileView({ student, onUpdateStudent, onBack }) {
       </GlassCard>
 
       {/* Areas of Interest Card */}
-      <GlassCard className="p-6" hover>
+      <GlassCard className="p-6 relative overflow-hidden" hover>
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-          <SectionHeader title="Areas of interest" subtitle="Specialization domains & tech topics" />
-          <button type="button" onClick={() => setInterestModalOpen(true)} className="lp-btn-primary px-3.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500/20 to-cyan-500/10 border border-violet-500/30 flex items-center justify-center text-violet-300 shadow-sm">
+              <Sparkles size={18} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-white">Areas of interest</h3>
+                {profile.interests?.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-500/15 text-violet-300 border border-violet-500/30">
+                    {profile.interests.length} Domains
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400">Specialization domains & tech topics</p>
+            </div>
+          </div>
+          <button type="button" onClick={() => setInterestModalOpen(true)} className="lp-btn-primary px-3.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer shadow-md">
             <Plus size={14} /> Add Interest
           </button>
         </div>
 
         {profile.interests?.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pt-1">
             {profile.interests.map(i => (
-              <div key={i} className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/30 text-xs text-violet-300">
-                <span>{i}</span>
-                <button type="button" onClick={() => { setDeleteTarget({ type: "interest", item: i }); setDeleteModalOpen(true); }} className="hover:text-rose-400 transition-colors">
+              <div key={i} className="group flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-violet-500/15 to-cyan-500/15 border border-violet-500/30 text-xs text-violet-200 hover:border-cyan-400/60 hover:scale-105 transition-all shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span className="font-medium">{i}</span>
+                <button type="button" onClick={() => { setDeleteTarget({ type: "interest", item: i }); setDeleteModalOpen(true); }} className="text-slate-400 hover:text-rose-400 transition-colors ml-0.5">
                   <X size={12} />
                 </button>
               </div>
@@ -1251,10 +1267,25 @@ export function ProfileView({ student, onUpdateStudent, onBack }) {
       </GlassCard>
 
       {/* Previous Learning Card */}
-      <GlassCard className="p-6" hover>
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-          <SectionHeader title="Previous learning" subtitle="Document completed courses, degrees, or workshops" />
-          <button type="button" onClick={() => { setLearningToEdit(null); setLearningModalOpen(true); }} className="lp-btn-primary px-3.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer">
+      <GlassCard className="p-6 relative overflow-hidden" hover>
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-md shadow-emerald-500/10">
+              <BookOpen size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-white tracking-wide">Previous learning</h3>
+                {profile.learningRecords?.length > 0 && (
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                    {profile.learningRecords.length} Completed
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400">Document completed courses, degrees, or workshops</p>
+            </div>
+          </div>
+          <button type="button" onClick={() => { setLearningToEdit(null); setLearningModalOpen(true); }} className="lp-btn-primary px-3.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer shadow-md">
             <Plus size={14} /> Add Learning
           </button>
         </div>
@@ -1262,13 +1293,18 @@ export function ProfileView({ student, onUpdateStudent, onBack }) {
         {profile.learningRecords?.length > 0 ? (
           <div className="grid sm:grid-cols-2 gap-4">
             {profile.learningRecords.map(rec => (
-              <div key={rec.id} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 hover:border-cyan-400/30 transition-all space-y-2 relative group">
+              <div key={rec.id} className="p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-emerald-500/40 transition-all duration-200 space-y-2.5 relative group shadow-lg">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 className="text-sm font-semibold text-white">{rec.courseName}</h4>
-                    <p className="text-xs text-cyan-400">{rec.provider || "Self-Paced"}</p>
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <CheckCircle2 size={13} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">{rec.courseName}</h4>
+                      <p className="text-xs text-emerald-400/90 font-medium">{rec.provider || "Self-Paced"}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
                     <button type="button" onClick={() => { setLearningToEdit(rec); setLearningModalOpen(true); }} className="p-1 text-slate-400 hover:text-cyan-300">
                       <Edit3 size={13} />
                     </button>
@@ -1278,18 +1314,20 @@ export function ProfileView({ student, onUpdateStudent, onBack }) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-slate-400">
+                <div className="flex items-center gap-2 text-xs text-slate-400 pl-8">
                   <Pill tone="violet">{rec.courseType || "Course"}</Pill>
-                  {rec.completionYear && <span>{rec.completionYear}</span>}
+                  {rec.completionYear && <span className="bg-white/5 px-2 py-0.5 rounded text-[11px] border border-white/10 text-slate-300">{rec.completionYear}</span>}
                 </div>
 
-                {rec.description && <p className="text-xs text-slate-300 leading-relaxed pt-1">{rec.description}</p>}
+                {rec.description && <p className="text-xs text-slate-300 leading-relaxed pt-1 pl-8">{rec.description}</p>}
 
                 {rec.certificateUrl && (
-                  <a href={rec.certificateUrl.startsWith("http") ? rec.certificateUrl : `https://${rec.certificateUrl}`} target="_blank" rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-cyan-400 hover:underline pt-1">
-                    <ExternalLink size={12} /> View Certificate
-                  </a>
+                  <div className="pl-8 pt-1">
+                    <a href={rec.certificateUrl.startsWith("http") ? rec.certificateUrl : `https://${rec.certificateUrl}`} target="_blank" rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 hover:underline">
+                      <ExternalLink size={12} /> View Certificate
+                    </a>
+                  </div>
                 )}
               </div>
             ))}
@@ -1304,10 +1342,25 @@ export function ProfileView({ student, onUpdateStudent, onBack }) {
       </GlassCard>
 
       {/* Certifications Card */}
-      <GlassCard className="p-6" hover>
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-          <SectionHeader title="Certifications & credentials" subtitle="Verified industry certs" />
-          <button type="button" onClick={() => { setCertToEdit(null); setCertModalOpen(true); }} className="lp-btn-primary px-3.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer">
+      <GlassCard className="p-6 relative overflow-hidden" hover>
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-md shadow-violet-500/10">
+              <Award size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-white tracking-wide">Certifications & credentials</h3>
+                {profile.certificationsList?.length > 0 && (
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-violet-500/15 text-violet-300 border border-violet-500/30">
+                    {profile.certificationsList.length} Verified
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400">Verified industry certs & credentials</p>
+            </div>
+          </div>
+          <button type="button" onClick={() => { setCertToEdit(null); setCertModalOpen(true); }} className="lp-btn-primary px-3.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer shadow-md">
             <Plus size={14} /> Add Certification
           </button>
         </div>
@@ -1315,13 +1368,18 @@ export function ProfileView({ student, onUpdateStudent, onBack }) {
         {profile.certificationsList?.length > 0 ? (
           <div className="grid sm:grid-cols-2 gap-4">
             {profile.certificationsList.map(cert => (
-              <div key={cert.id} className="p-4 rounded-xl bg-white/[0.02] border border-white/10 hover:border-cyan-400/30 transition-all space-y-2 relative group">
+              <div key={cert.id} className="p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-violet-500/40 transition-all duration-200 space-y-2.5 relative group shadow-lg">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 className="text-sm font-semibold text-white">{cert.name}</h4>
-                    <p className="text-xs text-violet-400">{cert.issuer || "Issuing Organization"}</p>
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-violet-500/15 border border-violet-500/30 text-violet-300 flex items-center justify-center shrink-0 mt-0.5">
+                      <Award size={15} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-white group-hover:text-violet-300 transition-colors">{cert.name}</h4>
+                      <p className="text-xs text-violet-400 font-medium">{cert.issuer || "Issuing Organization"}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
                     <button type="button" onClick={() => { setCertToEdit(cert); setCertModalOpen(true); }} className="p-1 text-slate-400 hover:text-cyan-300">
                       <Edit3 size={13} />
                     </button>
@@ -1331,16 +1389,18 @@ export function ProfileView({ student, onUpdateStudent, onBack }) {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
-                  {cert.issueDate && <span>Issued: {cert.issueDate}</span>}
-                  {cert.credentialId && <span>ID: {cert.credentialId}</span>}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 pl-9">
+                  {cert.issueDate && <span className="bg-white/5 px-2 py-0.5 rounded text-[11px] border border-white/10 text-slate-300">Issued: {cert.issueDate}</span>}
+                  {cert.credentialId && <span className="text-slate-400 text-[11px]">ID: {cert.credentialId}</span>}
                 </div>
 
                 {cert.credentialUrl && (
-                  <a href={cert.credentialUrl.startsWith("http") ? cert.credentialUrl : `https://${cert.credentialUrl}`} target="_blank" rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-cyan-400 hover:underline pt-1">
-                    <ExternalLink size={12} /> View Credential
-                  </a>
+                  <div className="pl-9 pt-1">
+                    <a href={cert.credentialUrl.startsWith("http") ? cert.credentialUrl : `https://${cert.credentialUrl}`} target="_blank" rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 hover:underline">
+                      <ExternalLink size={12} /> View Credential
+                    </a>
+                  </div>
                 )}
               </div>
             ))}

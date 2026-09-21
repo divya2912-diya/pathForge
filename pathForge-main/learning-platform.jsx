@@ -2747,39 +2747,106 @@ function ProfileView({ student = STUDENT, onUpdateStudent, onBack }) {
         </GlassCard>
       </div>
 
-      {/* Grid: Previous Learning & Technical Skills */}
+      {/* Grid: Previous Learning & Certifications/Interests */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <GlassCard className="p-6" hover>
-          <SectionHeader title="Previous learning" subtitle="Completed coursework and foundational credits" />
-          <div className="space-y-2.5">
+        {/* Previous Learning Card */}
+        <GlassCard className="p-6 relative overflow-hidden" hover>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-md shadow-emerald-500/10">
+                <BookOpen size={20} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white tracking-wide">Previous Learning</h3>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                    {PREVIOUS_LEARNING.length} Completed
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400">Completed coursework and foundational credits</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3">
             {PREVIOUS_LEARNING.map(c => (
-              <div key={c.title} className="flex items-start gap-2.5">
-                <CheckCircle2 size={15} color="#34d399" className="mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-white">{c.title}</p>
-                  <p className="text-xs" style={{ color: "var(--text-dim)" }}>{c.provider} · {c.when}</p>
+              <div key={c.title} className="group relative p-3.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-emerald-500/40 transition-all duration-200 flex items-start gap-3">
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform">
+                  <CheckCircle2 size={15} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors truncate">{c.title}</p>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0 font-medium">Verified</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
+                    <span className="text-slate-300 font-medium">{c.provider}</span>
+                    <span className="text-slate-600">•</span>
+                    <span className="text-slate-400">{c.when}</span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </GlassCard>
 
-        <GlassCard className="p-6" hover>
-          <SectionHeader title="Certifications & Interests" />
-          <div className="space-y-3 mb-5">
-            {OWNED_CERTIFICATIONS.map(c => (
-              <div key={c.title} className="flex items-center gap-2.5">
-                <Award size={15} color="#c4b5fd" className="shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-white">{c.title}</p>
-                  <p className="text-xs" style={{ color: "var(--text-dim)" }}>{c.provider}</p>
-                </div>
+        {/* Certifications & Interests Card */}
+        <GlassCard className="p-6 relative overflow-hidden" hover>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-md shadow-violet-500/10">
+                <Award size={20} />
               </div>
-            ))}
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white tracking-wide">Certifications & Interests</h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-500/15 text-violet-300 border border-violet-500/30">
+                    {OWNED_CERTIFICATIONS.length} Credentials
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400">Verified credentials & target technical domains</p>
+              </div>
+            </div>
           </div>
-          <p className="text-xs font-medium text-slate-300 mb-2">Areas of Interest</p>
-          <div className="flex flex-wrap gap-1.5">
-            {INTERESTS.map(i => <Pill key={i} tone="violet">{i}</Pill>)}
+
+          {/* Certifications Section */}
+          <div className="space-y-3 mb-5">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Award size={13} className="text-violet-400" /> Active Certifications
+            </p>
+            <div className="grid gap-2.5">
+              {OWNED_CERTIFICATIONS.map(c => (
+                <div key={c.title} className="group p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 hover:border-violet-500/40 transition-all duration-200 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-violet-500/15 border border-violet-500/30 text-violet-300 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                      <Award size={16} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white group-hover:text-violet-300 transition-colors">{c.title}</p>
+                      <p className="text-xs text-slate-400">{c.provider}</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20 font-medium shrink-0">
+                    Credential
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Areas of Interest Section */}
+          <div className="pt-4 border-t border-white/10">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <Sparkles size={13} className="text-cyan-400" /> Areas of Interest
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {INTERESTS.map(i => (
+                <div key={i} className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-violet-500/15 to-cyan-500/15 border border-violet-500/30 text-xs text-violet-200 hover:border-cyan-400/60 hover:scale-105 transition-all cursor-pointer shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                  <span>{i}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </GlassCard>
       </div>
