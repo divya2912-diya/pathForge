@@ -368,6 +368,65 @@ export async function toggleSavedCertification(certificationId, isCurrentlySaved
   }
 }
 
+// ── Projects Catalog & Saved ─────────────────────────────────
+
+export async function getCatalogProjects() {
+  try {
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .order("title", { ascending: true });
+    
+    if (error) {
+      console.error("Error fetching catalog projects:", error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.error("Exception fetching catalog projects:", err);
+    return [];
+  }
+}
+
+export async function getSavedProjects() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return new Set();
+
+    const { data, error } = await supabase
+      .from("saved_projects")
+      .select("project_id")
+      .eq("user_id", session.user.id);
+      
+    if (error) return new Set();
+    return new Set((data || []).map(r => r.project_id));
+  } catch {
+    return new Set();
+  }
+}
+
+export async function toggleSavedProject(projectId, isCurrentlySaved) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return { success: false, error: "Not logged in" };
+
+    if (isCurrentlySaved) {
+      const { error } = await supabase
+        .from("saved_projects")
+        .delete()
+        .match({ user_id: session.user.id, project_id: projectId });
+      return { success: !error };
+    } else {
+      const { error } = await supabase
+        .from("saved_projects")
+        .insert([{ user_id: session.user.id, project_id: projectId }]);
+      return { success: !error };
+    }
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
 // ── Helpers ──────────────────────────────────────────────────
 
 function toFrontendUser(profile, authUser = null) {

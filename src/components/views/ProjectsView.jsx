@@ -1,49 +1,134 @@
-import React, { useState } from "react";
-import { Star, Check, FolderKanban, Plus, CheckCircle2, Target } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Star, Check, FolderKanban, Plus, CheckCircle2, Target, ExternalLink, Bookmark, Briefcase } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import SectionHeader from "../ui/SectionHeader";
 import Pill from "../ui/Pill";
 import ModalShell from "../ui/ModalShell";
-import { PROJECTS } from "../../data/mockData";
+import { rankProjects } from "../../data/projectEngine";
+import { getCatalogProjects, getSavedProjects, toggleSavedProject } from "../../data/supabaseAuth";
 
-export function ProjectsView({ added, toggleAdded }) {
+export function ProjectsView({ student, added, toggleAdded }) {
   const [selectedProject, setSelectedProject] = useState(null);
+  const [catalog, setCatalog] = useState([]);
+  const [savedIds, setSavedIds] = useState(new Set());
+  const [loading, setLoading] = useState(true);
+
+  // Fetch Catalog & Saved
+  useEffect(() => {
+    let mounted = true;
+    async function loadData() {
+      setLoading(true);
+      const [projs, saved] = await Promise.all([
+        getCatalogProjects(),
+        getSavedProjects()
+      ]);
+      if (mounted) {
+        setCatalog(projs);
+        setSavedIds(saved);
+        setLoading(false);
+      }
+    }
+    loadData();
+    return () => { mounted = false; };
+  }, []);
+
+  // Compute Recommendations
+  const recommendations = useMemo(() => {
+    return rankProjects(catalog, student);
+  }, [catalog, student]);
+
+  // Handlers
+  const handleToggleSave = async (e, projectId) => {
+    e.stopPropagation();
+    const isSaved = savedIds.has(projectId);
+    
+    // Optimistic UI
+    setSavedIds(prev => {
+      const next = new Set(prev);
+      if (isSaved) next.delete(projectId);
+      else next.add(projectId);
+      return next;
+    });
+
+    const res = await toggleSavedProject(projectId, isSaved);
+    if (!res.success) {
+      // Revert if failed
+      setSavedIds(prev => {
+        const next = new Set(prev);
+        if (isSaved) next.add(projectId);
+        else next.delete(projectId);
+        return next;
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
       <SectionHeader eyebrow="Build to prove it" title="Recommended projects" subtitle="Chosen to close your current skill gaps and strengthen your portfolio." />
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {PROJECTS.map(p => (
-          <GlassCard key={p.id} hover className="p-5 flex flex-col">
-            <div className="flex items-center justify-between mb-2">
-              <Pill tone={p.difficulty === "Advanced" ? "violet" : "cyan"}>{p.difficulty}</Pill>
-              <Pill tone="cyan">{p.match}% match</Pill>
-            </div>
-            <p className="text-sm font-semibold mb-1.5">{p.title}</p>
-            <p className="text-xs mb-3 flex-1 text-slate-400">{p.desc}</p>
-            <div className="flex flex-wrap gap-1.5 mb-3">{p.skills.map(s => <Pill key={s}>{s}</Pill>)}</div>
-            <div className="flex items-center gap-1 mb-4">
-              {Array.from({ length: 5 }).map((_, i) => <Star key={i} size={13} fill={i < p.impact ? "#fbbf24" : "none"} color="#fbbf24" />)}
-              <span className="text-xs ml-1 text-slate-500">career impact</span>
-            </div>
-            <div className="flex gap-2 mt-auto">
-              <button 
-                onClick={() => setSelectedProject(p)}
-                className="lp-btn-ghost text-xs py-2 rounded-lg flex-1 cursor-pointer transition-colors hover:text-white"
-              >
-                View project
-              </button>
-              <button onClick={() => toggleAdded(p.id)} className={`text-xs py-2 rounded-lg flex-1 flex items-center justify-center gap-1 cursor-pointer transition-all ${
-                added.has(p.id) 
-                  ? "bg-emerald-500/15 border border-emerald-500/40 text-emerald-300" 
-                  : "bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20"
-              }`}>
-                {added.has(p.id) ? <><Check size={13} /> Added</> : "Add to roadmap"}
-              </button>
-            </div>
-          </GlassCard>
-        ))}
-      </div>
+      
+      {loading ? (
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {[1, 2, 3].map(i => (
+            <GlassCard key={i} className="p-6 h-[220px] animate-pulse flex flex-col justify-between">
+              <div className="flex gap-4"><div className="w-12 h-12 bg-white/5 rounded-xl" /><div className="flex-1 space-y-2"><div className="h-4 bg-white/5 rounded w-3/4" /><div className="h-3 bg-white/5 rounded w-1/2" /></div></div>
+              <div className="flex gap-2"><div className="w-16 h-6 bg-white/5 rounded-full" /><div className="w-16 h-6 bg-white/5 rounded-full" /></div>
+            </GlassCard>
+          ))}
+        </div>
+      ) : recommendations.length > 0 ? (
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {recommendations.map(p => (
+            <GlassCard key={p.id} hover className="p-5 flex flex-col">
+              <div className="flex items-start justify-between mb-3 relative z-10">
+                <div className="flex flex-col gap-1.5">
+                  <Pill tone={p.difficulty === "Advanced" ? "violet" : p.difficulty === "Intermediate" ? "cyan" : "emerald"}>{p.difficulty}</Pill>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={(e) => handleToggleSave(e, p.id)} className={`p-1.5 rounded-lg transition-colors ${savedIds.has(p.id) ? "text-amber-400 bg-amber-400/10" : "text-slate-500 hover:text-white hover:bg-white/10"}`}>
+                    <Bookmark size={16} fill={savedIds.has(p.id) ? "currentColor" : "none"} />
+                  </button>
+                  <div className={`px-2.5 py-1 rounded-md text-xs font-bold border shadow-sm ${
+                        p.match >= 80 ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300 shadow-emerald-500/10" : 
+                        p.match >= 50 ? "bg-cyan-500/15 border-cyan-500/30 text-cyan-300 shadow-cyan-500/10" :
+                        "bg-white/5 border-white/10 text-slate-300"
+                      }`}>
+                    {p.match}% Match
+                  </div>
+                </div>
+              </div>
+
+              <h3 className="text-sm font-bold text-white mb-1.5 leading-tight">{p.title}</h3>
+              <p className="text-xs mb-4 flex-1 text-slate-400 line-clamp-2 leading-relaxed">{p.description}</p>
+              
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {(p.skills || []).slice(0, 3).map((s, i) => <Pill key={i} tone="slate">{s}</Pill>)}
+                {(p.skills || []).length > 3 && <Pill tone="slate">+{p.skills.length - 3}</Pill>}
+              </div>
+
+              <div className="flex items-center justify-between border-t border-white/5 pt-4 z-10">
+                <button 
+                  onClick={() => setSelectedProject(p)}
+                  className="text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+                >
+                  View project
+                </button>
+                <button onClick={() => toggleAdded(p.id)} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md flex items-center gap-2 ${
+                  added.has(p.id) ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-emerald-500/10" : 
+                  "bg-cyan-500 hover:bg-cyan-400 text-[#060911] border border-cyan-400 hover:shadow-cyan-500/20"
+                }`}>
+                  {added.has(p.id) ? <><CheckCircle2 size={14} /> Added to Roadmap</> : <><Plus size={14} /> Add to Roadmap</>}
+                </button>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20 px-4 bg-white/[0.02] border border-white/5 rounded-2xl">
+          <FolderKanban size={48} className="mx-auto text-slate-600 mb-4" />
+          <h3 className="text-lg font-bold text-white mb-2">No projects found for this domain</h3>
+          <p className="text-sm text-slate-400 max-w-sm mx-auto">It looks like we don't have any projects specifically tailored to your current career goal right now. Try updating your target career.</p>
+        </div>
+      )}
 
       {/* Project Details Modal */}
       <ModalShell open={!!selectedProject} title="Project Details" icon={FolderKanban} onClose={() => setSelectedProject(null)}>
@@ -55,12 +140,15 @@ export function ProjectsView({ added, toggleAdded }) {
                 <div className="flex flex-wrap gap-2">
                   <span className={`px-2.5 py-1 rounded-md text-xs font-bold border shadow-sm ${
                         selectedProject.match >= 80 ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300 shadow-emerald-500/10" : 
-                        "bg-cyan-500/15 border-cyan-500/30 text-cyan-300 shadow-cyan-500/10"
+                        selectedProject.match >= 50 ? "bg-cyan-500/15 border-cyan-500/30 text-cyan-300 shadow-cyan-500/10" :
+                        "bg-white/5 border-white/10 text-slate-300"
                       }`}>
                     {selectedProject.match}% Match
                   </span>
                   <span className={`px-2.5 py-1 rounded-md text-xs font-medium border ${
-                    selectedProject.difficulty === "Advanced" ? "bg-violet-500/15 border-violet-500/30 text-violet-300" : "bg-cyan-500/15 border-cyan-500/30 text-cyan-300"
+                    selectedProject.difficulty === "Advanced" ? "bg-violet-500/15 border-violet-500/30 text-violet-300" : 
+                    selectedProject.difficulty === "Intermediate" ? "bg-cyan-500/15 border-cyan-500/30 text-cyan-300" :
+                    "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
                   }`}>
                     {selectedProject.difficulty}
                   </span>
@@ -71,19 +159,19 @@ export function ProjectsView({ added, toggleAdded }) {
             <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-sm">
               <h4 className="font-bold text-indigo-300 mb-1 flex items-center gap-2"><Target size={16} /> Why this is recommended</h4>
               <p className="text-indigo-200/80 text-xs leading-relaxed">
-                This project builds practical experience in {selectedProject.skills.join(", ")}, which directly targets your current skill gaps for your career goal.
+                {selectedProject.reason}
               </p>
             </div>
 
             <div>
               <h4 className="text-sm font-bold text-white mb-2">Description</h4>
-              <p className="text-sm text-slate-300 leading-relaxed">{selectedProject.desc}</p>
+              <p className="text-sm text-slate-300 leading-relaxed">{selectedProject.description}</p>
             </div>
 
             <div>
               <h4 className="text-sm font-bold text-white mb-3">Skills Applied</h4>
               <div className="flex flex-wrap gap-2">
-                {selectedProject.skills.map((skill, i) => (
+                {(selectedProject.skills || []).map((skill, i) => (
                   <span key={i} className="px-2.5 py-1 rounded-md text-xs font-medium border bg-white/5 border-white/10 text-slate-300">
                     {skill}
                   </span>
@@ -96,12 +184,33 @@ export function ProjectsView({ added, toggleAdded }) {
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={18} fill={i < selectedProject.impact ? "#fbbf24" : "none"} color={i < selectedProject.impact ? "#fbbf24" : "#475569"} />
+                    <Star key={i} size={18} fill={i < (selectedProject.impact || 3) ? "#fbbf24" : "none"} color={i < (selectedProject.impact || 3) ? "#fbbf24" : "#475569"} />
                   ))}
                 </div>
-                <span className="text-sm text-slate-400 font-medium ml-2">High portfolio value</span>
+                <span className="text-sm text-slate-400 font-medium ml-2">Portfolio Value</span>
               </div>
             </div>
+            
+            {/* Sources Required */}
+            {(selectedProject.source_url || selectedProject.demo_url) && (
+              <div>
+                <h4 className="text-sm font-bold text-white mb-3">Sources & Resources</h4>
+                <div className="flex flex-col gap-2">
+                  {selectedProject.source_url && (
+                    <a href={selectedProject.source_url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group">
+                      <span className="text-sm font-semibold text-white flex items-center gap-2"><FolderKanban size={16} className="text-cyan-400" /> Starter Code / Tutorial</span>
+                      <ExternalLink size={16} className="text-slate-500 group-hover:text-white transition-colors" />
+                    </a>
+                  )}
+                  {selectedProject.demo_url && (
+                    <a href={selectedProject.demo_url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors group">
+                      <span className="text-sm font-semibold text-white flex items-center gap-2"><Briefcase size={16} className="text-emerald-400" /> Live Demo Example</span>
+                      <ExternalLink size={16} className="text-slate-500 group-hover:text-white transition-colors" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-3 pt-4 border-t border-white/5">
               <button 
