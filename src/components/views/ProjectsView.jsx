@@ -101,7 +101,7 @@ export function ProjectsView({ student, added, toggleAdded }) {
         
         {/* Domain Tabs */}
         <div className="flex overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0 hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
-          <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 w-max">
+          <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 min-w-max">
             {DOMAIN_TABS.map(tab => (
               <button
                 key={tab.id}
