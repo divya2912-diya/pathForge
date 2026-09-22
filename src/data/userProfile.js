@@ -602,3 +602,118 @@ export function getStrengthsAndGaps(userSkills = [], targetCareer) {
 
   return { strengths, gaps };
 }
+
+/**
+ * Generate a personalized Career Skill Journey based on the user's profile and target career.
+ */
+export function generateCareerJourney(student) {
+  const targetCareer = student?.targetCareer || "Software Engineer";
+  const requiredSkills = SKILL_REQUIREMENTS[targetCareer] || SKILL_REQUIREMENTS["Software Engineer"];
+  
+  // Normalize user skills
+  const userSkills = (student?.skills || []).map(s => s.toLowerCase());
+  const userSkillsList = (student?.userSkillsList || []).map(s => s.name.toLowerCase());
+  const allUserSkills = new Set([...userSkills, ...userSkillsList]);
+
+  // Check if a skill is mastered
+  const isMastered = (skill) => {
+    return Array.from(allUserSkills).some(s => s.includes(skill.toLowerCase()) || skill.toLowerCase().includes(s));
+  };
+
+  const STAGES = [
+    { id: "stage_1", title: "Foundations", desc: "Core concepts required before building." },
+    { id: "stage_2", title: "Core Development", desc: "The primary tools and frameworks used daily." },
+    { id: "stage_3", title: "Real-World Projects", desc: "Applying skills to build functional systems." },
+    { id: "stage_4", title: "Specialization", desc: "Advanced concepts that set you apart." },
+    { id: "stage_5", title: "Interview Ready", desc: "Preparing for technical screens and system design." }
+  ];
+
+  const totalSkills = requiredSkills.length;
+  
+  const journeyStages = STAGES.map((stage, index) => {
+    let stageSkills = [];
+    let project = null;
+
+    if (index === 0) {
+      stageSkills = requiredSkills.slice(0, Math.ceil(totalSkills * 0.3));
+    } else if (index === 1) {
+      stageSkills = requiredSkills.slice(Math.ceil(totalSkills * 0.3), Math.ceil(totalSkills * 0.7));
+    } else if (index === 2) {
+      project = {
+        title: `Build a ${targetCareer} Application`,
+        desc: "Combine your core development skills into a deployable project.",
+        time: "15-20 hours"
+      };
+    } else if (index === 3) {
+      stageSkills = requiredSkills.slice(Math.ceil(totalSkills * 0.7));
+    } else if (index === 4) {
+      stageSkills = ["System Design", "Algorithms & Patterns"];
+    }
+
+    const skillsData = stageSkills.map((skill, sIdx) => {
+      const mastered = isMastered(skill) || isMastered(skill.replace(/ /g, ""));
+      return {
+        id: `skill_${skill.replace(/\s+/g, '_').toLowerCase()}`,
+        name: skill,
+        status: mastered ? "COMPLETED" : "NOT STARTED",
+        importance: index === 0 ? "Critical" : index === 1 ? "High" : "Medium",
+        estimatedHours: mastered ? 0 : Math.floor(Math.random() * 5) + 10,
+        why: `${skill} is a highly requested skill for ${targetCareer} roles.`,
+        tasks: [
+          { id: `task_${skill.replace(/\s+/g, '_').toLowerCase()}_1`, label: `Learn ${skill} fundamentals`, checked: mastered },
+          { id: `task_${skill.replace(/\s+/g, '_').toLowerCase()}_2`, label: `Complete practice exercises`, checked: mastered },
+          { id: `task_${skill.replace(/\s+/g, '_').toLowerCase()}_3`, label: `Pass assessment`, checked: mastered }
+        ],
+        resources: [
+          { title: `${skill} Official Documentation`, type: "Documentation", url: "#" },
+          { title: `Complete ${skill} Crash Course`, type: "Video", url: "#" },
+          { title: `Interactive ${skill} Exercises`, type: "Practice", url: "#" },
+          { title: `Build a project with ${skill}`, type: "Project", url: "#" }
+        ]
+      };
+    });
+
+    const completedSkills = skillsData.filter(s => s.status === "COMPLETED").length;
+    const stageProgress = skillsData.length > 0 ? Math.round((completedSkills / skillsData.length) * 100) : (project ? 0 : 100);
+
+    return {
+      ...stage,
+      skills: skillsData,
+      project,
+      progress: stageProgress,
+      status: "LOCKED" 
+    };
+  });
+
+  // Calculate actual statuses
+  let hasFoundInProgress = false;
+  let hasFoundUpNext = false;
+  
+  for (let i = 0; i < journeyStages.length; i++) {
+    const stage = journeyStages[i];
+    if (stage.progress === 100 && i !== 2) {
+      stage.status = "COMPLETED";
+    } else if (!hasFoundInProgress) {
+      stage.status = "IN PROGRESS";
+      hasFoundInProgress = true;
+    } else if (!hasFoundUpNext) {
+      stage.status = "UP NEXT";
+      hasFoundUpNext = true;
+    } else {
+      stage.status = "LOCKED";
+    }
+  }
+
+  const totalCompletedSkills = journeyStages.reduce((acc, stage) => acc + stage.skills.filter(s => s.status === "COMPLETED").length, 0);
+  const totalJourneySkills = journeyStages.reduce((acc, stage) => acc + stage.skills.length, 0);
+  const overallProgress = totalJourneySkills > 0 ? Math.round((totalCompletedSkills / totalJourneySkills) * 100) : 0;
+
+  return {
+    targetCareer,
+    overallProgress,
+    totalCompletedSkills,
+    totalJourneySkills,
+    currentStage: journeyStages.find(s => s.status === "IN PROGRESS") || journeyStages[journeyStages.length - 1],
+    stages: journeyStages
+  };
+}
