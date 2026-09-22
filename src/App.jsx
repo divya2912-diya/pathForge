@@ -103,7 +103,10 @@ export default function App() {
 
   // ── Onboarding complete ───────────────────────────────────
 
+  const [lastOnboardingData, setLastOnboardingData] = useState(null);
+
   const handleOnboardingComplete = async (onboardingData) => {
+    setLastOnboardingData(onboardingData);
     const profileUpdates = buildInitialProfile(onboardingData, student);
     const result = await updateCurrentUser(profileUpdates);
     if (result.success) setStudent(result.user);
@@ -222,7 +225,11 @@ export default function App() {
       )}
 
       {stage === "analyzing" && (
-        <AnalyzingScreen onDone={() => go("dashboard")} />
+        <AnalyzingScreen
+          student={student}
+          onboardingData={lastOnboardingData}
+          onDone={() => go("dashboard")}
+        />
       )}
 
       {stage === "app" && (

@@ -4,6 +4,10 @@
 
 // ── Career → Required Skills Map ───────────────────────────
 export const SKILL_REQUIREMENTS = {
+  "AI / ML Engineer": [
+    "Python", "Machine Learning", "Deep Learning", "Statistics",
+    "Docker", "SQL", "TensorFlow", "PyTorch", "NLP", "System Design",
+  ],
   "AI/ML Engineer": [
     "Python", "Machine Learning", "Deep Learning", "Statistics",
     "Docker", "SQL", "TensorFlow", "PyTorch", "NLP", "System Design",
@@ -12,17 +16,37 @@ export const SKILL_REQUIREMENTS = {
     "Python", "Statistics", "SQL", "Machine Learning", "Data Visualization",
     "R", "Pandas", "NumPy", "Tableau", "Communication",
   ],
+  "Data Analyst": [
+    "SQL", "Python", "Data Analysis", "Statistics", "Excel",
+    "Tableau", "PowerBI", "Data Visualization", "Communication",
+  ],
   "Software Engineer": [
-    "Python", "Java", "JavaScript", "Data Structures", "Algorithms",
-    "System Design", "SQL", "Git", "Docker", "REST APIs",
+    "Python", "Java", "JavaScript", "C++", "Data Structures",
+    "Algorithms", "System Design", "SQL", "Git", "Docker",
   ],
   "Full Stack Developer": [
-    "JavaScript", "React", "Node.js", "SQL", "REST APIs",
-    "CSS", "Git", "Docker", "TypeScript", "System Design",
+    "JavaScript", "TypeScript", "React", "Node.js", "SQL",
+    "HTML/CSS", "Git", "Docker", "REST APIs", "System Design",
+  ],
+  "Frontend Developer": [
+    "JavaScript", "TypeScript", "React", "HTML/CSS", "Git",
+    "REST APIs", "Redux", "Web Performance", "Testing",
+  ],
+  "Backend Developer": [
+    "Node.js", "Python", "Java", "SQL", "PostgreSQL",
+    "MongoDB", "Docker", "REST APIs", "System Design", "Git",
+  ],
+  "Cloud / DevOps Engineer": [
+    "AWS", "Docker", "Kubernetes", "Python", "Terraform",
+    "Linux", "Networking", "CI/CD", "Git", "System Design",
   ],
   "Cloud Engineer": [
     "AWS", "Docker", "Kubernetes", "Python", "Terraform",
     "Linux", "Networking", "CI/CD", "Git", "System Design",
+  ],
+  "Cybersecurity Engineer": [
+    "Networking", "Linux", "Python", "Cryptography", "Penetration Testing",
+    "Firewalls", "Risk Assessment", "SIEM Tools", "SQL", "Compliance",
   ],
   "Cybersecurity Analyst": [
     "Networking", "Linux", "Python", "Cryptography", "Penetration Testing",
@@ -403,39 +427,46 @@ export const CAREER_GAP_PLANS = {
  */
 export function buildInitialProfile(onboardingData, existingUser) {
   const {
-    degree,
-    year,
-    skills = [],
-    projects = "",
-    interests = [],
     career,
+    targetCareer: tc,
+    skills = [],
+    userSkillsList = [],
+    projectsList = [],
+    certificationsList = [],
+    github = "",
+    resumeInfo = null,
+    learningPreferences = null,
     pace,
     name: onboardName,
   } = onboardingData;
 
-  const targetCareer = career || existingUser?.targetCareer || "Software Engineer";
-  const requiredSkills = SKILL_REQUIREMENTS[targetCareer] || [];
-  const matched = skills.filter((s) =>
-    requiredSkills.some((r) => r.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(r.toLowerCase()))
-  );
-  const readinessPct = Math.min(
-    95,
-    Math.max(
-      20,
-      Math.round((matched.length / Math.max(requiredSkills.length, 1)) * 100 * 0.7 + 25)
-    )
-  );
+  const targetCareer = career || tc || existingUser?.targetCareer || "Software Engineer";
+  
+  const studentTemp = {
+    targetCareer,
+    skills,
+    userSkillsList,
+    projectsList,
+    certificationsList,
+    github: github || existingUser?.github || "",
+    degree: existingUser?.degree || "",
+    location: existingUser?.location || "",
+  };
+
+  const calculatedReadiness = calculateDynamicReadiness(studentTemp);
 
   return {
     ...(onboardName ? { name: onboardName } : {}),
-    degree: degree || existingUser?.degree,
-    year: year || existingUser?.year,
     targetCareer,
     skills,
-    interests,
-    projects,
-    pace: pace || "Balanced",
-    careerReadiness: readinessPct,
+    userSkillsList,
+    projectsList,
+    certificationsList,
+    github: github || existingUser?.github || "",
+    resumeInfo: resumeInfo || existingUser?.resumeInfo || null,
+    learningPreferences: learningPreferences || existingUser?.learningPreferences || null,
+    pace: pace || (learningPreferences?.hoursPerWeek ? `${learningPreferences.hoursPerWeek}` : "Balanced"),
+    careerReadiness: calculatedReadiness,
     onboardingComplete: true,
     bio: existingUser?.bio || "",
   };

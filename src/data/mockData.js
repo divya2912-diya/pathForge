@@ -160,8 +160,16 @@ export const CAREER_SKILLS = [
 ];
 
 export const ONBOARD_CAREERS = [
-  "AI/ML Engineer", "Software Engineer", "Data Scientist", "Cybersecurity Analyst",
-  "Cloud Engineer", "Full Stack Developer", "UI/UX Designer",
+  "Full Stack Developer",
+  "Frontend Developer",
+  "Backend Developer",
+  "AI / ML Engineer",
+  "Data Scientist",
+  "Data Analyst",
+  "Cloud / DevOps Engineer",
+  "Cybersecurity Engineer",
+  "Software Engineer",
+  "Other / Custom Career",
 ];
 
 export const NAV_MENU = [
@@ -180,15 +188,12 @@ export const NAV_MENU = [
 
 export const PREVIOUS_LEARNING = [];
 
-export const OWNED_PROJECTS = [
-  { title: "AI Chatbot", desc: "A rule-based + intent-classification chatbot for campus FAQs." },
-  { title: "Smart Attendance System", desc: "Face-recognition attendance tracker built with OpenCV." },
-  { title: "Movie Recommendation System", desc: "Content-based recommender using cosine similarity." },
-];
+export const OWNED_PROJECTS = [];
 
 export const OWNED_CERTIFICATIONS = [];
 
 export const INTERESTS = [];
 
 export const RESOURCE_ICONS = { video: Video, doc: FileText, code: FileCode2, book: BookOpen };
-export const ONBOARD_STEPS = ["Academic Background", "Current Skills", "Projects & Certifications", "Interests", "Target Career", "Learning Preferences"];
+export const ONBOARD_STEPS = ["Target Career", "Current Skills", "Experience & Evidence", "Learning Preferences"];
+

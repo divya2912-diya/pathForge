@@ -455,6 +455,8 @@ function toFrontendUser(profile, authUser = null) {
     projectsList:       profile.projects_list || [],
     projects:           profile.projects || "",
     pace:               profile.pace || "Balanced",
+    learningPreferences: profile.learning_preferences || null,
+    resumeInfo:         profile.resume_info || null,
     onboardingComplete: profile.onboarding_complete || false,
     careerReadiness:    profile.career_readiness ?? null,
     assessmentScore:    profile.assessment_score ?? null,
@@ -478,6 +480,8 @@ function toSnakeCase(updates) {
     careerReadiness:    "career_readiness",
     assessmentScore:    "assessment_score",
     assessmentAnswers:  "assessment_answers",
+    learningPreferences: "learning_preferences",
+    resumeInfo:         "resume_info",
     lastLogin:          "last_login",
     createdAt:          "created_at",
   };
