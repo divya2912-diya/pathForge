@@ -114,7 +114,7 @@ export function RoadmapView({ student, onUpdateStudent }) {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* Top Header / Career Summary */}
-      <div className="bg-slate-900/60 backdrop-blur-md border border-white/5 rounded-2xl p-6 lg:p-8 flex flex-col lg:flex-row gap-8 items-start lg:items-center justify-between">
+      <div className="relative z-50 bg-slate-900/60 backdrop-blur-md border border-white/5 rounded-2xl p-6 lg:p-8 flex flex-col lg:flex-row gap-8 items-start lg:items-center justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-cyan-400 text-sm font-semibold tracking-wider uppercase">
             <Compass className="w-4 h-4" />
