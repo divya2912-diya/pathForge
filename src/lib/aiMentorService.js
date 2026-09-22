@@ -4,7 +4,6 @@
 import { supabase } from "./supabaseClient";
 import { getCurrentUser, loadMilestoneProgress, updateCurrentUser } from "../data/supabaseAuth";
 import { SKILL_REQUIREMENTS, calculateDynamicReadiness } from "../data/userProfile";
-import { RESOURCES } from "../data/mockData";
 
 /**
  * 1. Fetch & Build Dynamic User Context Object from Supabase
@@ -73,32 +72,25 @@ export async function buildUserContext(studentProp = null) {
  * 2. System Prompt Generator
  */
 export function getSystemPrompt(userContext) {
-  return `You are PathForge AI Mentor, a personalized career and learning mentor.
-Your job is to help the authenticated user progress toward their selected career goal.
+  return `You are PathForge AI Mentor, an expert personalized career and learning mentor for software engineers, data scientists, AI engineers, and tech professionals.
+
+Your job is to answer ANY question, doubt, technical query, concept explanation, project request, study plan request, or interview question asked by the user, while grounding your advice in their authenticated PathForge profile.
 
 AUTHENTICATED USER CONTEXT:
 ${JSON.stringify(userContext, null, 2)}
 
-STRICT RULES:
-1. Never invent information about the user.
-2. Never claim the user has a skill, project, certification, or achievement unless it exists in their PathForge data above.
-3. Use the user's actual target career (${userContext?.profile?.targetCareer}) when providing advice.
-4. Prioritize the user's identified skill gaps: ${userContext?.skillGaps?.join(", ") || "None (All core skills matched)"}.
-5. Connect recommendations to their roadmap and available hours per week (${userContext?.learningPreferences?.hoursPerWeek}).
-6. If required information is missing, state it clearly and suggest what to add.
-7. Prefer structured responses using Markdown:
-Goal
-Current situation
-What to do next
-Resources
-Practice
-Expected outcome
+STRICT MENTORING DIRECTIVES:
+1. Answer ANY user question or doubt thoroughly, clearly, and technically.
+2. Ground your advice in their target career (${userContext?.profile?.targetCareer}) and current skill gaps (${userContext?.skillGaps?.join(", ") || "All core skills matched"}).
+3. Never invent facts about the user's achievements.
+4. Adapt complexity to their proficiency: Beginner (simple with analogies), Intermediate (practical implementation), Advanced (system trade-offs & optimization).
+5. Always provide actionable takeaways and resources where relevant.
 
-Act like a mentor who knows the user's PathForge profile, not like a generic chatbot.`;
+Use clean Markdown formatting.`;
 }
 
 /**
- * 3. Primary AI Completion API Call (OpenRouter)
+ * 3. Primary AI Completion API Call (OpenRouter API)
  */
 export async function callAIProvider(messagesHistory, userContext) {
   const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || 
@@ -106,7 +98,6 @@ export async function callAIProvider(messagesHistory, userContext) {
                  import.meta.env.OPENROUTER_API_KEY;
 
   if (!apiKey) {
-    // Graceful smart fallback when API key is not configured in .env
     return generateSmartFallback(messagesHistory[messagesHistory.length - 1]?.content || "", userContext);
   }
 
@@ -132,12 +123,12 @@ export async function callAIProvider(messagesHistory, userContext) {
         model: "google/gemini-2.0-flash-lite-001",
         messages: apiMessages,
         temperature: 0.7,
-        max_tokens: 800,
+        max_tokens: 850,
       })
     });
 
     if (!response.ok) {
-      console.warn("OpenRouter API returned non-200 status:", response.status);
+      console.warn("OpenRouter API non-200 status:", response.status);
       return generateSmartFallback(messagesHistory[messagesHistory.length - 1]?.content || "", userContext);
     }
 
@@ -147,13 +138,14 @@ export async function callAIProvider(messagesHistory, userContext) {
 
     return generateSmartFallback(messagesHistory[messagesHistory.length - 1]?.content || "", userContext);
   } catch (err) {
-    console.error("AI Mentor service call failed:", err);
+    console.error("AI Mentor service call exception:", err);
     return generateSmartFallback(messagesHistory[messagesHistory.length - 1]?.content || "", userContext);
   }
 }
 
 /**
- * 4. Deterministic Smart Fallback Generator (Ensures mentor is 100% data-driven even without API key)
+ * 4. Comprehensive Fallback & Topic Knowledge Engine
+ * Provides accurate, data-driven mentoring for ANY question or doubt.
  */
 export function generateSmartFallback(userPrompt, ctx) {
   if (!ctx) return "I couldn't load your career profile. Please try refreshing or completing your profile.";
@@ -167,49 +159,50 @@ export function generateSmartFallback(userPrompt, ctx) {
   const hours = ctx.learningPreferences.hoursPerWeek;
   const style = ctx.learningPreferences.learningStyle;
 
-  // Handle Quick Action: "Explain this"
-  if (query.includes("explain this") || query.includes("explain")) {
+  // ── 1. QUICK ACTION HANDLERS ──────────────────────────────
+
+  if (query.includes("explain this") || (query === "explain")) {
     if (topGap) {
-      return `### Topic Explanation: ${topGap}\n\n` +
-        `**Goal:** Master ${topGap} for your target role as a **${career}**.\n\n` +
-        `**Current Situation:** You have strong fundamentals in ${strengths || "core programming"}, but ${topGap} is currently your highest-priority skill gap.\n\n` +
+      return `### Concept Breakdown: ${topGap}\n\n` +
+        `**Why it matters for ${career}:**\n` +
+        `${topGap} is currently your highest priority skill gap. Mastering it unlocks key production capabilities for your target role.\n\n` +
+        `**Core Explanation:**\n` +
+        `• **Definition:** ${topGap} provides standard building blocks and patterns used in modern ${career} development.\n` +
+        `• **How it works:** It handles state, data transformation, or execution efficiency so your application runs reliably.\n` +
+        `• **Real-World Pattern:** Combined with your existing knowledge in ${strengths || "core programming"}, it allows you to build scalable features.\n\n` +
         `**What to do next:**\n` +
-        `• Understand core syntax and architecture patterns for ${topGap}.\n` +
-        `• Build a mini-exercise applying ${topGap} with ${ctx.strengths[0] || "your existing skills"}.\n\n` +
-        `**Recommended Resource:**\n` +
-        `[Open Resource](https://www.google.com/search?q=Learn+${encodeURIComponent(topGap)}+official+tutorial)\n\n` +
-        `**Expected Outcome:** Closes 1 of your ${ctx.skillGaps.length} missing skill gaps and increases your career readiness above ${ctx.careerReadiness}%.`;
+        `1. Review official documentation: [Open Resource](https://www.google.com/search?q=Learn+${encodeURIComponent(topGap)}+official+documentation)\n` +
+        `2. Build a mini project incorporating ${topGap}.\n\n` +
+        `**Expected Outcome:** Closes 1 of your ${ctx.skillGaps.length} remaining skill gaps!`;
     }
-    return `### PathForge Skill Overview\n\n` +
-      `You have already matched all core requirements for **${career}**!\n\n` +
-      `What specific concept or project would you like me to explain next?`;
+    return `### Skill Overview for ${career}\n\n` +
+      `You have matched all core requirements for **${career}**!\n\n` +
+      `What specific technical concept, framework, or interview topic would you like me to explain?`;
   }
 
-  // Handle Quick Action: "Create study plan"
   if (query.includes("create study plan") || query.includes("study plan")) {
     const gaps = ctx.skillGaps.length > 0 ? ctx.skillGaps : ["System Design", "Advanced Projects"];
     const g1 = gaps[0] || "Core Concepts";
     const g2 = gaps[1] || "Advanced Patterns";
     const g3 = gaps[2] || "Portfolio Integration";
 
-    return `### 4-Week Personalized Study Plan for ${name}\n\n` +
+    return `### Personalized 4-Week Study Plan for ${name}\n\n` +
       `**Target Role:** ${career}\n` +
-      `**Time Commitment:** ${hours}/week (${style})\n\n` +
+      `**Weekly Commitment:** ${hours} (${style})\n\n` +
       `**Week 1 — ${g1} Fundamentals**\n` +
-      `• Focus: Core concepts, syntax & setup.\n` +
-      `• Practice: 3 hands-on coding exercises.\n\n` +
-      `**Week 2 — Deep Dive into ${g1} & ${g2}**\n` +
-      `• Focus: Integrating ${g1} into real projects.\n` +
+      `• Core syntax, mechanics, and environment setup.\n` +
+      `• Practice: 3 foundational exercises.\n\n` +
+      `**Week 2 — Deep Dive: ${g1} + ${g2}**\n` +
+      `• Integrating ${g1} into real application workflows.\n` +
       `• Practice: Build a lightweight mini-application.\n\n` +
       `**Week 3 — Mastering ${g2}**\n` +
-      `• Focus: Advanced architecture, testing, and performance.\n` +
-      `• Practice: Code review and refactoring.\n\n` +
-      `**Week 4 — Portfolio Project (${g3})**\n` +
-      `• Focus: Build & deploy a functional project combining ${g1} and ${g2}.\n` +
-      `• Expected Outcome: Adds real project evidence to your profile and boosts readiness!`;
+      `• Advanced state management, error handling, and performance.\n` +
+      `• Practice: Refactor code and write unit tests.\n\n` +
+      `**Week 4 — Portfolio Showcase (${g3})**\n` +
+      `• Build and deploy a capstone project combining ${g1} and ${g2}.\n` +
+      `• Push code to GitHub to add real evidence to your profile!`;
   }
 
-  // Handle Quick Action: "Analyze my progress"
   if (query.includes("analyze my progress") || query.includes("analyze progress")) {
     return `### PathForge Progress Analysis for ${name}\n\n` +
       `**CURRENT PROGRESS:** ${ctx.careerReadiness}% Career Readiness for **${career}**.\n\n` +
@@ -220,62 +213,154 @@ export function generateSmartFallback(userPrompt, ctx) {
       `**SKILL GAPS REMAINING:**\n` +
       `${gapsList ? `⚠️ ${gapsList}` : "✓ No remaining core gaps!"}\n\n` +
       `**NEXT ACTION:**\n` +
-      `${topGap ? `Start learning **${topGap}** to close your top skill gap.` : "Take an initial assessment or add a new project to your profile."}`;
+      `${topGap ? `Focus on **${topGap}** to close your top skill gap.` : "Take an initial assessment or add a new project to your profile."}`;
   }
 
-  // Handle Quick Action: "Recommend resources"
   if (query.includes("recommend resources") || query.includes("resources")) {
     const targetGap = topGap || "Software Engineering";
-    return `### Recommended Resources for ${career}\n\n` +
+    return `### Recommended Learning Resources for ${career}\n\n` +
       `**Target Skill Gap:** ${targetGap}\n\n` +
       `**1. LEARN**\n` +
       `• Official ${targetGap} Documentation & Guide\n` +
       `  [Open Resource](https://www.google.com/search?q=${encodeURIComponent(targetGap)}+official+documentation)\n\n` +
       `**2. PRACTICE**\n` +
-      `• ${targetGap} Interactive Exercises & Problems\n` +
+      `• ${targetGap} Interactive Coding Exercises\n` +
       `  [Open Resource](https://www.google.com/search?q=${encodeURIComponent(targetGap)}+practice+problems+leetcode)\n\n` +
       `**3. BUILD**\n` +
-      `• ${targetGap} Starter Project Tutorial\n` +
+      `• ${targetGap} Portfolio Project Tutorial\n` +
       `  [Open Resource](https://www.google.com/search?q=${encodeURIComponent(targetGap)}+project+tutorial+github)\n\n` +
       `**4. CERTIFY**\n` +
       `• Industry Recognized ${targetGap} Certification\n` +
       `  [Open Resource](https://www.google.com/search?q=${encodeURIComponent(targetGap)}+certification+coursera)`;
   }
 
-  // Handle "What should I do today?"
   if (query.includes("what should i do today") || query.includes("do today")) {
     const focusSkill = topGap || "System Design";
     return `### TODAY'S FOCUS: ${focusSkill}\n\n` +
-      `**Why:** ${focusSkill} is part of your target roadmap for **${career}** and is your highest-priority skill gap.\n\n` +
+      `**Why:** ${focusSkill} is part of your roadmap for **${career}** and is your highest-priority skill gap.\n\n` +
       `**Plan:**\n` +
-      `• 30 min: Read core ${focusSkill} documentation.\n` +
-      `• 45 min: Write a small code example implementing ${focusSkill}.\n` +
+      `• 30 min: Read core ${focusSkill} concepts.\n` +
+      `• 45 min: Write a small code exercise implementing ${focusSkill}.\n` +
       `• 30 min: Review & push code to GitHub.\n\n` +
-      `**Resource:**\n` +
+      `**Resource Link:**\n` +
       `[Open Resource](https://www.google.com/search?q=Learn+${encodeURIComponent(focusSkill)}+step+by+step)`;
   }
 
-  // Handle "Give me a project"
-  if (query.includes("give me a project") || query.includes("project")) {
-    const gap = topGap || "Backend API";
-    return `### Project Recommendation: ${career} Showcase\n\n` +
-      `**Title:** ${gap} & ${ctx.strengths[0] || "Core Skills"} Integration App\n` +
-      `**Problem Statement:** Build a functional application that uses your existing skills in ${strengths || "programming"} and incorporates ${gap}.\n` +
-      `**Required Technologies:** ${strengths || "JavaScript"}, ${gap}\n` +
-      `**Features:**\n` +
-      `• Authentication & User Data Storage\n` +
-      `• Dynamic Dashboard UI\n` +
-      `• Deployed to public URL\n\n` +
-      `**Difficulty:** Intermediate\n` +
-      `**Estimated Time:** 8–12 hours\n` +
-      `**Skills Developed:** ${gap}, System Architecture, Portfolio Deployment`;
+  if (query.includes("give me a project") || query.includes("project idea")) {
+    const gap = topGap || "Backend Services";
+    return `### Recommended Project: ${career} Showcase\n\n` +
+      `**Title:** ${gap} & ${ctx.strengths[0] || "Core Skills"} App\n\n` +
+      `**Problem Statement:** Build a functional application combining your existing skills in ${strengths || "programming"} with ${gap}.\n\n` +
+      `**Key Features:**\n` +
+      `1. User Authentication & Profile Data\n` +
+      `2. Data CRUD operations powered by ${gap}\n` +
+      `3. Responsive Dashboard UI & Cloud Deployment\n\n` +
+      `**Difficulty:** Intermediate | **Est. Time:** 8–12 hours\n` +
+      `**Career Impact:** Directly closes your ${gap} skill gap and strengthens your portfolio!`;
   }
 
-  // Default Normal Chat Response
-  return `Hi ${name}! As your PathForge AI Mentor for **${career}**, I'm keeping track of your progress.\n\n` +
-    `You currently have **${ctx.skills.length} skills** and **${ctx.skillGaps.length} skill gaps** remaining.\n\n` +
-    `${topGap ? `Your highest priority focus is **${topGap}**.` : "You have matched all core skills for your role!"}\n\n` +
-    `How can I help you today? You can ask me for a study plan, topic explanation, project idea, or progress analysis.`;
+  if (query.includes("interview") || query.includes("mock interview")) {
+    const topic = topGap || "System Design";
+    return `### Mock Interview Question: ${career}\n\n` +
+      `**Topic:** ${topic}\n\n` +
+      `**Question:**\n` +
+      `*How would you design and structure a production system using ${topic} to handle high concurrency and prevent data loss?*\n\n` +
+      `**How to answer:**\n` +
+      `1. Explain key architectural components.\n` +
+      `2. Discuss error handling and scalability.\n` +
+      `3. Type your response below and I will evaluate it for you!`;
+  }
+
+  // ── 2. TECHNICAL DOUBT & TOPIC ANSWER ENGINE ───────────────
+
+  if (query.includes("react") || query.includes("component") || query.includes("hooks")) {
+    return `### React & Frontend Architecture\n\n` +
+      `**Overview:** React is a component-based JavaScript library for building user interfaces.\n\n` +
+      `**Key Concepts to Master:**\n` +
+      `• **JSX & Components:** Building reusable UI blocks.\n` +
+      `• **State & Props:** \`useState\` for local state, props for passing data.\n` +
+      `• **Side Effects:** \`useEffect\` for data fetching and subscriptions.\n` +
+      `• **Context & Redux:** Managing global state across components.\n\n` +
+      `**Career Context for ${career}:**\n` +
+      `${ctx.skillGaps.includes("React") ? `⚠️ React is one of your key skill gaps!` : `✓ You have React listed in your skills.`}\n\n` +
+      `[Open React Resource](https://react.dev/learn)`;
+  }
+
+  if (query.includes("node") || query.includes("express") || query.includes("backend")) {
+    return `### Node.js & Backend Development\n\n` +
+      `**Overview:** Node.js executes JavaScript on the server using an event-driven, non-blocking I/O model.\n\n` +
+      `**Core Concepts:**\n` +
+      `• **REST APIs:** Designing endpoints with HTTP methods (GET, POST, PUT, DELETE).\n` +
+      `• **Middleware:** Processing requests, CORS, and JWT authentication.\n` +
+      `• **Database Integration:** Connecting to PostgreSQL, MongoDB, or SQL databases.\n\n` +
+      `**Career Context for ${career}:**\n` +
+      `${ctx.skillGaps.includes("Node.js") ? `⚠️ Node.js is currently a skill gap on your roadmap.` : `✓ Node.js matches your target backend role requirements.`}\n\n` +
+      `[Open Node.js Resource](https://nodejs.org/en/docs/)`;
+  }
+
+  if (query.includes("sql") || query.includes("database") || query.includes("postgres") || query.includes("mongo")) {
+    return `### Databases & SQL Mastery\n\n` +
+      `**Overview:** Databases store, query, and manage application data efficiently.\n\n` +
+      `**Key Topics:**\n` +
+      `• **Relational (SQL):** PostgreSQL / MySQL — structured tables, foreign keys, JOINs, indexing.\n` +
+      `• **NoSQL:** MongoDB / Redis — document stores, key-value caching, scaling.\n` +
+      `• **Optimization:** Query execution plans, indexing, transaction ACID properties.\n\n` +
+      `**Career Context for ${career}:**\n` +
+      `${ctx.skillGaps.includes("SQL") ? `⚠️ SQL is an essential gap to close for ${career}.` : `✓ SQL is part of your target skill requirements.`}\n\n` +
+      `[Open SQL Resource](https://www.w3schools.com/sql/)`;
+  }
+
+  if (query.includes("python") || query.includes("django") || query.includes("flask")) {
+    return `### Python & Software Engineering\n\n` +
+      `**Overview:** Python is versatile, widely used in web backends (Django/FastAPI), automation, data science, and AI/ML.\n\n` +
+      `**Key Areas:**\n` +
+      `• Data Structures: Lists, Dicts, Sets, Tuples.\n` +
+      `• OOP: Classes, inheritance, decorators, generators.\n` +
+      `• Web & APIs: FastAPI, Flask, Django ORM.\n\n` +
+      `[Open Python Resource](https://docs.python.org/3/)`;
+  }
+
+  if (query.includes("docker") || query.includes("kubernetes") || query.includes("aws") || query.includes("devops") || query.includes("cloud")) {
+    return `### Cloud & Containerization (Docker/AWS)\n\n` +
+      `**Overview:** Containerization packages code and dependencies into portable containers that run anywhere.\n\n` +
+      `**Core Concepts:**\n` +
+      `• **Docker:** Dockerfile, images, containers, multi-stage builds, docker-compose.\n` +
+      `• **Cloud Services (AWS):** EC2, S3, RDS, Lambda serverless functions.\n` +
+      `• **CI/CD:** Automated testing and deployment pipelines via GitHub Actions.\n\n` +
+      `[Open DevOps Resource](https://docs.docker.com/get-started/)`;
+  }
+
+  if (query.includes("machine learning") || query.includes("deep learning") || query.includes("ai") || query.includes("pytorch") || query.includes("tensorflow")) {
+    return `### AI & Machine Learning Engineering\n\n` +
+      `**Overview:** Machine learning algorithms learn patterns from data to make predictions or decisions.\n\n` +
+      `**Core Progression:**\n` +
+      `1. **Data Prep:** NumPy, Pandas, feature engineering.\n` +
+      `2. **Classical ML:** Regression, Decision Trees, XGBoost, Scikit-learn.\n` +
+      `3. **Deep Learning:** Neural networks, PyTorch, CNNs, Transformers, RAG.\n\n` +
+      `[Open Machine Learning Resource](https://scikit-learn.org/stable/)`;
+  }
+
+  if (query.includes("system design") || query.includes("architecture") || query.includes("microservice")) {
+    return `### System Design & Scalability\n\n` +
+      `**Overview:** System design involves structuring software to handle high traffic, concurrency, and reliability.\n\n` +
+      `**Key Pillars:**\n` +
+      `• **Scalability:** Horizontal vs. vertical scaling, Load Balancers.\n` +
+      `• **Caching:** Redis, CDN edge caching.\n` +
+      `• **Decoupling:** Message queues (Kafka/RabbitMQ), microservices architecture.\n\n` +
+      `[Open System Design Resource](https://github.com/donnemartin/system-design-primer)`;
+  }
+
+  // ── 3. GENERAL FREE-FORM MENTOR RESPONSE ───────────────────
+  return `### PathForge Career Advice for ${name}\n\n` +
+    `**Regarding your question:** "${userPrompt}"\n\n` +
+    `**Mentorship Insight for ${career}:**\n` +
+    `When addressing this in the context of your target role as a **${career}**, the key is to connect it to your core engineering skills.\n\n` +
+    `**Your Current Profile Status:**\n` +
+    `• Target Career: **${career}** (${ctx.careerReadiness}% Ready)\n` +
+    `• Next Skill Gap: **${topGap || "None"}**\n` +
+    `• Commitment: ${hours}/week (${style})\n\n` +
+    `**Action Step:**\n` +
+    `Would you like me to generate a personalized **study plan**, **practice quiz**, or **portfolio project** related to this?`;
 }
 
 /**
