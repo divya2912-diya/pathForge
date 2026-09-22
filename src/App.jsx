@@ -258,7 +258,7 @@ export default function App() {
               <SettingsView student={student} onLogout={handleLogout} onUpdateStudent={handleUpdateStudent} />
             )}
           </main>
-          <AIAssistant open={assistantOpen} setOpen={setAssistantOpen} />
+          <AIAssistant open={assistantOpen} setOpen={setAssistantOpen} student={student} />
           {toast && <Toast message={toast} onClose={() => setToast(null)} />}
         </div>
       )}
