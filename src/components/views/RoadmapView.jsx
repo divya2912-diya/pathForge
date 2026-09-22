@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Clock, ChevronDown, Target, Sparkles, CheckCircle2,
-  FolderKanban, ArrowRight, Briefcase, DollarSign
+  FolderKanban, ArrowRight, Briefcase, DollarSign, Calendar, ExternalLink, PlayCircle, BookOpen, Check
 } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import SectionHeader from "../ui/SectionHeader";
@@ -15,6 +15,12 @@ export function RoadmapView({ student, onUpdateStudent }) {
   const [expanded, setExpanded] = useState(1);
   const [tab, setTab] = useState("all"); // all | active | foundational
   const [milestoneProgress, setMilestoneProgress] = useState({});
+  const [taskProgress, setTaskProgress] = useState({}); // { taskId: boolean }
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
 
   const targetCareer = student?.targetCareer || "Software Engineer";
   const userSkills = student?.skills || [];
@@ -48,6 +54,13 @@ export function RoadmapView({ student, onUpdateStudent }) {
     setMilestoneProgress(prev => ({ ...prev, [milestoneId]: newProgress }));
     await saveMilestoneProgress(targetCareer, milestoneId, newProgress);
     onUpdateStudent?.({}, `Progress updated: ${newProgress}%`);
+  };
+
+  const handleTaskToggle = (milestoneId, taskId, isChecked, currentProg) => {
+    setTaskProgress(prev => ({ ...prev, [taskId]: !isChecked }));
+    const newProgress = Math.min(100, currentProg + (isChecked ? -15 : 15));
+    setMilestoneProgress(prev => ({ ...prev, [milestoneId]: Math.max(0, newProgress) }));
+    saveMilestoneProgress(targetCareer, milestoneId, Math.max(0, newProgress));
   };
 
   return (
@@ -94,10 +107,10 @@ export function RoadmapView({ student, onUpdateStudent }) {
                 {careerReadiness}% Current → {overview.projectedScore}% Fully Qualified
               </span>
             </div>
-            <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+            <div className="relative h-3 bg-white/10 rounded-full overflow-hidden shadow-inner">
               <div
-                className="absolute top-0 left-0 bottom-0 rounded-full transition-all duration-1000"
-                style={{ width: `${careerReadiness}%`, background: "linear-gradient(90deg, #22d3ee, #8b5cf6)" }}
+                className="absolute top-0 left-0 bottom-0 rounded-full transition-all duration-1000 ease-out"
+                style={{ width: isLoaded ? `${careerReadiness}%` : "0%", background: "linear-gradient(90deg, #22d3ee, #8b5cf6)" }}
               />
             </div>
             <div className="flex justify-between items-center text-[11px] text-slate-400 pt-1">
@@ -164,11 +177,16 @@ export function RoadmapView({ student, onUpdateStudent }) {
                       </span>
                       <div className="min-w-0 space-y-1">
                         <div className="flex items-center gap-2.5 flex-wrap">
-                          <h3 className="lp-display text-base font-semibold text-white">{m.title}</h3>
+                          <h3 className="lp-display text-base font-semibold text-white group-hover:text-cyan-300 transition-colors">{m.title}</h3>
                           <Pill tone={m.priorityTone}>{m.priority}</Pill>
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
-                            {m.boost} Hireability ({m.scoreRange})
-                          </span>
+                          <div className="relative group/tooltip">
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 cursor-help">
+                              {m.boost} Hireability ({m.scoreRange})
+                            </span>
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-xs text-slate-300 rounded shadow-xl opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-50">
+                              Completing this milestone increases your overall market competitiveness by {m.boost}.
+                            </div>
+                          </div>
                         </div>
                         <p className="text-xs text-slate-400 flex items-center gap-2 flex-wrap">
                           <span className="flex items-center gap-1"><Clock size={12} /> {m.duration}</span>
@@ -213,6 +231,54 @@ export function RoadmapView({ student, onUpdateStudent }) {
                         </div>
                       </div>
 
+                      {/* Dynamic Tasks & Resources */}
+                      {(m.tasks || m.resources) && (
+                        <div className="grid md:grid-cols-2 gap-6 pt-2 border-t border-white/5">
+                          {m.tasks && (
+                            <div className="space-y-3">
+                              <p className="text-xs font-medium text-slate-300 flex items-center gap-2">
+                                <CheckCircle2 size={14} className="text-indigo-400" /> Milestone Checkpoints
+                              </p>
+                              <div className="space-y-2">
+                                {m.tasks.map(task => {
+                                  const isChecked = taskProgress[task.id] ?? task.checked;
+                                  return (
+                                    <label key={task.id} className="flex items-start gap-2.5 cursor-pointer group">
+                                      <div className={`mt-0.5 shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${isChecked ? 'bg-cyan-500 border-cyan-500 text-slate-900' : 'border-slate-500 bg-slate-800/50 group-hover:border-cyan-400'}`}>
+                                        {isChecked && <Check size={12} strokeWidth={3} />}
+                                      </div>
+                                      <span className={`text-xs ${isChecked ? 'text-slate-400 line-through' : 'text-slate-300 group-hover:text-white transition-colors'}`}>
+                                        {task.label}
+                                      </span>
+                                      {/* Hidden checkbox for accessibility */}
+                                      <input type="checkbox" className="hidden" checked={isChecked} onChange={() => handleTaskToggle(m.id, task.id, isChecked, liveProgress)} />
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                          {m.resources && (
+                            <div className="space-y-3">
+                              <p className="text-xs font-medium text-slate-300 flex items-center gap-2">
+                                <Sparkles size={14} className="text-amber-400" /> AI-Curated Resources
+                              </p>
+                              <div className="space-y-2">
+                                {m.resources.map((res, i) => (
+                                  <a key={i} href={res.url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-2 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.04] transition-all group">
+                                    <div className="flex items-center gap-2 text-xs text-slate-300 group-hover:text-white">
+                                      {res.type === 'Video' ? <PlayCircle size={14} className="text-rose-400" /> : <BookOpen size={14} className="text-blue-400" />}
+                                      <span className="truncate">{res.title}</span>
+                                    </div>
+                                    <ExternalLink size={12} className="text-slate-500 group-hover:text-cyan-400 opacity-0 group-hover:opacity-100 transition-all" />
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <div>
                         <p className="text-xs font-medium text-slate-300 mb-2">Key Skills Unlocked</p>
                         <div className="flex flex-wrap gap-1.5">
@@ -228,17 +294,23 @@ export function RoadmapView({ student, onUpdateStudent }) {
                           <span>Deliverable: <strong>{m.project}</strong></span>
                         </div>
                         {m.status !== "locked" && (
-                          <button
-                            id={`btn-milestone-${m.id}`}
-                            onClick={() => liveStatus === "in-progress" || liveProgress > 0
-                              ? handleContinueMilestone(m.id)
-                              : handleStartMilestone(m.id)
-                            }
-                            className="lp-btn-primary px-4 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <span>{liveProgress > 0 ? "Continue Sprint" : "Start Milestone"}</span>
-                            <ArrowRight size={13} />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-slate-300 hover:text-white tooltip-trigger" title="Sync to Calendar">
+                              <Calendar size={16} />
+                            </button>
+                            <button
+                              id={`btn-milestone-${m.id}`}
+                              onClick={() => liveStatus === "in-progress" || liveProgress > 0
+                                ? handleContinueMilestone(m.id)
+                                : handleStartMilestone(m.id)
+                              }
+                              className="lp-btn-primary px-4 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 cursor-pointer relative overflow-hidden group"
+                            >
+                              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
+                              <span className="relative">{liveProgress > 0 ? "Complete Sprint" : "Start Milestone"}</span>
+                              <ArrowRight size={13} className="relative group-hover:translate-x-1 transition-transform" />
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>

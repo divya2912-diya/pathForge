@@ -311,28 +311,64 @@ export const CAREER_GAP_PLANS = {
           project: "Foundational Capstone Project",
           skills: ["Core Skill 1", "Core Skill 2", "Core Skill 3"],
           whyCompaniesTest: "These fundamentals are tested in every interview for this role.",
-          duration: "3 weeks", difficulty: "Intermediate" },
+          duration: "3 weeks", difficulty: "Intermediate",
+          tasks: [
+            { id: "t1-1", label: "Review foundational concepts", checked: true },
+            { id: "t1-2", label: "Complete core exercises", checked: false },
+            { id: "t1-3", label: "Pass baseline assessment", checked: false }
+          ],
+          resources: [
+            { title: "Definitive Guide to Core Skills", type: "Article", url: "#" },
+            { title: "Foundations Masterclass", type: "Course", url: "#" }
+          ]
+        },
         { id: 2, step: 2, title: "Advanced Specialization", status: "upcoming", progress: 0,
           boost: "+8%", scoreRange: "74% → 82%", priority: "High Impact", priorityTone: "cyan",
           gap: "Advanced concepts and frameworks",
           project: "Intermediate Practice Project",
           skills: ["Advanced Skill 1", "Advanced Skill 2"],
           whyCompaniesTest: "Advanced skills differentiate entry-level from mid-level candidates.",
-          duration: "2 weeks", difficulty: "Advanced" },
+          duration: "2 weeks", difficulty: "Advanced",
+          tasks: [
+            { id: "t2-1", label: "Study advanced design patterns", checked: false },
+            { id: "t2-2", label: "Optimize existing codebase", checked: false }
+          ],
+          resources: [
+            { title: "Advanced Architecture Patterns", type: "Video", url: "#" }
+          ]
+        },
         { id: 3, step: 3, title: "Portfolio & Projects", status: "locked", progress: 0,
           boost: "+5%", scoreRange: "82% → 87%", priority: "Specialization", priorityTone: "violet",
           gap: "Portfolio projects and real-world experience",
           project: "Portfolio Showcase Project",
           skills: ["Project Management", "Documentation", "Deployment"],
           whyCompaniesTest: "Employers want evidence of real-world application, not just coursework.",
-          duration: "3 weeks", difficulty: "Advanced" },
+          duration: "3 weeks", difficulty: "Advanced",
+          tasks: [
+            { id: "t3-1", label: "Draft project requirements", checked: false },
+            { id: "t3-2", label: "Implement core features", checked: false },
+            { id: "t3-3", label: "Deploy to production", checked: false }
+          ],
+          resources: [
+            { title: "How to Build a Standout Portfolio", type: "Guide", url: "#" }
+          ]
+        },
         { id: 4, step: 4, title: "Interview Preparation", status: "locked", progress: 0,
           boost: "+3%", scoreRange: "87% → 90%", priority: "Final Polish", priorityTone: "green",
           gap: "Interview readiness and communication",
           project: "Mock Interview & Portfolio Review",
           skills: ["Communication", "Mock Interviews", "Resume Polish"],
           whyCompaniesTest: "Technical skills alone don't land jobs — interview performance is critical.",
-          duration: "1.5 weeks", difficulty: "Intermediate" },
+          duration: "1.5 weeks", difficulty: "Intermediate",
+          tasks: [
+            { id: "t4-1", label: "Update resume to ATS standards", checked: false },
+            { id: "t4-2", label: "Complete 2 mock interviews", checked: false }
+          ],
+          resources: [
+            { title: "Top 50 Behavioral Questions", type: "Cheat Sheet", url: "#" },
+            { title: "Mock Interview Platform", type: "Tool", url: "#" }
+          ]
+        },
       ],
       foundationalCompleted: [
         { id: 101, title: "Foundations Course", status: "done", score: "100%", duration: "3 weeks", provider: "University Coursework" },
