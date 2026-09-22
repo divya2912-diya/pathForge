@@ -218,14 +218,30 @@ export const CAREER_GAP_PLANS = {
         project: "Design & Implement a Distributed URL Shortener",
         skills: ["Graph Theory", "Dynamic Programming", "Caching", "Load Balancing"],
         whyCompaniesTest: "FAANG and top companies test DSA and system design in every SWE interview regardless of seniority.",
-        duration: "3 weeks", difficulty: "Advanced" },
+        duration: "3 weeks", difficulty: "Advanced",
+        tasks: [
+          { id: "se1-1", label: "Master graph traversal algorithms", checked: true },
+          { id: "se1-2", label: "System Design basics", checked: false }
+        ],
+        resources: [
+          { title: "System Design Interview Prep", type: "Video", url: "#" }
+        ]
+      },
       { id: 2, step: 2, title: "Backend API & Database Mastery", status: "upcoming", progress: 0,
         boost: "+8%", scoreRange: "78% → 86%", priority: "High Impact", priorityTone: "cyan",
         gap: "REST API design, SQL optimization, ORM patterns, authentication",
         project: "RESTful API with OAuth2, PostgreSQL, and Redis caching",
         skills: ["REST APIs", "PostgreSQL", "Redis", "JWT Auth"],
         whyCompaniesTest: "Building reliable backend services is the core deliverable for most software engineering roles.",
-        duration: "2 weeks", difficulty: "Intermediate" },
+        duration: "2 weeks", difficulty: "Intermediate",
+        tasks: [
+          { id: "se2-1", label: "Build RESTful API endpoints", checked: false },
+          { id: "se2-2", label: "Implement JWT authentication", checked: false }
+        ],
+        resources: [
+          { title: "REST API Best Practices", type: "Article", url: "#" }
+        ]
+      },
       { id: 3, step: 3, title: "Docker & CI/CD Pipeline", status: "locked", progress: 0,
         boost: "+4%", scoreRange: "86% → 90%", priority: "Specialization", priorityTone: "violet",
         gap: "Containerization, automated testing, deployment pipelines",
