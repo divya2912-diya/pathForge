@@ -1,6 +1,6 @@
 // ============================================================
 //  PathForge — Real Gemini AI Career Mentor & Agent Service
-//  Powered by Google Gemini API
+//  Powered by Google Gemini API (Crash-Proof & Bulletproof)
 // ============================================================
 import { supabase } from "./supabaseClient";
 import { getCurrentUser, loadMilestoneProgress, updateCurrentUser } from "../data/supabaseAuth";
@@ -14,105 +14,136 @@ export const AI_MODELS = [
 ];
 
 /**
- * Get active Gemini API Key from localStorage or environment
+ * Get active Gemini API Key safely
  */
 export function getStoredApiKey() {
-  const localKey = localStorage.getItem("pathforge_ai_api_key");
-  if (localKey && localKey.trim()) return localKey.trim();
-
-  return (
-    import.meta.env.VITE_GEMINI_API_KEY ||
-    import.meta.env.VITE_AI_API_KEY ||
-    ""
-  );
+  if (typeof window === "undefined" || !window.localStorage) {
+    return import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_AI_API_KEY || "";
+  }
+  try {
+    const localKey = localStorage.getItem("pathforge_ai_api_key");
+    if (localKey && localKey.trim()) return localKey.trim();
+  } catch (e) {
+    console.warn("localStorage error:", e);
+  }
+  return import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_AI_API_KEY || "";
 }
 
 /**
- * Save Gemini API key to localStorage
+ * Save Gemini API key safely to localStorage
  */
 export function saveApiKey(key) {
-  if (key) {
-    localStorage.setItem("pathforge_ai_api_key", key.trim());
-  } else {
-    localStorage.removeItem("pathforge_ai_api_key");
+  if (typeof window === "undefined" || !window.localStorage) return;
+  try {
+    if (key && key.trim()) {
+      localStorage.setItem("pathforge_ai_api_key", key.trim());
+    } else {
+      localStorage.removeItem("pathforge_ai_api_key");
+    }
+  } catch (e) {
+    console.warn("localStorage save error:", e);
   }
 }
 
 /**
- * Get preferred Gemini model
+ * Get preferred Gemini model safely
  */
 export function getStoredModel() {
-  return localStorage.getItem("pathforge_ai_model") || "gemini-2.0-flash";
+  if (typeof window === "undefined" || !window.localStorage) return "gemini-2.0-flash";
+  try {
+    return localStorage.getItem("pathforge_ai_model") || "gemini-2.0-flash";
+  } catch (e) {
+    return "gemini-2.0-flash";
+  }
 }
 
 /**
- * Save preferred Gemini model
+ * Save preferred Gemini model safely
  */
 export function saveModel(modelId) {
-  localStorage.setItem("pathforge_ai_model", modelId);
+  if (typeof window === "undefined" || !window.localStorage) return;
+  try {
+    localStorage.setItem("pathforge_ai_model", modelId || "gemini-2.0-flash");
+  } catch (e) {
+    console.warn("localStorage save error:", e);
+  }
 }
 
 /**
- * 1. Fetch & Build Dynamic User Context Object from Supabase
+ * 1. Fetch & Build Dynamic User Context Object safely
  */
 export async function buildUserContext(studentProp = null) {
-  const student = studentProp || (await getCurrentUser());
-  if (!student) return null;
+  try {
+    const student = studentProp || (await getCurrentUser());
+    if (!student) return null;
 
-  const targetCareer = student.targetCareer || "Software Engineer";
-  const required = SKILL_REQUIREMENTS[targetCareer] || SKILL_REQUIREMENTS["Software Engineer"] || [];
+    const targetCareer = student.targetCareer || "Software Engineer";
+    const required = SKILL_REQUIREMENTS[targetCareer] || SKILL_REQUIREMENTS["Software Engineer"] || [];
 
-  const userSkills = (student.skills || []).map(s => s.toLowerCase());
-  const userSkillsList = (student.userSkillsList || []).map(s => s.name.toLowerCase());
-  const allUserSkills = new Set([...userSkills, ...userSkillsList]);
+    const userSkills = (student.skills || [])
+      .map(s => (typeof s === "string" ? s : s?.name || "").toLowerCase())
+      .filter(Boolean);
 
-  const isMastered = (reqSkill) => {
-    return Array.from(allUserSkills).some(s => s.includes(reqSkill.toLowerCase()) || reqSkill.toLowerCase().includes(s));
-  };
+    const userSkillsList = (student.userSkillsList || [])
+      .map(s => (typeof s === "string" ? s : s?.name || "").toLowerCase())
+      .filter(Boolean);
 
-  const skillGaps = required.filter(r => !isMastered(r));
-  const strengths = required.filter(r => isMastered(r));
+    const allUserSkills = new Set([...userSkills, ...userSkillsList]);
 
-  // Load milestone progress
-  const milestoneMap = await loadMilestoneProgress(targetCareer);
-  const completedMilestones = Object.entries(milestoneMap)
-    .filter(([_, val]) => val === 1)
-    .map(([key]) => key);
+    const isMastered = (reqSkill) => {
+      const targetStr = (reqSkill || "").toLowerCase();
+      return Array.from(allUserSkills).some(
+        s => s.includes(targetStr) || targetStr.includes(s)
+      );
+    };
 
-  const readiness = calculateDynamicReadiness(student) || 0;
+    const skillGaps = required.filter(r => !isMastered(r));
+    const strengths = required.filter(r => isMastered(r));
 
-  return {
-    profile: {
-      name: student.name || "User",
-      degree: student.degree || "",
-      year: student.year || "",
-      targetCareer,
-      bio: student.bio || "",
-      location: student.location || "",
-      github: student.github || "",
-    },
-    skills: student.userSkillsList && student.userSkillsList.length > 0 
-      ? student.userSkillsList 
-      : (student.skills || []).map(s => ({ name: s, proficiency: "Intermediate" })),
-    strengths,
-    skillGaps,
-    requiredSkills: required,
-    projects: student.projectsList || [],
-    certifications: student.certificationsList || [],
-    learningPreferences: student.learningPreferences || {
-      hoursPerWeek: student.pace || "5–10 hours",
-      learningStyle: "Hands-on Projects",
-      targetTimeline: "3–6 months",
-    },
-    roadmap: {
-      targetCareer,
-      completedCount: completedMilestones.length,
-      nextGap: skillGaps[0] || null,
-    },
-    assessments: student.assessments || [],
-    resumeInfo: student.resumeInfo || null,
-    careerReadiness: readiness,
-  };
+    // Load milestone progress safely
+    const milestoneMap = (await loadMilestoneProgress(targetCareer)) || {};
+    const completedMilestones = Object.entries(milestoneMap)
+      .filter(([_, val]) => val === 1)
+      .map(([key]) => key);
+
+    const readiness = calculateDynamicReadiness(student) || 0;
+
+    return {
+      profile: {
+        name: student.name || "User",
+        degree: student.degree || "",
+        year: student.year || "",
+        targetCareer,
+        bio: student.bio || "",
+        location: student.location || "",
+        github: student.github || "",
+      },
+      skills: student.userSkillsList && student.userSkillsList.length > 0 
+        ? student.userSkillsList 
+        : (student.skills || []).map(s => (typeof s === "string" ? { name: s, proficiency: "Intermediate" } : s)),
+      strengths,
+      skillGaps,
+      requiredSkills: required,
+      projects: student.projectsList || [],
+      certifications: student.certificationsList || [],
+      learningPreferences: student.learningPreferences || {
+        hoursPerWeek: student.pace || "5–10 hours",
+        learningStyle: "Hands-on Projects",
+        targetTimeline: "3–6 months",
+      },
+      roadmap: {
+        targetCareer,
+        completedCount: completedMilestones.length,
+        nextGap: skillGaps[0] || null,
+      },
+      assessments: student.assessments || [],
+      resumeInfo: student.resumeInfo || null,
+      careerReadiness: readiness,
+    };
+  } catch (err) {
+    console.error("Error building user context:", err);
+    return null;
+  }
 }
 
 /**
@@ -128,7 +159,7 @@ ${JSON.stringify(userContext, null, 2)}
 
 STRICT MENTORING DIRECTIVES:
 1. Answer ANY user question or doubt thoroughly, clearly, and technically.
-2. Ground your advice in their target career (${userContext?.profile?.targetCareer}) and current skill gaps (${userContext?.skillGaps?.join(", ") || "All core skills matched"}).
+2. Ground your advice in their target career (${userContext?.profile?.targetCareer || "Software Engineer"}) and current skill gaps (${userContext?.skillGaps?.join(", ") || "All core skills matched"}).
 3. Never invent facts about the user's achievements.
 4. Adapt complexity to their proficiency: Beginner (simple with analogies), Intermediate (practical implementation), Advanced (system trade-offs & optimization).
 5. Always provide actionable takeaways, clear formatted code examples, and web search resources where relevant.
@@ -138,7 +169,7 @@ STRICT MENTORING DIRECTIVES:
 /**
  * 3. Primary AI Completion API Call (Google Gemini REST API)
  */
-export async function callAIProvider(messagesHistory, userContext, modelOverride = null) {
+export async function callAIProvider(messagesHistory = [], userContext = null, modelOverride = null) {
   const apiKey = getStoredApiKey();
   const selectedModel = modelOverride || getStoredModel();
   const lastQuery = messagesHistory[messagesHistory.length - 1]?.text || "";
@@ -151,8 +182,8 @@ export async function callAIProvider(messagesHistory, userContext, modelOverride
   const targetModel = selectedModel || "gemini-2.0-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
 
-  // Format messages for Gemini API
-  const contents = messagesHistory.map(m => ({
+  // Format messages for Gemini API safely
+  const contents = (messagesHistory || []).map(m => ({
     role: m.from === "user" ? "user" : "model",
     parts: [{ text: m.text || m.content || "" }]
   }));
@@ -197,17 +228,17 @@ export async function callAIProvider(messagesHistory, userContext, modelOverride
 /**
  * 4. Comprehensive Fallback & Topic Knowledge Engine
  */
-export function generateSmartFallback(userPrompt, ctx) {
-  if (!ctx) return "I couldn't load your career profile. Please try refreshing or completing your profile.";
+export function generateSmartFallback(userPrompt = "", ctx = null) {
+  if (!ctx || !ctx.profile) return "I couldn't load your career profile. Please try refreshing or completing your profile.";
 
-  const query = userPrompt.toLowerCase();
-  const name = ctx.profile.name.split(" ")[0] || "there";
-  const career = ctx.profile.targetCareer;
-  const topGap = ctx.skillGaps[0];
-  const strengths = ctx.strengths.slice(0, 3).join(", ");
-  const gapsList = ctx.skillGaps.slice(0, 4).join(", ");
-  const hours = ctx.learningPreferences.hoursPerWeek;
-  const style = ctx.learningPreferences.learningStyle;
+  const query = (userPrompt || "").toLowerCase();
+  const name = ctx.profile?.name?.split(" ")?.[0] || "there";
+  const career = ctx.profile?.targetCareer || "Software Engineer";
+  const topGap = ctx.skillGaps?.[0];
+  const strengths = (ctx.strengths || []).slice(0, 3).join(", ");
+  const gapsList = (ctx.skillGaps || []).slice(0, 4).join(", ");
+  const hours = ctx.learningPreferences?.hoursPerWeek || "5-10 hours";
+  const style = ctx.learningPreferences?.learningStyle || "Hands-on Projects";
 
   if (query.includes("explain this") || (query === "explain")) {
     if (topGap) {
@@ -221,7 +252,7 @@ export function generateSmartFallback(userPrompt, ctx) {
         `**What to do next:**\n` +
         `1. Review official documentation: [Open Resource](https://www.google.com/search?q=Learn+${encodeURIComponent(topGap)}+official+documentation)\n` +
         `2. Build a mini project incorporating ${topGap}.\n\n` +
-        `**Expected Outcome:** Closes 1 of your ${ctx.skillGaps.length} remaining skill gaps!`;
+        `**Expected Outcome:** Closes 1 of your ${(ctx.skillGaps || []).length} remaining skill gaps!`;
     }
     return `### Skill Overview for ${career}\n\n` +
       `You have matched all core requirements for **${career}**!\n\n` +
@@ -229,7 +260,7 @@ export function generateSmartFallback(userPrompt, ctx) {
   }
 
   if (query.includes("create study plan") || query.includes("study plan")) {
-    const gaps = ctx.skillGaps.length > 0 ? ctx.skillGaps : ["System Design", "Advanced Projects"];
+    const gaps = (ctx.skillGaps || []).length > 0 ? ctx.skillGaps : ["System Design", "Advanced Projects"];
     const g1 = gaps[0] || "Core Concepts";
     const g2 = gaps[1] || "Advanced Patterns";
     const g3 = gaps[2] || "Portfolio Integration";
@@ -253,11 +284,11 @@ export function generateSmartFallback(userPrompt, ctx) {
 
   if (query.includes("analyze my progress") || query.includes("analyze progress")) {
     return `### PathForge Progress Analysis for ${name}\n\n` +
-      `**CURRENT PROGRESS:** ${ctx.careerReadiness}% Career Readiness for **${career}**.\n\n` +
+      `**CURRENT PROGRESS:** ${ctx.careerReadiness || 0}% Career Readiness for **${career}**.\n\n` +
       `**STRENGTHS:**\n` +
       `${strengths ? `✓ ${strengths}` : "• Add your skills in your profile to show strengths."}\n` +
-      `${ctx.projects.length > 0 ? `✓ ${ctx.projects.length} project(s) added` : ""}\n` +
-      `${ctx.certifications.length > 0 ? `✓ ${ctx.certifications.length} certification(s) earned` : ""}\n\n` +
+      `${(ctx.projects || []).length > 0 ? `✓ ${ctx.projects.length} project(s) added` : ""}\n` +
+      `${(ctx.certifications || []).length > 0 ? `✓ ${ctx.certifications.length} certification(s) earned` : ""}\n\n` +
       `**SKILL GAPS REMAINING:**\n` +
       `${gapsList ? `⚠️ ${gapsList}` : "✓ No remaining core gaps!"}\n\n` +
       `**NEXT ACTION:**\n` +
@@ -297,7 +328,7 @@ export function generateSmartFallback(userPrompt, ctx) {
   if (query.includes("give me a project") || query.includes("project idea")) {
     const gap = topGap || "Backend Services";
     return `### Recommended Project: ${career} Showcase\n\n` +
-      `**Title:** ${gap} & ${ctx.strengths[0] || "Core Skills"} App\n\n` +
+      `**Title:** ${gap} & ${strengths.split(",")?.[0] || "Core Skills"} App\n\n` +
       `**Problem Statement:** Build a functional application combining your existing skills in ${strengths || "programming"} with ${gap}.\n\n` +
       `**Key Features:**\n` +
       `1. User Authentication & Profile Data\n` +
@@ -328,7 +359,7 @@ export function generateSmartFallback(userPrompt, ctx) {
       `• **Side Effects:** \`useEffect\` for data fetching and subscriptions.\n` +
       `• **Context & Redux:** Managing global state across components.\n\n` +
       `**Career Context for ${career}:**\n` +
-      `${ctx.skillGaps.includes("React") ? `⚠️ React is one of your key skill gaps!` : `✓ You have React listed in your skills.`}\n\n` +
+      `${(ctx.skillGaps || []).includes("React") ? `⚠️ React is one of your key skill gaps!` : `✓ You have React listed in your skills.`}\n\n` +
       `[Open React Resource](https://react.dev/learn)`;
   }
 
@@ -340,7 +371,7 @@ export function generateSmartFallback(userPrompt, ctx) {
       `• **Middleware:** Processing requests, CORS, and JWT authentication.\n` +
       `• **Database Integration:** Connecting to PostgreSQL, MongoDB, or SQL databases.\n\n` +
       `**Career Context for ${career}:**\n` +
-      `${ctx.skillGaps.includes("Node.js") ? `⚠️ Node.js is currently a skill gap on your roadmap.` : `✓ Node.js matches your target backend role requirements.`}\n\n` +
+      `${(ctx.skillGaps || []).includes("Node.js") ? `⚠️ Node.js is currently a skill gap on your roadmap.` : `✓ Node.js matches your target backend role requirements.`}\n\n` +
       `[Open Node.js Resource](https://nodejs.org/en/docs/)`;
   }
 
@@ -352,7 +383,7 @@ export function generateSmartFallback(userPrompt, ctx) {
       `• **NoSQL:** MongoDB / Redis — document stores, key-value caching, scaling.\n` +
       `• **Optimization:** Query execution plans, indexing, transaction ACID properties.\n\n` +
       `**Career Context for ${career}:**\n` +
-      `${ctx.skillGaps.includes("SQL") ? `⚠️ SQL is an essential gap to close for ${career}.` : `✓ SQL is part of your target skill requirements.`}\n\n` +
+      `${(ctx.skillGaps || []).includes("SQL") ? `⚠️ SQL is an essential gap to close for ${career}.` : `✓ SQL is part of your target skill requirements.`}\n\n` +
       `[Open SQL Resource](https://www.w3schools.com/sql/)`;
   }
 
@@ -401,7 +432,7 @@ export function generateSmartFallback(userPrompt, ctx) {
     `**Mentorship Insight for ${career}:**\n` +
     `When addressing this in the context of your target role as a **${career}**, the key is to connect it to your core engineering skills.\n\n` +
     `**Your Current Profile Status:**\n` +
-    `• Target Career: **${career}** (${ctx.careerReadiness}% Ready)\n` +
+    `• Target Career: **${career}** (${ctx.careerReadiness || 0}% Ready)\n` +
     `• Next Skill Gap: **${topGap || "None"}**\n` +
     `• Commitment: ${hours}/week (${style})\n\n` +
     `**Action Step:**\n` +
@@ -417,7 +448,7 @@ export function generateAdaptiveQuiz(targetCareer, topSkillGap) {
   return [
     {
       id: 1,
-      question: `What is the primary role of ${topic} when building scalable applications for a ${targetCareer}?`,
+      question: `What is the primary role of ${topic} when building scalable applications for a ${targetCareer || "Software Engineer"}?`,
       options: [
         `Providing core architecture and data handling for ${topic}`,
         `Styling raw HTML buttons`,
