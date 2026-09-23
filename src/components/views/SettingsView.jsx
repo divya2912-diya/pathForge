@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { LogOut, Shield, Bell, Gauge, User, KeyRound, AlertCircle, Check, Cpu, Key, Sparkles } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import SectionHeader from "../ui/SectionHeader";
@@ -20,7 +20,7 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
   });
   const toggle = (k) => setPrefs(p => ({ ...p, [k]: !p[k] }));
 
-  // AI Agent Settings State
+  // Gemini AI Agent Settings State
   const [apiKeyInput, setApiKeyInput] = useState(getStoredApiKey());
   const [selectedModel, setSelectedModel] = useState(getStoredModel());
   const [aiSavedSuccess, setAiSavedSuccess] = useState(false);
@@ -96,14 +96,14 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
         </div>
       </GlassCard>
 
-      {/* AI Agent Configuration Card */}
+      {/* Gemini AI Agent Configuration Card */}
       <GlassCard className="p-6 border border-cyan-500/30" hover>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Cpu size={18} className="text-cyan-400" />
             <SectionHeader
-              title="AI Agent & Model Settings"
-              subtitle="Configure your Gemini or OpenRouter API key and preferred AI model"
+              title="Gemini AI Agent Settings"
+              subtitle="Configure your Google Gemini API Key and preferred Gemini model"
             />
           </div>
           <span
@@ -113,13 +113,13 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
                 : "bg-amber-500/10 text-amber-300 border-amber-500/30"
             }`}
           >
-            {isKeyActive ? "✓ Active Key" : "No Key Set"}
+            {isKeyActive ? "✓ Gemini Key Active" : "No Key Set"}
           </span>
         </div>
 
         {aiSavedSuccess && (
           <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-            <Check size={14} className="shrink-0" /> AI Agent settings saved successfully!
+            <Check size={14} className="shrink-0" /> Gemini AI Agent settings saved successfully!
           </div>
         )}
 
@@ -127,24 +127,24 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
               <Key size={13} className="text-cyan-400" />
-              API Key (Google Gemini or OpenRouter)
+              Google Gemini API Key
             </label>
             <input
               type="password"
               value={apiKeyInput}
               onChange={(e) => setApiKeyInput(e.target.value)}
-              placeholder="Paste your Gemini (AIza...) or OpenRouter (sk-or-...) key"
+              placeholder="Paste your Google Gemini API Key (AIza...)"
               className="lp-input w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder-slate-500 font-mono"
             />
             <p className="text-[11px] text-slate-400 mt-1">
-              Your API key is securely stored in your browser's local storage and used directly for model completions.
+              Your key is saved locally in your browser and used directly for Google Gemini completions.
             </p>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
               <Sparkles size={13} className="text-cyan-400" />
-              Preferred AI Model
+              Gemini Model
             </label>
             <select
               value={selectedModel}
@@ -171,7 +171,7 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
                 }}
                 className="text-xs px-3 py-2 rounded-xl bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-500/30 cursor-pointer font-medium"
               >
-                Clear API Key
+                Clear Gemini Key
               </button>
             ) : <span />}
 
@@ -179,7 +179,7 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
               type="submit"
               className="lp-btn-primary px-5 py-2.5 rounded-xl text-sm font-semibold cursor-pointer"
             >
-              Save AI Agent Settings
+              Save Gemini Settings
             </button>
           </div>
         </form>

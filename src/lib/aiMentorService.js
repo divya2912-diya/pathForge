@@ -1,23 +1,20 @@
 // ============================================================
-//  PathForge — Real AI Career Mentor & Agent Service
-//  Supports Google Gemini API & OpenRouter API
+//  PathForge — Real Gemini AI Career Mentor & Agent Service
+//  Powered by Google Gemini API
 // ============================================================
 import { supabase } from "./supabaseClient";
 import { getCurrentUser, loadMilestoneProgress, updateCurrentUser } from "../data/supabaseAuth";
 import { SKILL_REQUIREMENTS, calculateDynamicReadiness } from "../data/userProfile";
 
-// Supported Models List
+// Supported Google Gemini Models
 export const AI_MODELS = [
-  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (Google Direct)", provider: "gemini" },
-  { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash (Google Direct)", provider: "gemini" },
-  { id: "google/gemini-2.0-flash-lite-001", name: "Gemini 2.0 Flash Lite (OpenRouter)", provider: "openrouter" },
-  { id: "meta-llama/llama-3.3-70b-instruct", name: "Llama 3.3 70B (OpenRouter)", provider: "openrouter" },
-  { id: "openai/gpt-4o-mini", name: "GPT-4o Mini (OpenRouter)", provider: "openrouter" },
-  { id: "deepseek/deepseek-r1", name: "DeepSeek R1 (OpenRouter)", provider: "openrouter" },
+  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (Recommended)", provider: "google" },
+  { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash (Standard)", provider: "google" },
+  { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro (Deep Reasoning)", provider: "google" },
 ];
 
 /**
- * Get active API Key from localStorage or environment
+ * Get active Gemini API Key from localStorage or environment
  */
 export function getStoredApiKey() {
   const localKey = localStorage.getItem("pathforge_ai_api_key");
@@ -25,14 +22,13 @@ export function getStoredApiKey() {
 
   return (
     import.meta.env.VITE_GEMINI_API_KEY ||
-    import.meta.env.VITE_OPENROUTER_API_KEY ||
     import.meta.env.VITE_AI_API_KEY ||
     ""
   );
 }
 
 /**
- * Save API key to localStorage
+ * Save Gemini API key to localStorage
  */
 export function saveApiKey(key) {
   if (key) {
@@ -43,14 +39,14 @@ export function saveApiKey(key) {
 }
 
 /**
- * Get preferred model
+ * Get preferred Gemini model
  */
 export function getStoredModel() {
   return localStorage.getItem("pathforge_ai_model") || "gemini-2.0-flash";
 }
 
 /**
- * Save preferred model
+ * Save preferred Gemini model
  */
 export function saveModel(modelId) {
   localStorage.setItem("pathforge_ai_model", modelId);
@@ -120,12 +116,12 @@ export async function buildUserContext(studentProp = null) {
 }
 
 /**
- * 2. System Prompt Generator
+ * 2. Gemini System Prompt Generator
  */
 export function getSystemPrompt(userContext) {
-  return `You are PathForge AI Mentor & Agent, an expert personalized career and technical AI agent for software engineers, data scientists, AI engineers, and tech professionals.
+  return `You are PathForge Gemini AI Mentor & Agent, an expert personalized career and technical AI agent for software engineers, data scientists, AI engineers, and tech professionals.
 
-Your job is to act as an autonomous AI Agent: answer ANY question, technical query, concept explanation, project request, study plan request, code bug, or interview question asked by the user, while grounding your advice in their authenticated PathForge profile context below.
+Your job is to act as an autonomous AI Agent powered by Google Gemini: answer ANY question, technical query, concept explanation, project request, study plan request, code bug, or interview question asked by the user, while grounding your advice in their authenticated PathForge profile context below.
 
 AUTHENTICATED USER CONTEXT:
 ${JSON.stringify(userContext, null, 2)}
@@ -140,12 +136,22 @@ STRICT MENTORING DIRECTIVES:
 }
 
 /**
- * Call Gemini API directly (Google AI Studio key)
+ * 3. Primary AI Completion API Call (Google Gemini REST API)
  */
-async function callGeminiDirectApi(apiKey, modelName, messagesHistory, systemPrompt) {
-  const targetModel = modelName.includes("/") ? "gemini-2.0-flash" : modelName;
+export async function callAIProvider(messagesHistory, userContext, modelOverride = null) {
+  const apiKey = getStoredApiKey();
+  const selectedModel = modelOverride || getStoredModel();
+  const lastQuery = messagesHistory[messagesHistory.length - 1]?.text || "";
+
+  if (!apiKey) {
+    return generateSmartFallback(lastQuery, userContext);
+  }
+
+  const systemPrompt = getSystemPrompt(userContext);
+  const targetModel = selectedModel || "gemini-2.0-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
 
+  // Format messages for Gemini API
   const contents = messagesHistory.map(m => ({
     role: m.from === "user" ? "user" : "model",
     parts: [{ text: m.text || m.content || "" }]
@@ -162,106 +168,28 @@ async function callGeminiDirectApi(apiKey, modelName, messagesHistory, systemPro
     }
   };
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    console.warn("Gemini Direct API error response:", response.status, errText);
-    throw new Error(`Gemini API error ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json();
-  const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!candidateText) {
-    throw new Error("No output candidate returned from Gemini API");
-  }
-  return candidateText;
-}
-
-/**
- * Call OpenRouter API
- */
-async function callOpenRouterApi(apiKey, modelName, messagesHistory, systemPrompt) {
-  const targetModel = modelName.includes("/") ? modelName : "google/gemini-2.0-flash-lite-001";
-  const apiMessages = [
-    { role: "system", content: systemPrompt },
-    ...messagesHistory.map(m => ({
-      role: m.from === "user" ? "user" : "assistant",
-      content: m.text || m.content || "",
-    }))
-  ];
-
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": typeof window !== "undefined" ? window.location.origin : "https://pathforge.dev",
-      "X-Title": "PathForge AI Mentor"
-    },
-    body: JSON.stringify({
-      model: targetModel,
-      messages: apiMessages,
-      temperature: 0.7,
-      max_tokens: 1000,
-    })
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    console.warn("OpenRouter API error response:", response.status, errText);
-    throw new Error(`OpenRouter API error ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json();
-  const replyText = data.choices?.[0]?.message?.content;
-  if (!replyText) {
-    throw new Error("No choices returned from OpenRouter API");
-  }
-  return replyText;
-}
-
-/**
- * 3. Primary AI Completion API Call
- * Auto-detects whether key is OpenRouter key (sk-or-...) or Gemini key, and calls appropriate API.
- */
-export async function callAIProvider(messagesHistory, userContext, modelOverride = null) {
-  const apiKey = getStoredApiKey();
-  const selectedModel = modelOverride || getStoredModel();
-  const lastQuery = messagesHistory[messagesHistory.length - 1]?.text || "";
-
-  if (!apiKey) {
-    return generateSmartFallback(lastQuery, userContext);
-  }
-
-  const systemPrompt = getSystemPrompt(userContext);
-  const isOpenRouterKey = apiKey.startsWith("sk-or-");
-  const isOpenRouterModel = selectedModel.includes("/");
-
   try {
-    if (isOpenRouterKey || isOpenRouterModel) {
-      try {
-        return await callOpenRouterApi(apiKey, selectedModel, messagesHistory, systemPrompt);
-      } catch (err) {
-        console.warn("OpenRouter failed, attempting direct Gemini API call...", err);
-        return await callGeminiDirectApi(apiKey, "gemini-2.0-flash", messagesHistory, systemPrompt);
-      }
-    } else {
-      try {
-        return await callGeminiDirectApi(apiKey, selectedModel, messagesHistory, systemPrompt);
-      } catch (err) {
-        console.warn("Gemini Direct failed, trying OpenRouter format...", err);
-        return await callOpenRouterApi(apiKey, selectedModel, messagesHistory, systemPrompt);
-      }
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.warn("Gemini Direct API error status:", response.status, errText);
+      return generateSmartFallback(lastQuery, userContext);
     }
+
+    const data = await response.json();
+    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (replyText) return replyText;
+
+    return generateSmartFallback(lastQuery, userContext);
   } catch (err) {
-    console.error("AI Mentor service call failed completely:", err);
+    console.error("Gemini AI Mentor service call exception:", err);
     return generateSmartFallback(lastQuery, userContext);
   }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Bot, X, Send, ExternalLink, Settings, Key, Check, AlertCircle, Sparkles, ChevronDown } from "lucide-react";
+import { Bot, X, Send, ExternalLink, Settings, Key, Check, AlertCircle, Sparkles } from "lucide-react";
 import { getCurrentUser, updateCurrentUser } from "../data/supabaseAuth";
 import {
   buildUserContext,
@@ -36,13 +36,11 @@ function FormattedMessageText({ text }) {
           );
         }
 
-        // Process markdown headings, bold text, bullet points, links
         const lines = block.split("\n");
         return (
           <div key={bIdx} className="space-y-1">
             {lines.map((line, lIdx) => {
               let trimmed = line.trim();
-
               if (!trimmed) return <div key={lIdx} className="h-1" />;
 
               if (trimmed.startsWith("### ")) {
@@ -84,12 +82,8 @@ function FormattedMessageText({ text }) {
   );
 }
 
-/**
- * Handle bold text and markdown links inside a line
- */
 function InlineText({ text }) {
   if (!text) return null;
-  // Split by link [label](url)
   const linkParts = text.split(/(\[[^\]]+\]\([^)]+\))/g);
 
   return (
@@ -111,7 +105,6 @@ function InlineText({ text }) {
           );
         }
 
-        // Bold formatting **text**
         const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
         return (
           <span key={i}>
@@ -139,7 +132,7 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
   const [typing, setTyping] = useState(false);
   const endRef = useRef(null);
 
-  // Settings & Model state
+  // Settings & Gemini Model state
   const [selectedModel, setSelectedModel] = useState(getStoredModel());
   const [showSettings, setShowSettings] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState(getStoredApiKey());
@@ -151,12 +144,10 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
   const [quizScore, setQuizScore] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState([]);
 
-  // Sync API Key input on open
   useEffect(() => {
     setApiKeyInput(getStoredApiKey());
   }, [open]);
 
-  // Fetch initial user context & greeting on open
   useEffect(() => {
     let mounted = true;
     async function loadData() {
@@ -172,14 +163,14 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
           setMessages([
             {
               from: "ai",
-              text: `Hi ${userName} 👋\n\nI'm your **PathForge AI Agent**. I have analyzed your profile for **${career}**.\n\n${
+              text: `Hi ${userName} 👋\n\nI'm your **Gemini AI Agent**. I have analyzed your profile for **${career}**.\n\n${
                 topGap
                   ? `Your top identified skill gap is **${topGap}**.`
                   : "You're currently on track with your core skills!"
               }\n\n${
                 hasKey
-                  ? "✓ AI API connection is active."
-                  : "ℹ️ Add your Gemini or OpenRouter API key in settings anytime for maximum AI agent power."
+                  ? "✓ Gemini AI API connection is active."
+                  : "ℹ️ Add your Gemini API key in settings anytime for maximum AI agent power."
               }\n\nWhat would you like to work on today?`,
             },
           ]);
@@ -208,7 +199,6 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
     setTimeout(() => setKeySavedToast(false), 2500);
   };
 
-  // Send message or trigger quick action
   const send = async (rawText) => {
     const text = rawText?.trim();
     if (!text || typing) return;
@@ -223,7 +213,6 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
     const freshCtx = await buildUserContext(studentProp);
     setStudentContext(freshCtx);
 
-    // Special handler: "Test my knowledge"
     if (text.toLowerCase().includes("test my knowledge")) {
       const quiz = generateAdaptiveQuiz(
         freshCtx?.profile?.targetCareer || "Software Engineer",
@@ -244,7 +233,6 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
       return;
     }
 
-    // Call AI provider with message history, context, and selected model
     try {
       const aiReply = await callAIProvider(updatedMessages, freshCtx, selectedModel);
       setMessages(prev => [...prev, { from: "ai", text: aiReply }]);
@@ -252,14 +240,13 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
       console.error(err);
       setMessages(prev => [
         ...prev,
-        { from: "ai", text: "AI Agent is temporarily unavailable. Please try again." },
+        { from: "ai", text: "Gemini AI Agent is temporarily unavailable. Please try again." },
       ]);
     } finally {
       setTyping(false);
     }
   };
 
-  // Handle quiz option selection
   const handleQuizSelect = async (optionIdx) => {
     if (!activeQuiz) return;
     const currentQ = activeQuiz[quizIndex];
@@ -274,11 +261,9 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
     if (quizIndex < activeQuiz.length - 1) {
       setQuizIndex(quizIndex + 1);
     } else {
-      // Quiz finished
       const finalScorePct = Math.round((nextScore / activeQuiz.length) * 100);
       const topic = currentQ.topic;
 
-      // Save assessment result to Supabase
       const newAssessment = {
         name: `${topic} Skill Check`,
         score: finalScorePct,
@@ -310,7 +295,7 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
       <button
         onClick={() => setOpen(true)}
         className="lp-btn-primary fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl cursor-pointer hover:scale-105 transition-transform"
-        aria-label="Open AI Mentor Agent"
+        aria-label="Open Gemini AI Agent"
       >
         <Bot size={22} />
       </button>
@@ -337,7 +322,7 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <p className="text-xs md:text-sm font-bold text-white leading-tight">AI Mentor Agent</p>
+              <p className="text-xs md:text-sm font-bold text-white leading-tight">Gemini AI Agent</p>
               <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                 PRO
               </span>
@@ -358,7 +343,7 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
             className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
               showSettings ? "bg-cyan-500/20 text-cyan-300" : "text-slate-400 hover:text-white"
             }`}
-            title="API Settings"
+            title="Gemini API Settings"
           >
             <Settings size={16} />
           </button>
@@ -398,7 +383,7 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
           }`}
         >
           <Key size={10} />
-          {activeApiKey ? "API Connected" : "Add Key"}
+          {activeApiKey ? "Gemini Key Active" : "Add Key"}
         </button>
       </div>
 
@@ -408,26 +393,26 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
           <div className="flex items-center justify-between">
             <p className="font-semibold text-white flex items-center gap-1.5">
               <Key size={13} className="text-cyan-400" />
-              API Key Configuration
+              Google Gemini API Key
             </p>
             <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-white">
               <X size={14} />
             </button>
           </div>
           <p className="text-[11px] text-slate-400">
-            PathForge supports both **Google Gemini API** keys and **OpenRouter API** keys.
+            Paste your Google Gemini API Key below to power real-time AI responses.
           </p>
           <form onSubmit={handleSaveApiKey} className="space-y-2">
             <input
               type="password"
               value={apiKeyInput}
               onChange={(e) => setApiKeyInput(e.target.value)}
-              placeholder="Paste Gemini or OpenRouter API Key..."
-              className="w-full bg-slate-900 border border-cyan-500/30 rounded-lg py-1.5 px-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-cyan-400"
+              placeholder="Paste Google Gemini API Key..."
+              className="w-full bg-slate-900 border border-cyan-500/30 rounded-lg py-1.5 px-2.5 text-xs text-white placeholder-slate-500 outline-none focus:border-cyan-400 font-mono"
             />
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-slate-400">
-                {activeApiKey ? "Key active in localStorage" : "No key saved yet"}
+                {activeApiKey ? "Key active" : "No key saved yet"}
               </span>
               <div className="flex gap-1.5">
                 {activeApiKey && (
@@ -454,7 +439,7 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
 
           {keySavedToast && (
             <div className="p-1.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[11px] flex items-center gap-1 font-medium">
-              <Check size={12} /> API Key saved successfully!
+              <Check size={12} /> Gemini API Key saved!
             </div>
           )}
         </div>
@@ -508,7 +493,7 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
         {typing && (
           <div className="flex justify-start">
             <div className="px-3.5 py-2.5 rounded-2xl text-xs flex items-center gap-1.5 bg-white/5 border border-white/10 text-cyan-300">
-              <span className="animate-pulse font-medium">AI Agent is thinking ({selectedModel.split("/").pop()})</span>
+              <span className="animate-pulse font-medium">Gemini AI Agent is thinking ({selectedModel})</span>
               <span className="lp-float-3" style={{ animationDuration: ".9s" }}>●</span>
               <span className="lp-float-3" style={{ animationDuration: ".9s", animationDelay: ".15s" }}>●</span>
               <span className="lp-float-3" style={{ animationDuration: ".9s", animationDelay: ".3s" }}>●</span>
@@ -547,7 +532,7 @@ export function AIAssistant({ open, setOpen, student: studentProp }) {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && !typing && send(input)}
-          placeholder="Ask your AI agent anything..."
+          placeholder="Ask your Gemini AI agent..."
           disabled={typing}
           className="flex-1 bg-transparent text-xs text-white outline-none px-2 placeholder-slate-500"
         />
