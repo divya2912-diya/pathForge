@@ -40,17 +40,29 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [student, setStudent] = useState(null);
 
-  // ── On mount: listen to Supabase auth state changes ──────────
   useEffect(() => {
+    let mounted = true;
+
+    // Timeout safety fallback: if session check takes > 3s, fallback to login view
+    const timeout = setTimeout(() => {
+      if (mounted) setStage((prev) => (prev === "loading" ? "login" : prev));
+    }, 3000);
+
     // Initial session check
-    getCurrentUser().then((user) => {
-      if (user) {
-        setStudent(user);
-        setStage(user.onboardingComplete ? "landing" : "onboarding");
-      } else {
-        setStage("login");
-      }
-    });
+    getCurrentUser()
+      .then((user) => {
+        if (!mounted) return;
+        if (user) {
+          setStudent(user);
+          setStage(user.onboardingComplete ? "landing" : "onboarding");
+        } else {
+          setStage("login");
+        }
+      })
+      .catch((err) => {
+        console.error("Auth check failed:", err);
+        if (mounted) setStage("login");
+      });
 
     // Subscribe to auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -59,11 +71,14 @@ export default function App() {
           setStudent(null);
           setStage("login");
         }
-        // On sign-in, profile is fetched explicitly in handlers below
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   // ── Auth handlers ─────────────────────────────────────────
