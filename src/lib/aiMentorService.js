@@ -1,9 +1,60 @@
 // ============================================================
-//  PathForge — Real AI Career Mentor Service
+//  PathForge — Real AI Career Mentor & Agent Service
+//  Supports Google Gemini API & OpenRouter API
 // ============================================================
 import { supabase } from "./supabaseClient";
 import { getCurrentUser, loadMilestoneProgress, updateCurrentUser } from "../data/supabaseAuth";
 import { SKILL_REQUIREMENTS, calculateDynamicReadiness } from "../data/userProfile";
+
+// Supported Models List
+export const AI_MODELS = [
+  { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (Google Direct)", provider: "gemini" },
+  { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash (Google Direct)", provider: "gemini" },
+  { id: "google/gemini-2.0-flash-lite-001", name: "Gemini 2.0 Flash Lite (OpenRouter)", provider: "openrouter" },
+  { id: "meta-llama/llama-3.3-70b-instruct", name: "Llama 3.3 70B (OpenRouter)", provider: "openrouter" },
+  { id: "openai/gpt-4o-mini", name: "GPT-4o Mini (OpenRouter)", provider: "openrouter" },
+  { id: "deepseek/deepseek-r1", name: "DeepSeek R1 (OpenRouter)", provider: "openrouter" },
+];
+
+/**
+ * Get active API Key from localStorage or environment
+ */
+export function getStoredApiKey() {
+  const localKey = localStorage.getItem("pathforge_ai_api_key");
+  if (localKey && localKey.trim()) return localKey.trim();
+
+  return (
+    import.meta.env.VITE_GEMINI_API_KEY ||
+    import.meta.env.VITE_OPENROUTER_API_KEY ||
+    import.meta.env.VITE_AI_API_KEY ||
+    ""
+  );
+}
+
+/**
+ * Save API key to localStorage
+ */
+export function saveApiKey(key) {
+  if (key) {
+    localStorage.setItem("pathforge_ai_api_key", key.trim());
+  } else {
+    localStorage.removeItem("pathforge_ai_api_key");
+  }
+}
+
+/**
+ * Get preferred model
+ */
+export function getStoredModel() {
+  return localStorage.getItem("pathforge_ai_model") || "gemini-2.0-flash";
+}
+
+/**
+ * Save preferred model
+ */
+export function saveModel(modelId) {
+  localStorage.setItem("pathforge_ai_model", modelId);
+}
 
 /**
  * 1. Fetch & Build Dynamic User Context Object from Supabase
@@ -72,9 +123,9 @@ export async function buildUserContext(studentProp = null) {
  * 2. System Prompt Generator
  */
 export function getSystemPrompt(userContext) {
-  return `You are PathForge AI Mentor, an expert personalized career and learning mentor for software engineers, data scientists, AI engineers, and tech professionals.
+  return `You are PathForge AI Mentor & Agent, an expert personalized career and technical AI agent for software engineers, data scientists, AI engineers, and tech professionals.
 
-Your job is to answer ANY question, doubt, technical query, concept explanation, project request, study plan request, or interview question asked by the user, while grounding your advice in their authenticated PathForge profile.
+Your job is to act as an autonomous AI Agent: answer ANY question, technical query, concept explanation, project request, study plan request, code bug, or interview question asked by the user, while grounding your advice in their authenticated PathForge profile context below.
 
 AUTHENTICATED USER CONTEXT:
 ${JSON.stringify(userContext, null, 2)}
@@ -84,68 +135,139 @@ STRICT MENTORING DIRECTIVES:
 2. Ground your advice in their target career (${userContext?.profile?.targetCareer}) and current skill gaps (${userContext?.skillGaps?.join(", ") || "All core skills matched"}).
 3. Never invent facts about the user's achievements.
 4. Adapt complexity to their proficiency: Beginner (simple with analogies), Intermediate (practical implementation), Advanced (system trade-offs & optimization).
-5. Always provide actionable takeaways and resources where relevant.
-
-Use clean Markdown formatting.`;
+5. Always provide actionable takeaways, clear formatted code examples, and web search resources where relevant.
+6. Format your response cleanly using markdown headings, bullet points, and code blocks.`;
 }
 
 /**
- * 3. Primary AI Completion API Call (OpenRouter API)
+ * Call Gemini API directly (Google AI Studio key)
  */
-export async function callAIProvider(messagesHistory, userContext) {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || 
-                 import.meta.env.VITE_AI_API_KEY || 
-                 import.meta.env.OPENROUTER_API_KEY;
+async function callGeminiDirectApi(apiKey, modelName, messagesHistory, systemPrompt) {
+  const targetModel = modelName.includes("/") ? "gemini-2.0-flash" : modelName;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
 
-  if (!apiKey) {
-    return generateSmartFallback(messagesHistory[messagesHistory.length - 1]?.content || "", userContext);
+  const contents = messagesHistory.map(m => ({
+    role: m.from === "user" ? "user" : "model",
+    parts: [{ text: m.text || m.content || "" }]
+  }));
+
+  const payload = {
+    system_instruction: {
+      parts: [{ text: systemPrompt }]
+    },
+    contents,
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 1000,
+    }
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.warn("Gemini Direct API error response:", response.status, errText);
+    throw new Error(`Gemini API error ${response.status}: ${errText}`);
   }
 
+  const data = await response.json();
+  const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!candidateText) {
+    throw new Error("No output candidate returned from Gemini API");
+  }
+  return candidateText;
+}
+
+/**
+ * Call OpenRouter API
+ */
+async function callOpenRouterApi(apiKey, modelName, messagesHistory, systemPrompt) {
+  const targetModel = modelName.includes("/") ? modelName : "google/gemini-2.0-flash-lite-001";
+  const apiMessages = [
+    { role: "system", content: systemPrompt },
+    ...messagesHistory.map(m => ({
+      role: m.from === "user" ? "user" : "assistant",
+      content: m.text || m.content || "",
+    }))
+  ];
+
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": typeof window !== "undefined" ? window.location.origin : "https://pathforge.dev",
+      "X-Title": "PathForge AI Mentor"
+    },
+    body: JSON.stringify({
+      model: targetModel,
+      messages: apiMessages,
+      temperature: 0.7,
+      max_tokens: 1000,
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.warn("OpenRouter API error response:", response.status, errText);
+    throw new Error(`OpenRouter API error ${response.status}: ${errText}`);
+  }
+
+  const data = await response.json();
+  const replyText = data.choices?.[0]?.message?.content;
+  if (!replyText) {
+    throw new Error("No choices returned from OpenRouter API");
+  }
+  return replyText;
+}
+
+/**
+ * 3. Primary AI Completion API Call
+ * Auto-detects whether key is OpenRouter key (sk-or-...) or Gemini key, and calls appropriate API.
+ */
+export async function callAIProvider(messagesHistory, userContext, modelOverride = null) {
+  const apiKey = getStoredApiKey();
+  const selectedModel = modelOverride || getStoredModel();
+  const lastQuery = messagesHistory[messagesHistory.length - 1]?.text || "";
+
+  if (!apiKey) {
+    return generateSmartFallback(lastQuery, userContext);
+  }
+
+  const systemPrompt = getSystemPrompt(userContext);
+  const isOpenRouterKey = apiKey.startsWith("sk-or-");
+  const isOpenRouterModel = selectedModel.includes("/");
+
   try {
-    const systemPrompt = getSystemPrompt(userContext);
-    const apiMessages = [
-      { role: "system", content: systemPrompt },
-      ...messagesHistory.map(m => ({
-        role: m.from === "user" ? "user" : "assistant",
-        content: m.text || m.content || "",
-      }))
-    ];
-
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": window.location.origin,
-        "X-Title": "PathForge AI Mentor"
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.0-flash-lite-001",
-        messages: apiMessages,
-        temperature: 0.7,
-        max_tokens: 850,
-      })
-    });
-
-    if (!response.ok) {
-      console.warn("OpenRouter API non-200 status:", response.status);
-      return generateSmartFallback(messagesHistory[messagesHistory.length - 1]?.content || "", userContext);
+    if (isOpenRouterKey || isOpenRouterModel) {
+      try {
+        return await callOpenRouterApi(apiKey, selectedModel, messagesHistory, systemPrompt);
+      } catch (err) {
+        console.warn("OpenRouter failed, attempting direct Gemini API call...", err);
+        return await callGeminiDirectApi(apiKey, "gemini-2.0-flash", messagesHistory, systemPrompt);
+      }
+    } else {
+      try {
+        return await callGeminiDirectApi(apiKey, selectedModel, messagesHistory, systemPrompt);
+      } catch (err) {
+        console.warn("Gemini Direct failed, trying OpenRouter format...", err);
+        return await callOpenRouterApi(apiKey, selectedModel, messagesHistory, systemPrompt);
+      }
     }
-
-    const data = await response.json();
-    const replyText = data.choices?.[0]?.message?.content;
-    if (replyText) return replyText;
-
-    return generateSmartFallback(messagesHistory[messagesHistory.length - 1]?.content || "", userContext);
   } catch (err) {
-    console.error("AI Mentor service call exception:", err);
-    return generateSmartFallback(messagesHistory[messagesHistory.length - 1]?.content || "", userContext);
+    console.error("AI Mentor service call failed completely:", err);
+    return generateSmartFallback(lastQuery, userContext);
   }
 }
 
 /**
  * 4. Comprehensive Fallback & Topic Knowledge Engine
- * Provides accurate, data-driven mentoring for ANY question or doubt.
  */
 export function generateSmartFallback(userPrompt, ctx) {
   if (!ctx) return "I couldn't load your career profile. Please try refreshing or completing your profile.";
@@ -158,8 +280,6 @@ export function generateSmartFallback(userPrompt, ctx) {
   const gapsList = ctx.skillGaps.slice(0, 4).join(", ");
   const hours = ctx.learningPreferences.hoursPerWeek;
   const style = ctx.learningPreferences.learningStyle;
-
-  // ── 1. QUICK ACTION HANDLERS ──────────────────────────────
 
   if (query.includes("explain this") || (query === "explain")) {
     if (topGap) {
@@ -271,8 +391,6 @@ export function generateSmartFallback(userPrompt, ctx) {
       `3. Type your response below and I will evaluate it for you!`;
   }
 
-  // ── 2. TECHNICAL DOUBT & TOPIC ANSWER ENGINE ───────────────
-
   if (query.includes("react") || query.includes("component") || query.includes("hooks")) {
     return `### React & Frontend Architecture\n\n` +
       `**Overview:** React is a component-based JavaScript library for building user interfaces.\n\n` +
@@ -350,7 +468,6 @@ export function generateSmartFallback(userPrompt, ctx) {
       `[Open System Design Resource](https://github.com/donnemartin/system-design-primer)`;
   }
 
-  // ── 3. GENERAL FREE-FORM MENTOR RESPONSE ───────────────────
   return `### PathForge Career Advice for ${name}\n\n` +
     `**Regarding your question:** "${userPrompt}"\n\n` +
     `**Mentorship Insight for ${career}:**\n` +

@@ -1,8 +1,15 @@
-import React, { useState } from "react";
-import { LogOut, Shield, Bell, Gauge, User, KeyRound, AlertCircle, Check } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { LogOut, Shield, Bell, Gauge, User, KeyRound, AlertCircle, Check, Cpu, Key, Sparkles } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import SectionHeader from "../ui/SectionHeader";
 import { changePassword } from "../../data/supabaseAuth";
+import {
+  AI_MODELS,
+  getStoredApiKey,
+  saveApiKey,
+  getStoredModel,
+  saveModel,
+} from "../../lib/aiMentorService";
 
 export function SettingsView({ student, onLogout, onUpdateStudent }) {
   const [prefs, setPrefs] = useState({
@@ -13,6 +20,11 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
   });
   const toggle = (k) => setPrefs(p => ({ ...p, [k]: !p[k] }));
 
+  // AI Agent Settings State
+  const [apiKeyInput, setApiKeyInput] = useState(getStoredApiKey());
+  const [selectedModel, setSelectedModel] = useState(getStoredModel());
+  const [aiSavedSuccess, setAiSavedSuccess] = useState(false);
+
   // Change password state
   const [cpCurrent, setCpCurrent] = useState("");
   const [cpNew, setCpNew] = useState("");
@@ -20,6 +32,14 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
   const [cpError, setCpError] = useState("");
   const [cpSuccess, setCpSuccess] = useState(false);
   const [cpLoading, setCpLoading] = useState(false);
+
+  const handleSaveAiSettings = (e) => {
+    e.preventDefault();
+    saveApiKey(apiKeyInput);
+    saveModel(selectedModel);
+    setAiSavedSuccess(true);
+    setTimeout(() => setAiSavedSuccess(false), 3000);
+  };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
@@ -47,6 +67,8 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
     ? new Date(student.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
     : "Unknown";
 
+  const isKeyActive = !!getStoredApiKey();
+
   return (
     <div className="space-y-6 max-w-2xl">
       <SectionHeader eyebrow="Account" title="Settings" />
@@ -72,6 +94,95 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
             </div>
           ))}
         </div>
+      </GlassCard>
+
+      {/* AI Agent Configuration Card */}
+      <GlassCard className="p-6 border border-cyan-500/30" hover>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Cpu size={18} className="text-cyan-400" />
+            <SectionHeader
+              title="AI Agent & Model Settings"
+              subtitle="Configure your Gemini or OpenRouter API key and preferred AI model"
+            />
+          </div>
+          <span
+            className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${
+              isKeyActive
+                ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                : "bg-amber-500/10 text-amber-300 border-amber-500/30"
+            }`}
+          >
+            {isKeyActive ? "✓ Active Key" : "No Key Set"}
+          </span>
+        </div>
+
+        {aiSavedSuccess && (
+          <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+            <Check size={14} className="shrink-0" /> AI Agent settings saved successfully!
+          </div>
+        )}
+
+        <form onSubmit={handleSaveAiSettings} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+              <Key size={13} className="text-cyan-400" />
+              API Key (Google Gemini or OpenRouter)
+            </label>
+            <input
+              type="password"
+              value={apiKeyInput}
+              onChange={(e) => setApiKeyInput(e.target.value)}
+              placeholder="Paste your Gemini (AIza...) or OpenRouter (sk-or-...) key"
+              className="lp-input w-full py-2.5 px-3 rounded-xl text-sm text-white placeholder-slate-500 font-mono"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">
+              Your API key is securely stored in your browser's local storage and used directly for model completions.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+              <Sparkles size={13} className="text-cyan-400" />
+              Preferred AI Model
+            </label>
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="lp-input w-full py-2.5 px-3 rounded-xl text-sm bg-slate-900 text-white cursor-pointer"
+            >
+              {AI_MODELS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center justify-between pt-1">
+            {isKeyActive ? (
+              <button
+                type="button"
+                onClick={() => {
+                  saveApiKey("");
+                  setApiKeyInput("");
+                  setAiSavedSuccess(true);
+                  setTimeout(() => setAiSavedSuccess(false), 2000);
+                }}
+                className="text-xs px-3 py-2 rounded-xl bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-500/30 cursor-pointer font-medium"
+              >
+                Clear API Key
+              </button>
+            ) : <span />}
+
+            <button
+              type="submit"
+              className="lp-btn-primary px-5 py-2.5 rounded-xl text-sm font-semibold cursor-pointer"
+            >
+              Save AI Agent Settings
+            </button>
+          </div>
+        </form>
       </GlassCard>
 
       {/* Notifications */}
