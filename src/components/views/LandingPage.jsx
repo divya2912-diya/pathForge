@@ -4,9 +4,9 @@ import {
   Compass, ShieldCheck, AlertTriangle, User, LogIn
 } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
+import FloatingCard from "../ui/FloatingCard";
 import SectionHeader from "../ui/SectionHeader";
 import Pill from "../ui/Pill";
-import { CareerJourneyMap } from "./CareerJourneyMap";
 
 export function LandingPage({ onStart, onExplore, onProfile, student, onLogin }) {
   return (
@@ -79,10 +79,10 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin })
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-8 pb-16">
-        <div className="max-w-3xl mb-12 lp-fade-up">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs mb-4" style={{ background: "rgba(34,211,238,0.08)", border: "1px solid rgba(34,211,238,0.25)", color: "#67e8f9" }}>
+      {/* HERO */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-10 md:pt-16 pb-28 grid md:grid-cols-2 gap-14 items-center">
+        <div className="lp-fade-up">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs mb-6" style={{ background: "rgba(34,211,238,0.08)", border: "1px solid rgba(34,211,238,0.25)", color: "#67e8f9" }}>
             <Sparkles size={13} /> AI-powered education to employment
           </div>
           {student && (
@@ -95,10 +95,10 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin })
             <br />
             <span className="lp-gradient-text">Powered by intelligence.</span>
           </h1>
-          <p className="mt-4 text-base md:text-lg max-w-2xl" style={{ color: "var(--text-dim)" }}>
+          <p className="mt-6 text-base md:text-lg max-w-lg" style={{ color: "var(--text-dim)" }}>
             Discover what you know, understand what you're missing, and follow an AI-guided path from learning to career readiness.
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-3.5">
+          <div className="mt-9 flex flex-wrap items-center gap-3.5">
             <button
               id="btn-landing-start"
               onClick={onStart}
@@ -116,15 +116,53 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin })
           </div>
         </div>
 
-        {/* CAREER JOURNEY & SKILL INTELLIGENCE MAP */}
-        <div className="lp-fade-up" style={{ animationDelay: ".15s" }}>
-          <CareerJourneyMap
-            student={student}
-            onNavigate={(targetView) => {
-              if (targetView === "profile") onProfile();
-              else onExplore();
-            }}
-          />
+        {/* HERO VISUAL */}
+        <div className="relative h-[440px] md:h-[520px] lp-fade-up" style={{ animationDelay: ".15s" }}>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="lp-orb lp-spin-slow rounded-full"
+              style={{
+                width: 210, height: 210,
+                background: "radial-gradient(circle at 35% 30%, rgba(103,232,249,0.55), rgba(139,92,246,0.35) 55%, rgba(6,9,17,0.1) 75%)",
+                border: "1px solid rgba(255,255,255,0.15)",
+              }}
+            />
+            <div
+              className="absolute rounded-full"
+              style={{ width: 90, height: 90, background: "radial-gradient(circle, rgba(255,255,255,0.9), rgba(103,232,249,0.4))", filter: "blur(1px)" }}
+            />
+          </div>
+
+          {/* connection lines */}
+          <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.35 }}>
+            <line x1="18%" y1="20%" x2="48%" y2="46%" stroke="#67e8f9" strokeWidth="1" strokeDasharray="4 5" />
+            <line x1="82%" y1="18%" x2="55%" y2="45%" stroke="#c4b5fd" strokeWidth="1" strokeDasharray="4 5" />
+            <line x1="12%" y1="78%" x2="48%" y2="55%" stroke="#67e8f9" strokeWidth="1" strokeDasharray="4 5" />
+            <line x1="85%" y1="80%" x2="55%" y2="56%" stroke="#c4b5fd" strokeWidth="1" strokeDasharray="4 5" />
+          </svg>
+
+          <FloatingCard className="lp-float-1" style={{ top: "6%", left: "2%" }}>
+            <p className="text-xs" style={{ color: "var(--text-dim)" }}>Python</p>
+            <p className="lp-display text-lg font-semibold text-cyan-300">92% Mastery</p>
+          </FloatingCard>
+          <FloatingCard className="lp-float-2" style={{ top: "2%", right: "0%" }}>
+            <p className="text-xs" style={{ color: "var(--text-dim)" }}>Machine Learning</p>
+            <p className="lp-display text-lg font-semibold text-blue-300">67% Mastery</p>
+          </FloatingCard>
+          <FloatingCard className="lp-float-3" style={{ bottom: "20%", left: "-2%" }}>
+            <div className="flex items-center gap-1.5 text-amber-300 text-xs mb-1"><AlertTriangle size={12} /> Skill gap detected</div>
+            <p className="lp-display text-sm font-medium">→ Deep Learning</p>
+          </FloatingCard>
+          <FloatingCard className="lp-float-1" style={{ bottom: "8%", right: "2%", animationDelay: "1.2s" }}>
+            <p className="text-xs" style={{ color: "var(--text-dim)" }}>Career match</p>
+            <p className="lp-display text-lg font-semibold" style={{ color: "#c4b5fd" }}>
+              {student?.targetCareer ? student.targetCareer.split(" ").slice(0, 2).join(" ") : "AI Engineer"} · 94%
+            </p>
+          </FloatingCard>
+          <FloatingCard className="lp-float-2" style={{ top: "42%", left: "-4%", animationDelay: ".6s" }}>
+            <div className="flex items-center gap-1.5 text-xs"><Route size={12} color="#67e8f9" /> Roadmap node</div>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-dim)" }}>Statistics → ML</p>
+          </FloatingCard>
         </div>
       </div>
 
