@@ -76,59 +76,69 @@ export async function sendMessage(messages, student) {
     })),
   ];
 
-  const payload = {
-    model: OR_MODEL,
-    messages: chatMessages,
-    temperature: 0.8,
-    max_tokens: 1500,
-    top_p: 0.95,
-  };
+  // Models to try in order — if one fails or rate-limits, try the next
+  const candidateModels = [
+    "openrouter/auto",
+    "openrouter/free",
+    "qwen/qwen3.8-27b:free",
+  ];
 
-  try {
-    const res = await fetch(OR_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
-        "HTTP-Referer": "https://pathforge.app",
-        "X-Title": "PathForge AI Mentor",
-      },
-      body: JSON.stringify(payload),
-    });
+  let lastErrorStatus = null;
 
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      const errMsg = errData?.error?.message || `HTTP ${res.status}`;
-      console.error("OpenRouter API error:", res.status, errMsg);
+  for (const model of candidateModels) {
+    const payload = {
+      model,
+      messages: chatMessages,
+      temperature: 0.8,
+      max_tokens: 1500,
+      top_p: 0.95,
+    };
 
-      if (res.status === 401) {
-        return `⚠️ **Invalid API Key.** Make sure your \`VITE_OPENROUTER_API_KEY\` in \`.env\` is correct.\n\nGet a free key at [openrouter.ai/keys](https://openrouter.ai/keys).`;
+    try {
+      const res = await fetch(OR_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+          "HTTP-Referer": "https://pathforge.app",
+          "X-Title": "PathForge AI Mentor",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        lastErrorStatus = res.status;
+        const errData = await res.json().catch(() => ({}));
+        console.warn(`OpenRouter model ${model} failed (${res.status}):`, errData?.error?.message);
+
+        // If key is invalid (401), don't retry other models — fail early
+        if (res.status === 401) {
+          return `⚠️ **Invalid API Key.** Make sure your \`VITE_OPENROUTER_API_KEY\` in \`.env\` is correct.\n\nGet a free key at [openrouter.ai/keys](https://openrouter.ai/keys).`;
+        }
+        // For 404, 429, 502, etc. -> try next model in loop
+        continue;
       }
-      if (res.status === 429) {
-        return "⚠️ **Rate limit reached.** Please wait a moment and try again.";
+
+      const data = await res.json();
+      const reply = data?.choices?.[0]?.message?.content;
+
+      if (reply) {
+        return reply;
       }
-      if (res.status === 402) {
-        return "⚠️ **Free quota exhausted.** Add credits at [openrouter.ai](https://openrouter.ai) or switch to another free model.";
-      }
-      return `⚠️ OpenRouter returned an error (${res.status}). Please try again.`;
+      console.warn(`OpenRouter model ${model} returned empty content, trying next...`);
+    } catch (err) {
+      console.error(`Fetch error with model ${model}:`, err);
     }
-
-    const data = await res.json();
-    const reply = data?.choices?.[0]?.message?.content;
-
-    if (!reply) {
-      console.warn("OpenRouter: empty reply", data);
-      return "I didn't receive a valid response. Please try rephrasing your question.";
-    }
-
-    return reply;
-  } catch (err) {
-    console.error("Chat service error:", err);
-    if (err.name === "TypeError") {
-      return "⚠️ **Network error.** Please check your internet connection and try again.";
-    }
-    return "Something went wrong. Please try again.";
   }
+
+  // If all API calls fail, fallback gracefully
+  if (lastErrorStatus === 429) {
+    return "⚠️ **Rate limit reached across free models.** Please wait a moment and try again.";
+  }
+  if (lastErrorStatus === 402) {
+    return "⚠️ **Free quota exhausted.** Add credits at [openrouter.ai](https://openrouter.ai) or check your key.";
+  }
+  return `⚠️ Unable to connect to OpenRouter free models right now. Please try again in a moment.`;
 }
 
 /**
