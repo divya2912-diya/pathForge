@@ -37,6 +37,8 @@ import { supabase } from "./lib/supabaseClient";
 import { buildInitialProfile } from "./data/userProfile";
 import { getTranslation } from "./services/i18nService";
 
+import { GuidedJourneyNav, GuidedJourneyFooter } from "./components/ui/GuidedJourneyNav";
+
 export default function App() {
   const [stage, setStage] = useState("loading"); // loading | login | landing | onboarding | analyzing | app
   const [active, setActive] = useState("dashboard");
@@ -312,6 +314,8 @@ export default function App() {
             onLanguageChange={handleLanguageChange}
           />
           <main className="px-5 md:px-8 py-7 max-w-7xl mx-auto">
+            <GuidedJourneyNav active={active} go={go} language={language} />
+
             {active === "dashboard" && <DashboardView go={go} student={student} onUpdateStudent={handleUpdateStudent} />}
             {active === "roadmap" && <RoadmapView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
             {active === "resources" && <ResourcesView student={student} added={added} toggleAdded={toggleAdded} go={go} />}
@@ -333,6 +337,8 @@ export default function App() {
             {active === "settings" && (
               <SettingsView student={student} onLogout={handleLogout} onUpdateStudent={handleUpdateStudent} />
             )}
+
+            <GuidedJourneyFooter active={active} go={go} language={language} />
           </main>
           {toast && <Toast message={toast} onClose={() => setToast(null)} />}
         </div>
