@@ -119,49 +119,70 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin })
         {/* HERO VISUAL */}
         <div className="relative h-[440px] md:h-[520px] lp-fade-up" style={{ animationDelay: ".15s" }}>
           <div className="absolute inset-0 flex items-center justify-center">
+            {/* Orbital Spin Rings */}
             <div
-              className="lp-orb lp-spin-slow rounded-full"
+              className="absolute rounded-full border border-cyan-400/30 animate-spin"
+              style={{ width: 280, height: 280, animationDuration: "12s" }}
+            />
+            <div
+              className="absolute rounded-full border border-purple-500/20 animate-spin"
+              style={{ width: 340, height: 340, animationDuration: "18s", animationDirection: "reverse" }}
+            />
+
+            <div
+              className="lp-orb lp-spin-slow rounded-full shadow-[0_0_50px_rgba(34,211,238,0.3)]"
               style={{
-                width: 210, height: 210,
-                background: "radial-gradient(circle at 35% 30%, rgba(103,232,249,0.55), rgba(139,92,246,0.35) 55%, rgba(6,9,17,0.1) 75%)",
-                border: "1px solid rgba(255,255,255,0.15)",
+                width: 220, height: 220,
+                background: "radial-gradient(circle at 35% 30%, rgba(103,232,249,0.65), rgba(139,92,246,0.45) 55%, rgba(6,9,17,0.2) 80%)",
+                border: "1px solid rgba(255,255,255,0.2)",
               }}
             />
             <div
-              className="absolute rounded-full"
-              style={{ width: 90, height: 90, background: "radial-gradient(circle, rgba(255,255,255,0.9), rgba(103,232,249,0.4))", filter: "blur(1px)" }}
+              className="absolute rounded-full shadow-[0_0_30px_rgba(255,255,255,0.8)]"
+              style={{ width: 95, height: 95, background: "radial-gradient(circle, rgba(255,255,255,0.95), rgba(103,232,249,0.5))", filter: "blur(1px)" }}
             />
           </div>
 
-          {/* connection lines */}
-          <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.35 }}>
-            <line x1="18%" y1="20%" x2="48%" y2="46%" stroke="#67e8f9" strokeWidth="1" strokeDasharray="4 5" />
-            <line x1="82%" y1="18%" x2="55%" y2="45%" stroke="#c4b5fd" strokeWidth="1" strokeDasharray="4 5" />
-            <line x1="12%" y1="78%" x2="48%" y2="55%" stroke="#67e8f9" strokeWidth="1" strokeDasharray="4 5" />
-            <line x1="85%" y1="80%" x2="55%" y2="56%" stroke="#c4b5fd" strokeWidth="1" strokeDasharray="4 5" />
+          {/* Connection lines */}
+          <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.45 }}>
+            <line x1="18%" y1="20%" x2="48%" y2="46%" stroke="#67e8f9" strokeWidth="1.5" strokeDasharray="4 5" />
+            <line x1="82%" y1="18%" x2="55%" y2="45%" stroke="#c4b5fd" strokeWidth="1.5" strokeDasharray="4 5" />
+            <line x1="12%" y1="78%" x2="48%" y2="55%" stroke="#67e8f9" strokeWidth="1.5" strokeDasharray="4 5" />
+            <line x1="85%" y1="80%" x2="55%" y2="56%" stroke="#c4b5fd" strokeWidth="1.5" strokeDasharray="4 5" />
           </svg>
 
-          <FloatingCard className="lp-float-1" style={{ top: "6%", left: "2%" }}>
-            <p className="text-xs" style={{ color: "var(--text-dim)" }}>Python</p>
-            <p className="lp-display text-lg font-semibold text-cyan-300">92% Mastery</p>
+          {/* Interactive Floating Cards with Dynamic User Data */}
+          <FloatingCard onClick={onStart} className="lp-float-1 cursor-pointer hover:scale-105 transition-transform" style={{ top: "6%", left: "2%" }}>
+            <p className="text-xs text-slate-400 font-medium">{student?.skills?.[0] || "Python"}</p>
+            <p className="lp-display text-lg font-bold text-cyan-300">92% Mastery</p>
           </FloatingCard>
-          <FloatingCard className="lp-float-2" style={{ top: "2%", right: "0%" }}>
-            <p className="text-xs" style={{ color: "var(--text-dim)" }}>Machine Learning</p>
-            <p className="lp-display text-lg font-semibold text-blue-300">67% Mastery</p>
+
+          <FloatingCard onClick={onStart} className="lp-float-2 cursor-pointer hover:scale-105 transition-transform" style={{ top: "2%", right: "0%" }}>
+            <p className="text-xs text-slate-400 font-medium">{student?.skills?.[1] || "Machine Learning"}</p>
+            <p className="lp-display text-lg font-bold text-blue-300">67% Mastery</p>
           </FloatingCard>
-          <FloatingCard className="lp-float-3" style={{ bottom: "20%", left: "-2%" }}>
-            <div className="flex items-center gap-1.5 text-amber-300 text-xs mb-1"><AlertTriangle size={12} /> Skill gap detected</div>
-            <p className="lp-display text-sm font-medium">→ Deep Learning</p>
-          </FloatingCard>
-          <FloatingCard className="lp-float-1" style={{ bottom: "8%", right: "2%", animationDelay: "1.2s" }}>
-            <p className="text-xs" style={{ color: "var(--text-dim)" }}>Career match</p>
-            <p className="lp-display text-lg font-semibold" style={{ color: "#c4b5fd" }}>
-              {student?.targetCareer ? student.targetCareer.split(" ").slice(0, 2).join(" ") : "AI Engineer"} · 94%
+
+          <FloatingCard onClick={onStart} className="lp-float-3 cursor-pointer hover:scale-105 transition-transform border-amber-500/30" style={{ bottom: "20%", left: "-2%" }}>
+            <div className="flex items-center gap-1.5 text-amber-300 text-xs mb-1 font-bold">
+              <AlertTriangle size={13} /> Skill gap detected
+            </div>
+            <p className="lp-display text-xs font-bold text-white">
+              → {student?.targetCareer ? "High-Priority Gap" : "Deep Learning"}
             </p>
           </FloatingCard>
-          <FloatingCard className="lp-float-2" style={{ top: "42%", left: "-4%", animationDelay: ".6s" }}>
-            <div className="flex items-center gap-1.5 text-xs"><Route size={12} color="#67e8f9" /> Roadmap node</div>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-dim)" }}>Statistics → ML</p>
+
+          <FloatingCard onClick={onStart} className="lp-float-1 cursor-pointer hover:scale-105 transition-transform" style={{ bottom: "8%", right: "2%", animationDelay: "1.2s" }}>
+            <p className="text-xs text-slate-400 font-medium">Target career match</p>
+            <p className="lp-display text-sm font-bold text-purple-300">
+              {student?.targetCareer || "AI / ML Engineer"} · {student ? "Dynamic Match" : "94% Match"}
+            </p>
+          </FloatingCard>
+
+          <FloatingCard onClick={onStart} className="lp-float-2 cursor-pointer hover:scale-105 transition-transform" style={{ top: "42%", left: "-4%", animationDelay: ".6s" }}>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-300">
+              <Route size={13} /> Active Roadmap
+            </div>
+            <p className="text-xs mt-0.5 text-slate-300 font-medium">Foundation → Goal</p>
           </FloatingCard>
         </div>
       </div>
