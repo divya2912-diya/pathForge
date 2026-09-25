@@ -228,6 +228,8 @@ export default function App() {
           onProfile={() => go("profile")}
           student={student}
           onLogin={() => setStage("login")}
+          onUpdateStudent={handleUpdateStudent}
+          go={go}
         />
       )}
 

@@ -134,6 +134,9 @@ export function DashboardView({ go, student, onUpdateStudent }) {
             <h3 className="text-xl font-bold text-white mb-2">Dashboard Not Available</h3>
             <p className="text-slate-400 text-sm max-w-md">We need your target career and current skills to analyze your gaps and generate your dashboard.</p>
          </div>
+
+         {/* Job Notifications Carousel for New / Unonboarded Users */}
+         <HomeJobCarousel student={student} onUpdateStudent={onUpdateStudent} go={go} />
       </div>
     );
   }
@@ -408,6 +411,9 @@ export function DashboardView({ go, student, onUpdateStudent }) {
            </div>
         )}
       </GlassCard>
+
+      {/* Real-time Job Notifications Carousel */}
+      <HomeJobCarousel student={student} onUpdateStudent={onUpdateStudent} go={go} />
 
     </div>
   );

@@ -8,6 +8,7 @@ import FloatingCard from "../ui/FloatingCard";
 import SectionHeader from "../ui/SectionHeader";
 import Pill from "../ui/Pill";
 import { SKILL_REQUIREMENTS, CAREER_ROADMAPS } from "../../data/userProfile";
+import { HomeJobCarousel } from "./HomeJobCarousel";
 
 function getRequiredSkillsForCareer(targetCareer) {
   if (!targetCareer) return [];
@@ -29,7 +30,7 @@ function getRequiredSkillsForCareer(targetCareer) {
   return ["Problem Solving", "Git", "Data Structures", "System Design", "SQL"];
 }
 
-export function LandingPage({ onStart, onExplore, onProfile, student, onLogin }) {
+export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, onUpdateStudent, go }) {
   // Extract real dynamic user data (Single Source of Truth)
   const userSkills = Array.isArray(student?.skills) ? student.skills : [];
   
@@ -337,6 +338,15 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin })
             </GlassCard>
           ))}
         </div>
+      </div>
+
+      {/* LIVE JOB NOTIFICATIONS CAROUSEL */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-24">
+        <HomeJobCarousel 
+          student={student} 
+          onUpdateStudent={onUpdateStudent} 
+          go={go || onExplore} 
+        />
       </div>
 
       {/* TRUSTED AI */}
