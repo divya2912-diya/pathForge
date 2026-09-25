@@ -13,6 +13,7 @@ import SkillsView from "./components/views/SkillsView";
 import RoadmapView from "./components/views/RoadmapView";
 import ResourcesView from "./components/views/ResourcesView";
 import ResumeView from "./components/views/ResumeView";
+import JobNotificationsView from "./components/views/JobNotificationsView";
 import ProjectsView from "./components/views/ProjectsView";
 import CertificationsView from "./components/views/CertificationsView";
 import CareerView from "./components/views/CareerView";
@@ -258,7 +259,8 @@ export default function App() {
             {active === "dashboard" && <DashboardView go={go} student={student} />}
             {active === "roadmap" && <RoadmapView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
             {active === "resources" && <ResourcesView student={student} added={added} toggleAdded={toggleAdded} go={go} />}
-            {active === "resume" && <ResumeView student={student} />}
+            {active === "resume" && <ResumeView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
+            {active === "jobs" && <JobNotificationsView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
             {active === "projects" && <ProjectsView student={student} added={added} toggleAdded={toggleAdded} go={go} />}
             {active === "certifications" && <CertificationsView student={student} onUpdateStudent={handleUpdateStudent} added={added} toggleAdded={toggleAdded} go={go} />}
             {active === "career" && <CareerView student={student} onUpdateStudent={handleUpdateStudent} />}

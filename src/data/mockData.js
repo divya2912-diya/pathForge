@@ -1,6 +1,6 @@
 import {
   Home, LayoutDashboard, Radar, Route, LayoutGrid, Sparkles, FileText, FolderKanban, Award,
-  Compass, User, Settings, Video, BookOpen, FileCode2
+  Compass, User, Settings, Video, BookOpen, FileCode2, Bell
 } from "lucide-react";
 
 export const SKILL_GROUPS = [
@@ -182,6 +182,7 @@ export const NAV_MENU = [
   { id: "career", label: "Career Intelligence", icon: Compass },
   { id: "projects", label: "Projects", icon: FolderKanban },
   { id: "certifications", label: "Certifications", icon: Award },
+  { id: "jobs", label: "Job Notifications", icon: Bell },
   { id: "profile", label: "Profile", icon: User },
   { id: "settings", label: "Settings", icon: Settings },
 ];
