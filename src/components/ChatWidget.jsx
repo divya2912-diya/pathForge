@@ -334,52 +334,52 @@ export function ChatWidget({ student }) {
           {/* Quick Action Chips */}
           <div className="cw-quick-chips">
             <button
-              onClick={() => send("what is my status?")}
+              onClick={() => send("What is my current career status and skill match?")}
               disabled={loading}
               className="cw-chip"
               title="What is my status?"
             >
-              🎯 What is my status?
+              🎯 My Career Status
             </button>
             <button
-              onClick={() => send("Analyze my current PathForge progress and tell me what I have completed, what is pending, and what I should focus on next.")}
+              onClick={() => send("Analyze my quiz and assessment performance, identify my weak topics, and give explainable recommendations.")}
               disabled={loading}
               className="cw-chip"
-              title="Analyze my progress"
+              title="Analyze assessment performance"
             >
-              📊 Analyze progress
+              📊 Quiz & Gap Analysis
             </button>
             <button
-              onClick={() => send("Create a personalized study plan based on my current skills, target career, skill gaps and roadmap progress.")}
+              onClick={() => send("Suggest internships, application strategies, and interview preparation plans tailored to my target career.")}
               disabled={loading}
               className="cw-chip"
-              title="Create study plan"
+              title="Internship & Interview Prep"
             >
-              📅 Study plan
+              💼 Internship & Interview Plan
             </button>
             <button
-              onClick={() => send("What high-priority skills am I missing for my target career?")}
+              onClick={() => send("Recommend top certifications and portfolio projects to close my high-priority skill gaps.")}
               disabled={loading}
               className="cw-chip"
-              title="Missing skills"
+              title="Certifications & Projects"
             >
-              ⚡ Missing skills
+              🎓 Certifications & Projects
             </button>
             <button
-              onClick={() => send("Recommend learning resources for my highest-priority skill gaps.")}
+              onClick={() => send("Recommend alternative suitable career paths based on my current skills, and explain the dynamic career switch process.")}
               disabled={loading}
               className="cw-chip"
-              title="Recommend resources"
+              title="Career Path Switching"
             >
-              📚 Recommend resources
+              🔄 Career Path Switcher
             </button>
             <button
-              onClick={() => send("Start an interactive quiz or ask me knowledge assessment questions based on my target career and current skill gaps.")}
+              onClick={() => send("Create a personalized study plan matching my VARK learning style preference.")}
               disabled={loading}
               className="cw-chip"
-              title="Test my knowledge"
+              title="VARK Learning Plan"
             >
-              🧪 Test knowledge
+              🎨 Learning Style Plan
             </button>
           </div>
 

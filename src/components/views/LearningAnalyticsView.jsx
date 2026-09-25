@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { 
   TrendingUp, Compass, Radar, Flame, Award, 
-  CheckCircle2, Clock, Zap, Target, BookOpen, AlertTriangle, ChevronRight, Activity, PieChart, Sparkles, BarChart2
+  CheckCircle2, Clock, Zap, Target, BookOpen, AlertTriangle, ChevronRight, Activity, PieChart, Sparkles, BarChart2,
+  Users, Download, UserCheck, ShieldAlert, Sliders, ArrowUpRight
 } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
 import GlassCard from "../ui/GlassCard";
 import SectionHeader from "../ui/SectionHeader";
-import AnimatedCounter from "../ui/AnimatedCounter";
 import ProgressRing from "../ui/ProgressRing";
 import { buildUserLearningContext } from "../../services/userContextService";
 import { getTranslation } from "../../services/i18nService";
@@ -15,7 +16,8 @@ export function LearningAnalyticsView({ student, onUpdateStudent, go }) {
   const ctx = buildUserLearningContext(student);
   const lang = student?.preferredLanguage || "en";
 
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("overview"); // overview | skills | consistency | trends | style | educator
+  const [viewRole, setViewRole] = useState("student"); // student | educator
 
   // Format activity duration
   const totalHours = ctx.learningActivity.totalHours;
@@ -26,35 +28,124 @@ export function LearningAnalyticsView({ student, onUpdateStudent, go }) {
   const hasAssessments = ctx.assessmentSummary.totalCount > 0;
   const hasActivity = totalSessions > 0;
 
+  // Trend Data for Charts
+  const trendData = [
+    { day: "Mon", hours: 1.5, score: 65, topics: 1 },
+    { day: "Tue", hours: 2.0, score: 70, topics: 2 },
+    { day: "Wed", hours: 3.2, score: 78, topics: 2 },
+    { day: "Thu", hours: 1.8, score: 82, topics: 3 },
+    { day: "Fri", hours: 4.0, score: 85, topics: 4 },
+    { day: "Sat", hours: 2.5, score: 88, topics: 4 },
+    { day: "Sun", hours: 3.5, score: ctx.assessmentSummary.avgScore || 90, topics: ctx.roadmapProgress.completed || 5 }
+  ];
+
+  // Cohort Mock Data for Educator Mode
+  const cohortStudents = [
+    { name: student?.name || "Current Student", career: ctx.targetCareer, readiness: ctx.careerReadinessScore, streak: streak, avgScore: ctx.assessmentSummary.avgScore || 85, status: "On Track" },
+    { name: "Alex Rivera", career: "Full Stack Developer", readiness: 84, streak: 12, avgScore: 88, status: "On Track" },
+    { name: "Priya Sharma", career: "AI / ML Engineer", readiness: 92, streak: 18, avgScore: 94, status: "Top Performer" },
+    { name: "Marcus Chen", career: "Cloud / DevOps", readiness: 42, streak: 1, avgScore: 48, status: "At Risk" },
+    { name: "Sofia Rossi", career: "Data Scientist", readiness: 78, streak: 7, avgScore: 81, status: "On Track" },
+    { name: "David Kim", career: "Cybersecurity Engineer", readiness: 35, streak: 0, avgScore: 45, status: "Needs Support" }
+  ];
+
+  const exportReport = () => {
+    const reportText = `PathForge Learning Analytics Report
+Generated: ${new Date().toLocaleDateString()}
+Student: ${ctx.name}
+Target Career: ${ctx.targetCareer}
+Career Readiness Score: ${ctx.careerReadinessScore}%
+Roadmap Progress: ${ctx.roadmapProgress.percent}%
+Mastered Skills (${ctx.masteredSkills.length}): ${ctx.masteredSkills.join(", ")}
+Skill Gaps (${ctx.skillGaps.length}): ${ctx.skillGaps.join(", ")}
+Study Streak: ${streak} Days
+Average Assessment Score: ${ctx.assessmentSummary.avgScore}%
+    `;
+    const blob = new Blob([reportText], { type: "text/plain;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `PathForge_Report_${ctx.name.replace(/\s+/g, "_")}.txt`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* ── HEADER ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <SectionHeader 
             eyebrow={getTranslation("analytics.title", lang).toUpperCase()} 
-            title="Learning Analytics & Intelligence" 
-            subtitle={getTranslation("analytics.subtitle", lang)} 
+            title={viewRole === "student" ? "Learning Analytics & Progress Intelligence" : "Educator & Cohort Intelligence Center"} 
+            subtitle={viewRole === "student" 
+              ? getTranslation("analytics.subtitle", lang)
+              : "Monitor student cohort progress, skill development trends, and at-risk learners."} 
           />
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-1.5 p-1 bg-white/[0.03] border border-white/5 rounded-xl w-fit text-xs">
-          {["overview", "skills", "consistency", "style"].map((tab) => (
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Educator / Student View Mode Toggle */}
+          <div className="flex items-center p-1 bg-white/[0.04] border border-white/10 rounded-xl text-xs">
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg font-bold capitalize transition-all cursor-pointer ${
-                activeTab === tab 
-                  ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-[0_0_12px_rgba(34,211,238,0.2)]" 
-                  : "text-slate-400 hover:text-white"
+              onClick={() => setViewRole("student")}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                viewRole === "student" ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" : "text-slate-400 hover:text-white"
               }`}
             >
-              {tab}
+              <Activity size={13} /> Student View
             </button>
-          ))}
+            <button
+              onClick={() => { setViewRole("educator"); setActiveTab("educator"); }}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                viewRole === "educator" ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Users size={13} /> Educator Mode
+            </button>
+          </div>
+
+          {/* Export Report Button */}
+          <button
+            onClick={exportReport}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
+            title="Download Learning Progress Summary Report"
+          >
+            <Download size={14} className="text-cyan-400" /> Export Report
+          </button>
         </div>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="flex items-center gap-1.5 p-1.5 bg-white/[0.03] border border-white/5 rounded-2xl w-fit overflow-x-auto max-w-full text-xs">
+        {[
+          { id: "overview", label: "Overview" },
+          { id: "skills", label: "Skill Matrix" },
+          { id: "consistency", label: "Consistency" },
+          { id: "trends", label: "Learning Trends" },
+          { id: "style", label: "Learning Style" },
+          { id: "educator", label: "Educator Cohort", highlight: true },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => {
+              setActiveTab(tab.id);
+              if (tab.id === "educator") setViewRole("educator");
+              else setViewRole("student");
+            }}
+            className={`px-4 py-2 rounded-xl font-bold capitalize transition-all cursor-pointer shrink-0 ${
+              activeTab === tab.id 
+                ? tab.highlight
+                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-[0_0_12px_rgba(168,85,247,0.2)]"
+                  : "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-[0_0_12px_rgba(34,211,238,0.2)]" 
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* ── TAB 1: OVERVIEW ─────────────────────────────────────────────── */}
@@ -121,7 +212,7 @@ export function LearningAnalyticsView({ student, onUpdateStudent, go }) {
 
             <GlassCard 
               hover 
-              onClick={() => go?.("roadmap")} 
+              onClick={() => go?.("assessment")} 
               className="p-5 cursor-pointer border-amber-500/20 bg-gradient-to-br from-amber-500/[0.03] to-transparent"
             >
               <div className="flex items-center justify-between mb-3">
@@ -247,7 +338,7 @@ export function LearningAnalyticsView({ student, onUpdateStudent, go }) {
                     {getTranslation("analytics.noAssessments", lang)}
                   </p>
                   <button 
-                    onClick={() => go?.("roadmap")} 
+                    onClick={() => go?.("assessment")} 
                     className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer"
                   >
                     Take First Assessment
@@ -334,7 +425,55 @@ export function LearningAnalyticsView({ student, onUpdateStudent, go }) {
         </GlassCard>
       )}
 
-      {/* ── TAB 4: ADAPTIVE LEARNING STYLE ─────────────────────────────── */}
+      {/* ── TAB 4: LEARNING TRENDS (RECHARTS) ─────────────────────────── */}
+      {activeTab === "trends" && (
+        <div className="space-y-6">
+          <GlassCard strong className="p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart2 size={18} className="text-cyan-400" />
+                <h3 className="font-bold text-white text-base">Weekly Learning & Score Trajectory</h3>
+              </div>
+              <span className="text-xs font-semibold text-slate-400">7-Day Activity Trend</span>
+            </div>
+
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={trendData}>
+                  <defs>
+                    <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.4}/>
+                      <stop offset="95%" stopColor="#22d3ee" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="day" stroke="#64748b" fontSize={11} />
+                  <YAxis stroke="#64748b" fontSize={11} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: "#09101f", borderColor: "rgba(255,255,255,0.1)", borderRadius: "12px", fontSize: "12px" }}
+                  />
+                  <Area type="monotone" dataKey="hours" name="Study Hours" stroke="#22d3ee" fillOpacity={1} fill="url(#colorHours)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="score" name="Assessment Score %" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorScore)" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-6 text-xs text-slate-400">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-cyan-400" /> Study Hours
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-purple-400" /> Assessment Score Trajectory (%)
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+      )}
+
+      {/* ── TAB 5: ADAPTIVE LEARNING STYLE ─────────────────────────────── */}
       {activeTab === "style" && (
         <GlassCard strong className="p-6 space-y-6">
           <div className="flex items-center justify-between">
@@ -374,6 +513,87 @@ export function LearningAnalyticsView({ student, onUpdateStudent, go }) {
             ))}
           </div>
         </GlassCard>
+      )}
+
+      {/* ── TAB 6: EDUCATOR & COHORT ANALYTICS ─────────────────────────── */}
+      {activeTab === "educator" && (
+        <div className="space-y-6">
+          {/* Educator Cohort Overview */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <GlassCard className="p-5 border-purple-500/20 bg-purple-500/[0.03]">
+              <p className="text-xs text-slate-400 font-medium">Total Cohort Students</p>
+              <p className="text-2xl font-bold text-white mt-1">6 Active</p>
+            </GlassCard>
+            <GlassCard className="p-5 border-emerald-500/20 bg-emerald-500/[0.03]">
+              <p className="text-xs text-slate-400 font-medium">Avg Cohort Readiness</p>
+              <p className="text-2xl font-bold text-emerald-300 mt-1">74%</p>
+            </GlassCard>
+            <GlassCard className="p-5 border-cyan-500/20 bg-cyan-500/[0.03]">
+              <p className="text-xs text-slate-400 font-medium">Topic Completion Rate</p>
+              <p className="text-2xl font-bold text-cyan-300 mt-1">68%</p>
+            </GlassCard>
+            <GlassCard className="p-5 border-amber-500/20 bg-amber-500/[0.03]">
+              <p className="text-xs text-slate-400 font-medium">At-Risk Students Alert</p>
+              <p className="text-2xl font-bold text-amber-400 mt-1">2 Need Support</p>
+            </GlassCard>
+          </div>
+
+          {/* Student Roster Table */}
+          <GlassCard strong className="p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users size={18} className="text-purple-400" />
+                <h3 className="font-bold text-white text-base">Class Roster & Continuous Improvement</h3>
+              </div>
+              <button 
+                onClick={exportReport}
+                className="text-xs font-bold text-purple-300 hover:text-white flex items-center gap-1 cursor-pointer"
+              >
+                <Download size={13} /> Export Cohort CSV
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-white/10 text-slate-400">
+                    <th className="py-3 px-3 font-semibold">Student Name</th>
+                    <th className="py-3 px-3 font-semibold">Target Career</th>
+                    <th className="py-3 px-3 font-semibold">Readiness Score</th>
+                    <th className="py-3 px-3 font-semibold">Study Streak</th>
+                    <th className="py-3 px-3 font-semibold">Avg Quiz Score</th>
+                    <th className="py-3 px-3 font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {cohortStudents.map((st, i) => (
+                    <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="py-3 px-3 font-bold text-white flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center font-bold text-[10px]">
+                          {st.name.slice(0, 2).toUpperCase()}
+                        </div>
+                        {st.name}
+                      </td>
+                      <td className="py-3 px-3 text-slate-300">{st.career}</td>
+                      <td className="py-3 px-3 font-bold text-cyan-300">{st.readiness}%</td>
+                      <td className="py-3 px-3 text-amber-300 font-semibold">{st.streak} Days</td>
+                      <td className="py-3 px-3 text-purple-300 font-semibold">{st.avgScore}%</td>
+                      <td className="py-3 px-3">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                          st.status === "Top Performer" || st.status === "On Track"
+                            ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                            : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                        }`}>
+                          {st.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </GlassCard>
+        </div>
       )}
 
     </div>

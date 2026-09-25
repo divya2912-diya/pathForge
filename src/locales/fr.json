@@ -1,0 +1,68 @@
+{
+  "nav": {
+    "dashboard": "Tableau de Bord",
+    "roadmap": "Parcours d'Apprentissage",
+    "resources": "Ressources",
+    "resume": "Intelligence CV",
+    "jobs": "Offres d'Emploi",
+    "projects": "Projets",
+    "certifications": "Certifications",
+    "career": "Analyse de Carrière",
+    "profile": "Profil et Compétences",
+    "settings": "Paramètres",
+    "assessment": "Évaluation des Connaissances"
+  },
+  "dashboard": {
+    "welcome": "Bon retour",
+    "learningIntelligence": "Votre Intelligence d'Apprentissage",
+    "careerReadiness": "Préparation à la Carrière",
+    "learningProgress": "Progrès d'Apprentissage",
+    "skillsDeveloped": "Compétences Acquises",
+    "assessmentsTaken": "Évaluations Complétées",
+    "studyConsistency": "Régularité d'Étude",
+    "topicCompletion": "Achèvement des Sujets",
+    "assessmentPerformance": "Performance aux Évaluations",
+    "emptyStateTitle": "Tableau de bord indisponible",
+    "emptyStateDesc": "Complétez votre profil et définissez votre objectif de carrière.",
+    "completeProfile": "Compléter le Profil"
+  },
+  "aiMentor": {
+    "title": "Assistant IA PathForge",
+    "subtitle": "Votre mentor académique et professionnel personnalisé.",
+    "inputPlaceholder": "Posez des questions sur vos compétences, votre parcours ou vos entretiens...",
+    "send": "Envoyer"
+  },
+  "analytics": {
+    "title": "Analytique d'Apprentissage",
+    "subtitle": "Statistiques en temps réel calculées à partir de vos activités d'apprentissage.",
+    "noData": "Aucune activité enregistrée.",
+    "noAssessments": "Aucune évaluation effectuée.",
+    "streak": "Série Actuelle",
+    "activeDays": "Jours d'Apprentissage Actifs",
+    "sessionsThisWeek": "Sessions cette semaine",
+    "avgScore": "Score Moyen"
+  },
+  "learningStyle": {
+    "title": "Style d'Apprentissage Adaptatif",
+    "inferred": "Préférence d'Apprentissage",
+    "discovering": "Analyse de vos préférences en cours d'utilisation.",
+    "visual": "Visuel (Schémas & Vidéos)",
+    "reading": "Lecture/Écriture (Docs & Articles)",
+    "practice": "Pratique (Code & Quizz)",
+    "auditory": "Auditif (Lectures & Podcasts)"
+  },
+  "offline": {
+    "online": "En ligne",
+    "offline": "Mode hors ligne",
+    "syncing": "Synchronisation...",
+    "synced": "Synchronisé"
+  },
+  "common": {
+    "learnMore": "En savoir plus",
+    "viewDetails": "Voir les détails",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "cancel": "Annuler",
+    "loading": "Chargement des données..."
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "roadmap": "Lern-Roadmap",
+    "resources": "Ressourcen",
+    "resume": "Lebenslauf-Intelligenz",
+    "jobs": "Stellenangebote",
+    "projects": "Projekte",
+    "certifications": "Zertifizierungen",
+    "career": "Karriereanalyse",
+    "profile": "Profil & Fähigkeiten",
+    "settings": "Einstellungen",
+    "assessment": "Wissensprüfung"
+  },
+  "dashboard": {
+    "welcome": "Willkommen zurück",
+    "learningIntelligence": "Deine Lern-Intelligenz",
+    "careerReadiness": "Karriere-Bereitschaft",
+    "learningProgress": "Lernfortschritt",
+    "skillsDeveloped": "Erfasste Fähigkeiten",
+    "assessmentsTaken": "Absolvierte Prüfungen",
+    "studyConsistency": "Lern-Konsistenz",
+    "topicCompletion": "Themenabschluss",
+    "assessmentPerformance": "Prüfungsleistung",
+    "emptyStateTitle": "Dashboard nicht verfügbar",
+    "emptyStateDesc": "Vervollständige dein Profil und lege dein Karriereziel fest.",
+    "completeProfile": "Profil vervollständigen"
+  },
+  "aiMentor": {
+    "title": "PathForge KI-Mentor",
+    "subtitle": "Dein persönlicher akademischer & Karriere-Mentor mit Live-Daten.",
+    "inputPlaceholder": "Frage nach Wissenslücken, Lernpfad oder Interviewvorbereitung...",
+    "send": "Senden"
+  },
+  "analytics": {
+    "title": "Lern-Analytik & Fortschritt",
+    "subtitle": "Echtzeit-Analysen basierend auf deinen Lerneinheiten und Prüfungen.",
+    "noData": "Noch keine Lernaktivität erfasst.",
+    "noAssessments": "Noch keine Prüfungen absolviert.",
+    "streak": "Aktuelle Serie (Streak)",
+    "activeDays": "Aktive Lerntage",
+    "sessionsThisWeek": "Sitzungen diese Woche",
+    "avgScore": "Durchschnittsnote"
+  },
+  "learningStyle": {
+    "title": "Adaptiver Lernstil",
+    "inferred": "Ermittelte Lernpräferenz",
+    "discovering": "Lernpräferenzen werden während der Nutzung von PathForge ermittelt.",
+    "visual": "Visuell (Diagramme & Videos)",
+    "reading": "Lesen/Schreiben (Doku & Artikel)",
+    "practice": "Praktisch (Code & Quizzes)",
+    "auditory": "Auditiv (Vorlesungen & Podcasts)"
+  },
+  "offline": {
+    "online": "Online",
+    "offline": "Offline-Modus",
+    "syncing": "Synchronisieren...",
+    "synced": "Synchronisiert"
+  },
+  "common": {
+    "learnMore": "Mehr erfahren",
+    "viewDetails": "Details anzeigen",
+    "save": "Speichern",
+    "saved": "Gespeichert",
+    "cancel": "Abbrechen",
+    "loading": "Lade Daten..."
+  }
+}

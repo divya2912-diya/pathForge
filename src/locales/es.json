@@ -1,0 +1,68 @@
+{
+  "nav": {
+    "dashboard": "Panel de Control",
+    "roadmap": "Ruta de Aprendizaje",
+    "resources": "Recursos",
+    "resume": "Inteligencia de CV",
+    "jobs": "Notificaciones de Empleo",
+    "projects": "Proyectos",
+    "certifications": "Certificaciones",
+    "career": "Análisis de Carrera",
+    "profile": "Perfil y Habilidades",
+    "settings": "Configuración",
+    "assessment": "Evaluación de Conocimiento"
+  },
+  "dashboard": {
+    "welcome": "Bienvenido de nuevo",
+    "learningIntelligence": "Tu Inteligencia de Aprendizaje",
+    "careerReadiness": "Preparación Profesional",
+    "learningProgress": "Progreso de Aprendizaje",
+    "skillsDeveloped": "Habilidades Registradas",
+    "assessmentsTaken": "Evaluaciones Realizadas",
+    "studyConsistency": "Consistencia de Estudio",
+    "topicCompletion": "Completado de Temas",
+    "assessmentPerformance": "Rendimiento en Evaluaciones",
+    "emptyStateTitle": "Panel No Disponible",
+    "emptyStateDesc": "Completa tu perfil y define tu meta profesional para comenzar.",
+    "completeProfile": "Completar Perfil"
+  },
+  "aiMentor": {
+    "title": "Asistente de Inteligencia PathForge AI",
+    "subtitle": "Tu mentor académico y profesional personalizado con datos en vivo.",
+    "inputPlaceholder": "Pregunta sobre brechas de habilidades, ruta de aprendizaje o preparación para entrevistas...",
+    "send": "Enviar"
+  },
+  "analytics": {
+    "title": "Analítica de Aprendizaje y Progreso",
+    "subtitle": "Estadísticas en tiempo real calculadas de tus sesiones de estudio y evaluaciones.",
+    "noData": "Sin actividad de aprendizaje registrada.",
+    "noAssessments": "Sin evaluaciones completadas aún.",
+    "streak": "Racha Actual",
+    "activeDays": "Días Activos de Aprendizaje",
+    "sessionsThisWeek": "Sesiones de Esta Semana",
+    "avgScore": "Puntaje Promedio"
+  },
+  "learningStyle": {
+    "title": "Estilo de Aprendizaje Adaptativo",
+    "inferred": "Preferencia de Aprendizaje Inferida",
+    "discovering": "Descubriendo tus preferencias a medida que usas PathForge.",
+    "visual": "Visual (Diagramas y Videos)",
+    "reading": "Lectura/Escritura (Docs y Artículos)",
+    "practice": "Práctico (Código y Quizzes)",
+    "auditory": "Auditivo (Lecturas y Podcasts)"
+  },
+  "offline": {
+    "online": "En línea",
+    "offline": "Modo fuera de línea",
+    "syncing": "Sincronizando...",
+    "synced": "Sincronizado"
+  },
+  "common": {
+    "learnMore": "Saber más",
+    "viewDetails": "Ver detalles",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "cancel": "Cancelar",
+    "loading": "Cargando datos..."
+  }
+}

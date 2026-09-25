@@ -176,6 +176,7 @@ export const NAV_MENU = [
   { id: "home", label: "Home", icon: Home },
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "analytics", label: "Learning Analytics", icon: Radar },
+  { id: "assessment", label: "Knowledge Assessment", icon: Award },
   { id: "build-path", label: "Build My Learning Path", icon: Sparkles },
   { id: "roadmap", label: "Learning Roadmap", icon: Route },
   { id: "resources", label: "Resources", icon: LayoutGrid },

@@ -8,6 +8,7 @@ import LoginView from "./components/views/LoginView";
 import LandingPage from "./components/views/LandingPage";
 import OnboardingFlow from "./components/views/OnboardingFlow";
 import AnalyzingScreen from "./components/views/AnalyzingScreen";
+import AssessmentView from "./components/views/AssessmentView";
 import DashboardView from "./components/views/DashboardView";
 import SkillsView from "./components/views/SkillsView";
 import RoadmapView from "./components/views/RoadmapView";
@@ -271,6 +272,7 @@ export default function App() {
             {active === "certifications" && <CertificationsView student={student} onUpdateStudent={handleUpdateStudent} added={added} toggleAdded={toggleAdded} go={go} />}
             {active === "career" && <CareerView student={student} onUpdateStudent={handleUpdateStudent} />}
             {active === "analytics" && <LearningAnalyticsView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
+            {active === "assessment" && <AssessmentView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
             {active === "profile" && (
               <ProfileView
                 student={student}
