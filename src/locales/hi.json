@@ -13,7 +13,8 @@
     "profile": "प्रोफ़ाइल और कौशल",
     "settings": "सेटिंग्स",
     "language": "भाषा",
-    "login": "लॉगिन / बदलें"
+    "login": "साइन इन",
+    "logout": "लॉग आउट"
   },
   "dashboard": {
     "welcome": "स्वागत है",

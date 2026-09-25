@@ -9,7 +9,9 @@
     "certifications": "Certifications",
     "career": "Career Analysis",
     "profile": "Profile & Skills",
-    "settings": "Settings"
+    "settings": "Settings",
+    "login": "Sign In",
+    "logout": "Log Out"
   },
   "dashboard": {
     "welcome": "Welcome back",

@@ -1,10 +1,10 @@
 import React from "react";
-import { Flame, X, LogIn } from "lucide-react";
+import { Flame, X, LogIn, LogOut } from "lucide-react";
 import { NAV_MENU } from "../../data/mockData";
 import { LanguageSelector } from "../ui/LanguageSelector";
 import { getTranslation } from "../../services/i18nService";
 
-export function NavDrawer({ open, onClose, active, onNavigate, language = "en", onLanguageChange }) {
+export function NavDrawer({ open, onClose, active, onNavigate, language = "en", onLanguageChange, student, onLogout }) {
   return (
     <>
       {open && (
@@ -50,14 +50,30 @@ export function NavDrawer({ open, onClose, active, onNavigate, language = "en", 
             <LanguageSelector currentLang={language} onLanguageChange={onLanguageChange} />
           </div>
 
-          <button
-            onClick={() => onNavigate("login")}
-            className={`lp-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left cursor-pointer ${active === "login" ? "active" : ""}`}
-            style={{ color: active === "login" ? "#fff" : "var(--text-dim)" }}
-          >
-            <LogIn size={17} className="shrink-0 text-cyan-400" />
-            <span>{getTranslation("nav.login", language)}</span>
-          </button>
+          {student ? (
+            <button
+              onClick={() => {
+                onClose();
+                if (onLogout) onLogout();
+              }}
+              className="lp-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left cursor-pointer hover:bg-red-500/10 hover:text-red-400 text-rose-300 transition-colors"
+            >
+              <LogOut size={17} className="shrink-0 text-rose-400" />
+              <span>{getTranslation("nav.logout", language)}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                onClose();
+                onNavigate("login");
+              }}
+              className={`lp-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left cursor-pointer ${active === "login" ? "active" : ""}`}
+              style={{ color: active === "login" ? "#fff" : "var(--text-dim)" }}
+            >
+              <LogIn size={17} className="shrink-0 text-cyan-400" />
+              <span>{getTranslation("nav.login", language)}</span>
+            </button>
+          )}
         </div>
       </aside>
     </>

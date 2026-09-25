@@ -260,6 +260,8 @@ export default function App() {
         onNavigate={navigate}
         language={language}
         onLanguageChange={handleLanguageChange}
+        student={student}
+        onLogout={handleLogout}
       />
 
       {stage === "login" && (
