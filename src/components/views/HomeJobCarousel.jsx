@@ -22,7 +22,7 @@ export function HomeJobCarousel({ student, onUpdateStudent, go }) {
 
   // Section Entry Intersection Observer State
   const containerRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   // Reduced Motion Preference
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);

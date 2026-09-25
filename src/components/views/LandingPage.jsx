@@ -29,7 +29,7 @@ function getRequiredSkillsForCareer(targetCareer) {
 
 function RevealSection({ children, className = "" }) {
   const ref = React.useRef(null);
-  const [isVisible, setIsVisible] = React.useState(false);
+  const [isVisible, setIsVisible] = React.useState(true);
 
   React.useEffect(() => {
     const el = ref.current;
