@@ -25,7 +25,22 @@
     "assessmentPerformance": "Assessment Performance",
     "emptyStateTitle": "Dashboard Not Available",
     "emptyStateDesc": "Complete your profile and set your career goal to begin your personalized career journey.",
-    "completeProfile": "Complete Profile"
+    "completeProfile": "Complete Profile",
+    "continueLearning": "Continue Learning",
+    "updateGoal": "Update Goal"
+  },
+  "roadmap": {
+    "title": "Learning Roadmap",
+    "subtitle": "Custom roadmap tailored to your target career.",
+    "startLearning": "Start Learning",
+    "continueLearning": "Continue Learning",
+    "markComplete": "Mark Complete",
+    "completed": "Completed",
+    "inProgress": "In Progress",
+    "locked": "Locked",
+    "upcoming": "Upcoming",
+    "saveForOffline": "Save for Offline",
+    "offlineNotice": "Internet connection required to open external resource."
   },
   "aiMentor": {
     "title": "PathForge AI Intelligence Assistant",
