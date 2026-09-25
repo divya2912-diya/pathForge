@@ -3278,7 +3278,7 @@ export default function App() {
         <div>
           <TopBar title={titleMap[active]} onProfileClick={() => go("profile")} student={student} />
           <main className="px-5 md:px-8 py-7 max-w-7xl mx-auto">
-            {active === "dashboard" && <DashboardView go={go} />}
+            {active === "dashboard" && <DashboardView go={go} student={student} />}
             {active === "roadmap" && <RoadmapView />}
             {active === "resources" && <ResourcesView />}
             {active === "resume" && <ResumeView />}

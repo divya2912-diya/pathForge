@@ -11,6 +11,7 @@ import Pill from "../ui/Pill";
 import ProgressRing from "../ui/ProgressRing";
 import { SKILL_REQUIREMENTS } from "../../data/userProfile";
 import { loadMilestoneProgress } from "../../data/supabaseAuth";
+import { CareerJourneyMap } from "./CareerJourneyMap";
 
 export function DashboardView({ go, student }) {
   const [dbProgress, setDbProgress] = useState(null);
@@ -192,6 +193,9 @@ export function DashboardView({ go, student }) {
           </GlassCard>
         ))}
       </div>
+
+      {/* 2.5 Dynamic Career Intelligence Journey Map */}
+      <CareerJourneyMap student={student} onNavigate={go} />
 
       {/* 3. Career Skill Gaps */}
       <div className="grid lg:grid-cols-3 gap-6">
