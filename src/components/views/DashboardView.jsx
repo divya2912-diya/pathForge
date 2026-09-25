@@ -147,10 +147,10 @@ export function DashboardView({ go, student, onUpdateStudent }) {
   // FULLY POPULATED AUTHENTIC DASHBOARD
   // --------------------------------------------------------
   const stats = [
-    { label: "Career readiness", value: careerReadiness, icon: Compass, tone: "cyan", suffix: "%" },
-    { label: "Learning progress", value: learningProgress, icon: TrendingUp, tone: "violet", suffix: "%" },
-    { label: "Skills listed", value: totalSkillsCount, icon: Radar, tone: "green", suffix: "" },
-    { label: "Assessments taken", value: totalAssessments, icon: Flame, tone: "amber", suffix: "" },
+    { label: "Career readiness", value: careerReadiness, icon: Compass, tone: "cyan", suffix: "%", target: "career" },
+    { label: "Learning progress", value: learningProgress, icon: TrendingUp, tone: "violet", suffix: "%", target: "roadmap" },
+    { label: "Skills listed", value: totalSkillsCount, icon: Radar, tone: "green", suffix: "", target: "profile" },
+    { label: "Assessments taken", value: totalAssessments, icon: Flame, tone: "amber", suffix: "", target: "assessment" },
   ];
 
   return (
@@ -189,11 +189,17 @@ export function DashboardView({ go, student, onUpdateStudent }) {
       {/* 2. Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(s => (
-          <GlassCard key={s.label} hover className="p-5">
+          <GlassCard 
+            key={s.label} 
+            hover 
+            onClick={() => go?.(s.target)} 
+            className="p-5 cursor-pointer hover:border-cyan-500/40 transition-all group"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-${s.tone}-500/10`}>
                 <s.icon size={16} className={`text-${s.tone}-400`} />
               </div>
+              <ChevronRight size={15} className="text-slate-500 group-hover:text-cyan-300 group-hover:translate-x-1 transition-all" />
             </div>
             <p className="lp-display text-2xl font-semibold text-white">
               <AnimatedCounter to={s.value} suffix={s.suffix} />
@@ -266,7 +272,7 @@ export function DashboardView({ go, student, onUpdateStudent }) {
 
           {/* Card 5: Assessment Performance -> Assessments */}
           <div 
-            onClick={() => go?.("roadmap")} 
+            onClick={() => go?.("assessment")} 
             className="p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-blue-500/20 hover:border-blue-400/50 cursor-pointer transition-all space-y-2 group"
           >
             <div className="flex items-center justify-between text-xs text-slate-400">
