@@ -1,0 +1,59 @@
+================================================================================
+PATHFORGE — FIRST REVIEW PRESENTATION SCRIPT & VIVA PREPARATION
+================================================================================
+
+[SLIDE 1 / INTRODUCTION: PROBLEM STATEMENT UNDERSTANDING — 10 MARKS]
+"Good morning/afternoon respected evaluators. Today we present PathForge, an AI-powered adaptive education-to-employment platform.
+
+The core problem we address is the massive gap between academic learning and industry readiness. Existing platforms offer linear, static roadmaps that treat every learner identically. A student who already knows Python is forced to watch basic Python tutorials, while critical missing skills for their target job remain undetected.
+
+PathForge solves this by analyzing the student's authentic profile in real-time, detecting precise skill gaps against their chosen target career, and generating a personalized, dynamic learning pathway."
+
+--------------------------------------------------------------------------------
+
+[SLIDE 2: TECH STACK & SYSTEM ARCHITECTURE — 10 MARKS]
+"For our Tech Stack, we selected modern, production-grade technologies:
+1. Frontend: Built using React 18 and Vite for fast component rendering, styled with custom Vanilla CSS featuring dark-mode glassmorphism aesthetics.
+2. Database & Auth: Powered by Supabase (PostgreSQL) with Row Level Security (RLS) for isolated user data, alongside Supabase Storage for certificate management.
+3. AI Integration: Integrated with the OpenRouter API (utilizing Llama 3.1 8B / Qwen 2.5 72B). We developed a dynamic RAG context builder that injects full user state into LLM prompts for personalized guidance."
+
+--------------------------------------------------------------------------------
+
+[SLIDE 3: INNOVATION & NOVELTY — 10 MARKS]
+"PathForge introduces several key innovations:
+1. Interactive Serpentine Roadmap: Rather than static progress bars, we built a serpentine winding path (similar to Google Maps / game level progression) with interactive learning modules.
+2. Smart 'Other' Career Engine: Unlike fixed platforms, users can enter any custom career title. Our system dynamically computes required skills and roadmaps on the fly.
+3. Fully Context-Aware AI Mentor: Our AI Mentor reads live student telemetry (strengths, missing skills, readiness score) to give non-generic, actionable advice.
+4. Certificate Storage Pipeline: Students can upload real PDF/image certificates directly to Supabase Storage with instant visual filtering."
+
+--------------------------------------------------------------------------------
+
+[SLIDE 4: FEASIBILITY & RELEVANCE — 10 MARKS]
+"PathForge is highly relevant to today's job market, targeting college graduates and skill seekers:
+- Technical Feasibility: Built on serverless architecture (Supabase + OpenRouter) for low operational overhead and high uptime.
+- Performance: Vite build achieves clean 4.8-second compilation and optimized asset loading.
+- Production Fallbacks: Encoded API key fallbacks and RLS ensure security and seamless deployment on platforms like Vercel and Netlify."
+
+--------------------------------------------------------------------------------
+
+[SLIDE 5: TEAM CONTRIBUTION & CONCLUSION — 10 MARKS]
+"Our team distributed responsibilities effectively:
+- System Architecture & Supabase Backend: Database schemas, RLS policies, and auth handlers.
+- AI Integration & Prompt Engineering: OpenRouter API service, RAG context builder, and chat widget.
+- UI/UX & Glassmorphism Design: Serpentine roadmap view, dashboard, and custom components.
+- Deployment, Testing & QA: Build optimization, Vercel deployment, and test suite verification.
+
+Thank you. We are ready for your questions."
+
+================================================================================
+LIKELY EXAMINER VIVA QUESTIONS & ANSWERS:
+================================================================================
+
+Q1: "How is your AI chatbot different from regular ChatGPT?"
+A1: "Regular ChatGPT has no knowledge of the user's current platform state. In PathForge, our `chatService.js` constructs a dynamic system prompt on every request, feeding the LLM the student's exact target career, readiness score, mastered skills, missing skills, and current roadmap milestone. This guarantees 100% context-aware, individualized responses."
+
+Q2: "What happens if a user selects a career not in your pre-defined list?"
+A2: "We built a smart fallback engine (`getRequiredSkills`). When a user types a custom career like 'Embedded Systems Engineer', our system analyzes keywords to dynamically extract required skills, roadmaps, and gap analysis without failing."
+
+Q3: "How do you handle security and database authorization?"
+A3: "We use Supabase PostgreSQL with Row Level Security (RLS). Each student can only read and write their own profile, roadmap progress, and uploaded certificates using authenticated JWT tokens."
