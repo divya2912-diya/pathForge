@@ -28,7 +28,7 @@ const CertIcon = ({ icon: Icon, tone = "violet" }) => {
 
 // ── Main View ───────────────────────────────────────────────────
 export function CertificationsView({ student, onUpdateStudent, added, toggleAdded }) {
-  const [activeTab, setActiveTab] = useState("recommended");
+  const [activeTab, setActiveTab] = useState("all");
   const [catalog, setCatalog] = useState([]);
   const [savedIds, setSavedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
@@ -40,9 +40,11 @@ export function CertificationsView({ student, onUpdateStudent, added, toggleAdde
   // Modals
   const [selectedCert, setSelectedCert] = useState(null);
   
-  // My Certifications state
+  // My Certifications state & file upload
   const [myCertToEdit, setMyCertToEdit] = useState(null);
   const [myCertModalOpen, setMyCertModalOpen] = useState(false);
+  const [certFileName, setCertFileName] = useState("");
+  const [certFileUrl, setCertFileUrl] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
@@ -71,7 +73,7 @@ export function CertificationsView({ student, onUpdateStudent, added, toggleAdde
   }, [catalog, student]);
 
   // Derived Career Data
-  const targetCareer = student?.targetCareer || "Software Engineer";
+  const targetCareer = student?.targetCareer || "Career goal not set";
   const requiredSkills = (SKILL_REQUIREMENTS[targetCareer] || []).map(s => s.toLowerCase());
   const userSkills = (student?.skills || []).map(s => s.toLowerCase());
   const missingSkills = requiredSkills.filter(req => !userSkills.some(us => req.includes(us) || us.includes(req)));
@@ -79,7 +81,7 @@ export function CertificationsView({ student, onUpdateStudent, added, toggleAdde
 
   // Filter & Sort
   const filteredCerts = useMemo(() => {
-    let res = [...recommendations];
+    let res = activeTab === "recommended" ? [...recommendations] : [...catalog];
     
     if (search.trim()) {
       const query = search.toLowerCase();
@@ -97,7 +99,7 @@ export function CertificationsView({ student, onUpdateStudent, added, toggleAdde
       res.sort((a, b) => (diffRank[a.difficulty] || 0) - (diffRank[b.difficulty] || 0));
     }
     return res;
-  }, [recommendations, search, sortBy]);
+  }, [recommendations, catalog, activeTab, search, sortBy]);
 
   // Handlers
   const handleToggleSave = async (e, certId) => {
@@ -114,7 +116,6 @@ export function CertificationsView({ student, onUpdateStudent, added, toggleAdde
 
     const res = await toggleSavedCertification(certId, isSaved);
     if (!res.success) {
-      // Revert if failed (simplified error handling)
       setSavedIds(prev => {
         const next = new Set(prev);
         if (isSaved) next.add(certId);
@@ -122,6 +123,24 @@ export function CertificationsView({ student, onUpdateStudent, added, toggleAdde
         return next;
       });
     }
+  };
+
+  const handleCertFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['pdf', 'png', 'jpg', 'jpeg'].includes(ext)) {
+      alert("Please select a PDF, PNG, or JPG file.");
+      return;
+    }
+    setCertFileName(file.name);
+    
+    // Convert to base64 Data URL for guaranteed client & offline persistence
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCertFileUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveMyCert = (e) => {
@@ -133,7 +152,8 @@ export function CertificationsView({ student, onUpdateStudent, added, toggleAdde
       issuer: fd.get("issuer"),
       issueDate: fd.get("issueDate"),
       credentialId: fd.get("credentialId"),
-      credentialUrl: fd.get("credentialUrl"),
+      credentialUrl: certFileUrl || myCertToEdit?.credentialUrl || fd.get("credentialUrl"),
+      fileName: certFileName || myCertToEdit?.fileName || "certificate_file",
       skills: fd.get("skills") ? fd.get("skills").split(",").map(s => s.trim()).filter(Boolean) : [],
     };
     
@@ -147,6 +167,8 @@ export function CertificationsView({ student, onUpdateStudent, added, toggleAdde
     
     onUpdateStudent?.({ ...student, certificationsList: list }, "Certification saved!");
     setMyCertModalOpen(false);
+    setCertFileName("");
+    setCertFileUrl("");
   };
 
   const handleDeleteMyCert = () => {
@@ -168,17 +190,27 @@ export function CertificationsView({ student, onUpdateStudent, added, toggleAdde
             subtitle="Personalized recommendations and credential management." 
           />
         </div>
+        <button
+          onClick={() => { setMyCertToEdit(null); setCertFileName(""); setCertFileUrl(""); setMyCertModalOpen(true); }}
+          className="px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl font-bold text-xs text-white hover:from-cyan-400 transition-all shadow-md flex items-center gap-2 shrink-0 cursor-pointer"
+        >
+          <Plus size={16} /> Add Certification
+        </button>
       </div>
 
       {/* Tabs */}
       <div className="flex items-center gap-1 p-1 bg-white/[0.03] border border-white/5 rounded-xl w-fit">
+        <button onClick={() => setActiveTab("all")} 
+          className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === "all" ? "bg-white/10 text-white shadow-sm" : "text-slate-400 hover:text-white hover:bg-white/5"}`}>
+          All Certifications
+        </button>
         <button onClick={() => setActiveTab("recommended")} 
           className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === "recommended" ? "bg-white/10 text-white shadow-sm" : "text-slate-400 hover:text-white hover:bg-white/5"}`}>
-          Recommended Certifications
+          Recommended
         </button>
         <button onClick={() => setActiveTab("my-certs")} 
           className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === "my-certs" ? "bg-white/10 text-white shadow-sm" : "text-slate-400 hover:text-white hover:bg-white/5"}`}>
-          My Certifications
+          My Certifications ({student?.certificationsList?.length || 0})
         </button>
       </div>
 
@@ -492,7 +524,25 @@ export function CertificationsView({ student, onUpdateStudent, added, toggleAdde
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1">Credential URL</label>
+              <label className="block text-xs font-semibold text-slate-400 mb-1">Certificate File (PDF, PNG, JPG/JPEG) *</label>
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 px-4 py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-xl text-xs font-bold text-cyan-300 cursor-pointer transition-colors">
+                  <UploadCloud size={16} /> Upload from My Computer
+                  <input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={handleCertFileChange} className="hidden" />
+                </label>
+                {certFileName ? (
+                  <span className="text-xs text-emerald-400 font-medium truncate max-w-[200px]">
+                    ✓ {certFileName}
+                  </span>
+                ) : myCertToEdit?.fileName ? (
+                  <span className="text-xs text-slate-400 font-medium truncate max-w-[200px]">
+                    {myCertToEdit.fileName}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 mb-1">Credential / Verification URL (optional)</label>
               <input name="credentialUrl" defaultValue={myCertToEdit?.credentialUrl} placeholder="https://" className="w-full bg-[#0a0f1c] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50" />
             </div>
             <div>

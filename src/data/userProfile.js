@@ -577,7 +577,7 @@ export function calculateDynamicReadiness(student) {
     return null;
   }
 
-  const required = SKILL_REQUIREMENTS[targetCareer] || [];
+  const required = getRequiredSkills(targetCareer);
   const matchedCount = userSkills.filter((s) =>
     required.some((r) => r.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(r.toLowerCase()))
   ).length;
@@ -592,12 +592,50 @@ export function calculateDynamicReadiness(student) {
 
 
 /**
+ * Helper to get required skills for any target career, including custom "Other" careers.
+ */
+export function getRequiredSkills(targetCareer) {
+  if (!targetCareer) return [];
+  if (SKILL_REQUIREMENTS[targetCareer]) return SKILL_REQUIREMENTS[targetCareer];
+
+  const c = targetCareer.toLowerCase();
+  if (c.includes("game") || c.includes("graphics")) {
+    return ["C++", "C#", "Data Structures", "Algorithms", "3D Math", "Git", "System Design", "Game Engines"];
+  }
+  if (c.includes("embed") || c.includes("hardware") || c.includes("iot")) {
+    return ["C", "C++", "Microcontrollers", "RTOS", "Linux", "Electronics", "Git", "System Architecture"];
+  }
+  if (c.includes("mobile") || c.includes("android") || c.includes("ios")) {
+    return ["Kotlin", "Swift", "React Native", "Flutter", "REST APIs", "Git", "UI/UX", "Mobile Architecture"];
+  }
+  return [
+    "Programming Fundamentals",
+    "Data Structures",
+    "Core Frameworks",
+    "Databases & SQL",
+    "Version Control (Git)",
+    "System Architecture",
+    "Testing & Debugging",
+    "Portfolio Projects",
+  ];
+}
+
+/**
  * Get a personalized roadmap for the user's career, adjusting status
  * based on skills they already have.
  */
 export function getPersonalizedRoadmap(targetCareer, userSkills = []) {
-  const roadmap = CAREER_ROADMAPS[targetCareer] || CAREER_ROADMAPS["Software Engineer"];
-  return roadmap;
+  if (CAREER_ROADMAPS[targetCareer]) return CAREER_ROADMAPS[targetCareer];
+  const reqs = getRequiredSkills(targetCareer);
+  return reqs.map((skill, idx) => ({
+    id: idx + 1,
+    title: skill,
+    status: idx === 0 ? "done" : idx === 1 ? "in-progress" : idx < 4 ? "upcoming" : "locked",
+    duration: `${2 + (idx % 3)} weeks`,
+    difficulty: idx < 2 ? "Beginner" : idx < 5 ? "Intermediate" : "Advanced",
+    desc: `Master core concepts and practical application of ${skill} for ${targetCareer}.`,
+    relevance: `Essential milestone for ${targetCareer} roles.`,
+  }));
 }
 
 /**
@@ -611,7 +649,7 @@ export function getGapToHirePlan(targetCareer) {
  * Compute strengths and gaps from user skills vs. career requirements.
  */
 export function getStrengthsAndGaps(userSkills = [], targetCareer) {
-  const required = SKILL_REQUIREMENTS[targetCareer] || [];
+  const required = getRequiredSkills(targetCareer);
   const strengths = userSkills.filter((s) =>
     required.some(
       (r) =>

@@ -252,14 +252,15 @@ export default function App() {
             title={titleMap[active]}
             onProfileClick={() => go("profile")}
             student={student}
+            go={go}
           />
           <main className="px-5 md:px-8 py-7 max-w-7xl mx-auto">
             {active === "dashboard" && <DashboardView go={go} student={student} />}
             {active === "roadmap" && <RoadmapView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
-            {active === "resources" && <ResourcesView student={student} />}
+            {active === "resources" && <ResourcesView student={student} added={added} toggleAdded={toggleAdded} go={go} />}
             {active === "resume" && <ResumeView student={student} />}
-            {active === "projects" && <ProjectsView added={added} toggleAdded={toggleAdded} />}
-            {active === "certifications" && <CertificationsView added={added} toggleAdded={toggleAdded} />}
+            {active === "projects" && <ProjectsView student={student} added={added} toggleAdded={toggleAdded} go={go} />}
+            {active === "certifications" && <CertificationsView student={student} onUpdateStudent={handleUpdateStudent} added={added} toggleAdded={toggleAdded} go={go} />}
             {active === "career" && <CareerView student={student} onUpdateStudent={handleUpdateStudent} />}
             {active === "profile" && (
               <ProfileView

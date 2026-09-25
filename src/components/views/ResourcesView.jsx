@@ -5,7 +5,7 @@ import SectionHeader from "../ui/SectionHeader";
 import Pill from "../ui/Pill";
 import { RESOURCES, RESOURCE_ICONS } from "../../data/mockData";
 
-export function ResourcesView() {
+export function ResourcesView({ student, added, toggleAdded, go }) {
   const [filter, setFilter] = useState("All");
   const [domainFilter, setDomainFilter] = useState("All Domains");
   const [activeVideo, setActiveVideo] = useState(null);
@@ -76,13 +76,31 @@ export function ResourcesView() {
                 <span>{r.type}</span><span>·</span><span>{r.difficulty}</span><span>·</span><span>{r.time}</span>
               </div>
               <p className="text-xs flex-1 mb-4" style={{ color: "#8b93a7" }}>{r.reason}</p>
-              <button 
-                onClick={() => handleOpenResource(r)}
-                className="lp-btn-ghost text-xs py-2 rounded-lg w-full flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                {r.type === "Course" ? <PlayCircle size={13} /> : <ExternalLink size={13} />}
-                Open resource
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleOpenResource(r)}
+                  className="lp-btn-ghost text-xs py-2 rounded-lg flex-1 flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  {r.type === "Course" ? <PlayCircle size={13} /> : <ExternalLink size={13} />}
+                  Open resource
+                </button>
+                <button
+                  onClick={() => toggleAdded?.(r.id)}
+                  className={`text-xs py-2 px-3 rounded-lg border font-semibold flex items-center gap-1 transition-all ${
+                    added?.has(r.id) 
+                      ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                      : "bg-white/5 hover:bg-white/10 text-slate-300 border-white/10"
+                  }`}
+                >
+                  {added?.has(r.id) ? "✓ Added" : "+ Roadmap"}
+                </button>
+              </div>
+              {added?.has(r.id) && (
+                <div className="mt-2 text-[11px] text-emerald-400 flex items-center justify-between">
+                  <span>✓ Added to your roadmap</span>
+                  <button onClick={() => go?.("roadmap")} className="underline font-semibold hover:text-cyan-300">View Roadmap</button>
+                </div>
+              )}
             </GlassCard>
           );
         })}
