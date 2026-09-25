@@ -11,6 +11,7 @@ import { SKILL_REQUIREMENTS, CAREER_ROADMAPS } from "../../data/userProfile";
 import { HomeJobCarousel } from "./HomeJobCarousel";
 import { LanguageSelector } from "../ui/LanguageSelector";
 import { getTranslation } from "../../services/i18nService";
+import { PlatformOverviewModal } from "../ui/PlatformOverviewModal";
 
 function getRequiredSkillsForCareer(targetCareer) {
   if (!targetCareer) return [];
@@ -62,6 +63,7 @@ function RevealSection({ children, className = "" }) {
 
 export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, onUpdateStudent, go, language = "en", onLanguageChange }) {
   const t = (key) => getTranslation(key, language);
+  const [showOverviewModal, setShowOverviewModal] = React.useState(false);
 
   // Extract real dynamic user data (Single Source of Truth)
   const userSkills = Array.isArray(student?.skills) ? student.skills : [];
@@ -206,7 +208,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
             </button>
             <button
               id="btn-landing-explore"
-              onClick={onExplore}
+              onClick={() => setShowOverviewModal(true)}
               className="lp-btn-ghost px-5 py-3.5 rounded-xl text-[14px] text-slate-300 hover:text-white cursor-pointer"
             >
               {t("landing.explorePlatform")}
@@ -408,6 +410,16 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
           </div>
         </GlassCard>
       </RevealSection>
+
+      <PlatformOverviewModal
+        open={showOverviewModal}
+        onClose={() => setShowOverviewModal(false)}
+        onSelectPage={(pageId) => {
+          if (go) go(pageId);
+          else if (onExplore) onExplore(pageId);
+        }}
+        language={language}
+      />
     </div>
   );
 }
