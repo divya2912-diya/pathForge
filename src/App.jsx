@@ -18,7 +18,7 @@ import CertificationsView from "./components/views/CertificationsView";
 import CareerView from "./components/views/CareerView";
 import ProfileView from "./components/views/ProfileView";
 import SettingsView from "./components/views/SettingsView";
-import AIAssistant from "./components/AIAssistant";
+import ChatWidget from "./components/ChatWidget";
 
 import { NAV_MENU } from "./data/mockData";
 import {
@@ -35,7 +35,6 @@ export default function App() {
   const [stage, setStage] = useState("loading"); // loading | login | landing | onboarding | analyzing | app
   const [active, setActive] = useState("dashboard");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [assistantOpen, setAssistantOpen] = useState(false);
   const [added, setAdded] = useState(new Set());
   const [toast, setToast] = useState(null);
   const [student, setStudent] = useState(null);
@@ -273,7 +272,7 @@ export default function App() {
               <SettingsView student={student} onLogout={handleLogout} onUpdateStudent={handleUpdateStudent} />
             )}
           </main>
-          <AIAssistant open={assistantOpen} setOpen={setAssistantOpen} student={student} />
+          <ChatWidget student={student} />
           {toast && <Toast message={toast} onClose={() => setToast(null)} />}
         </div>
       )}
