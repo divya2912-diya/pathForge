@@ -4,10 +4,9 @@
 //  Key is stored in .env only — never exposed in the UI.
 // ============================================================
 
-// Free model on OpenRouter — no billing required
-// Other free options: "mistralai/mistral-7b-instruct:free"
-//                     "google/gemma-2-9b-it:free"
-const OR_MODEL = "meta-llama/llama-3.1-8b-instruct:free";
+// Use OpenRouter's auto-router — it picks the best free model automatically.
+// This never 404s because it adapts to whatever models are currently available.
+const OR_MODEL = "openrouter/auto";
 const OR_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 /**
