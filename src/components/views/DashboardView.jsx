@@ -12,8 +12,9 @@ import ProgressRing from "../ui/ProgressRing";
 import { SKILL_REQUIREMENTS } from "../../data/userProfile";
 import { loadMilestoneProgress } from "../../data/supabaseAuth";
 import { CareerJourneyMap } from "./CareerJourneyMap";
+import { HomeJobCarousel } from "./HomeJobCarousel";
 
-export function DashboardView({ go, student }) {
+export function DashboardView({ go, student, onUpdateStudent }) {
   const [dbProgress, setDbProgress] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -196,6 +197,9 @@ export function DashboardView({ go, student }) {
 
       {/* 2.5 Dynamic Career Intelligence Journey Map */}
       <CareerJourneyMap student={student} onNavigate={go} />
+
+      {/* 2.6 Domain-Wise Horizontal Job Opportunities Carousel */}
+      <HomeJobCarousel student={student} onUpdateStudent={onUpdateStudent} go={go} />
 
       {/* 3. Career Skill Gaps */}
       <div className="grid lg:grid-cols-3 gap-6">

@@ -4,6 +4,43 @@
 
 import { SKILL_REQUIREMENTS } from "../data/userProfile";
 
+/**
+ * Reusable domain classification function.
+ * Classifies jobs into domains based on source category, job title, and required skills.
+ */
+export function classifyJobDomain(job) {
+  if (job.domain) return job.domain;
+  
+  const text = (
+    (job.title || "") + " " + 
+    (job.category || "") + " " + 
+    (Array.isArray(job.skills) ? job.skills.join(" ") : "")
+  ).toLowerCase();
+
+  if (text.includes("ai") || text.includes("machine learning") || text.includes("ml") || text.includes("deep learning") || text.includes("tensorflow") || text.includes("pytorch") || text.includes("nlp")) {
+    return "AI / Machine Learning";
+  }
+  if (text.includes("data analyst") || text.includes("data science") || text.includes("tableau") || text.includes("statistics") || text.includes("pandas") || text.includes("analytics")) {
+    return "Data Science & Analytics";
+  }
+  if (text.includes("cloud") || text.includes("devops") || text.includes("aws") || text.includes("docker") || text.includes("kubernetes") || text.includes("azure") || text.includes("ci/cd")) {
+    return "Cloud & DevOps";
+  }
+  if (text.includes("security") || text.includes("cyber") || text.includes("network") || text.includes("cryptography") || text.includes("firewall")) {
+    return "Cybersecurity";
+  }
+  if (text.includes("frontend") || text.includes("react") || text.includes("web") || text.includes("html") || text.includes("css") || text.includes("ui/ux") || text.includes("next")) {
+    return "Web Development";
+  }
+  if (text.includes("backend") || text.includes("node") || text.includes("express") || text.includes("api") || text.includes("sql") || text.includes("postgres") || text.includes("java")) {
+    return "Backend Development";
+  }
+  if (text.includes("android") || text.includes("ios") || text.includes("mobile") || text.includes("flutter") || text.includes("react native")) {
+    return "Mobile Development";
+  }
+  return "Software Development";
+}
+
 // Real Verified Tech Job Catalog (High-quality active vacancies with official career URLs)
 const REAL_JOB_DATABASE = [
   {
@@ -19,6 +56,7 @@ const REAL_JOB_DATABASE = [
     url: "https://www.metacareers.com/jobs",
     source: "Meta Careers",
     category: "Full Stack Developer",
+    domain: "Web Development",
     notificationType: "🎯 Recommended Job"
   },
   {
@@ -34,6 +72,7 @@ const REAL_JOB_DATABASE = [
     url: "https://stripe.com/jobs",
     source: "Stripe Careers",
     category: "Full Stack Developer",
+    domain: "Software Development",
     notificationType: "⚡ High Skill Match"
   },
   {
@@ -49,6 +88,7 @@ const REAL_JOB_DATABASE = [
     url: "https://openai.com/careers",
     source: "OpenAI Careers",
     category: "AI / ML Engineer",
+    domain: "AI / Machine Learning",
     notificationType: "🆕 New Job"
   },
   {
@@ -64,6 +104,7 @@ const REAL_JOB_DATABASE = [
     url: "https://amazon.jobs",
     source: "Amazon Jobs",
     category: "Backend Developer",
+    domain: "Backend Development",
     notificationType: "📍 Location Match"
   },
   {
@@ -79,6 +120,7 @@ const REAL_JOB_DATABASE = [
     url: "https://www.google.com/about/careers/applications/jobs/results/",
     source: "Google Careers",
     category: "Cloud / DevOps Engineer",
+    domain: "Cloud & DevOps",
     notificationType: "💻 Remote Opportunity"
   },
   {
@@ -94,6 +136,7 @@ const REAL_JOB_DATABASE = [
     url: "https://jobs.netflix.com/",
     source: "Netflix Jobs",
     category: "Data Analyst",
+    domain: "Data Science & Analytics",
     notificationType: "🎯 Recommended Job"
   },
   {
@@ -109,6 +152,7 @@ const REAL_JOB_DATABASE = [
     url: "https://careers.microsoft.com/",
     source: "Microsoft Careers",
     category: "Cybersecurity Engineer",
+    domain: "Cybersecurity",
     notificationType: "🆕 New Job"
   },
   {
@@ -124,6 +168,7 @@ const REAL_JOB_DATABASE = [
     url: "https://www.apple.com/careers/us/",
     source: "Apple Jobs",
     category: "Software Engineer",
+    domain: "Software Development",
     notificationType: "⚡ High Skill Match"
   }
 ];
@@ -141,7 +186,6 @@ function sanitizeText(str) {
 function isValidTechJob(title, company) {
   const combined = (title + " " + company).toLowerCase();
   
-  // Exclude garbled encodings or non-English non-tech categories
   if (/[\u0080-\u024F]/.test(combined) && !/[a-zA-Z]/.test(combined)) return false;
   if (combined.includes("automotriz") || combined.includes("mecanico") || combined.includes("presupuesto")) return false;
 
@@ -162,7 +206,6 @@ export async function fetchLiveJobs() {
     if (response.ok) {
       const data = await response.json();
       if (Array.isArray(data) && data.length > 1) {
-        // Skip first item metadata and filter only clean, relevant tech jobs
         const validApiJobs = data
           .slice(1)
           .filter(j => j.position && isValidTechJob(j.position, j.company || ""))
@@ -172,8 +215,8 @@ export async function fetchLiveJobs() {
             const cleanCompany = sanitizeText(job.company || "Tech Company");
             const rawTags = Array.isArray(job.tags) ? job.tags : [];
             const cleanSkills = rawTags.map(t => sanitizeText(t)).filter(t => t.length > 1).map(t => t.charAt(0).toUpperCase() + t.slice(1));
-
-            return {
+            
+            const rawObj = {
               id: `remoteok_${job.id || idx}`,
               title: cleanTitle || "Software Engineer",
               company: cleanCompany || "Tech Company",
@@ -188,12 +231,16 @@ export async function fetchLiveJobs() {
               category: cleanSkills.some(s => s.toLowerCase().includes("react")) ? "Full Stack Developer" : "Software Engineer",
               notificationType: idx % 3 === 0 ? "🆕 New Job" : (idx % 2 === 0 ? "💻 Remote Opportunity" : "🎯 Recommended Job")
             };
+
+            return {
+              ...rawObj,
+              domain: classifyJobDomain(rawObj)
+            };
           });
 
         if (validApiJobs.length > 0) {
-          // Merge API tech jobs with verified catalog jobs for maximum quality
           const combinedMap = new Map();
-          REAL_JOB_DATABASE.forEach(j => combinedMap.set(j.id, j));
+          REAL_JOB_DATABASE.forEach(j => combinedMap.set(j.id, { ...j, domain: classifyJobDomain(j) }));
           validApiJobs.forEach(j => combinedMap.set(j.id, j));
           return Array.from(combinedMap.values());
         }
@@ -203,7 +250,7 @@ export async function fetchLiveJobs() {
     console.warn("Live API fetch notice: using verified tech jobs feed.", err);
   }
   
-  return REAL_JOB_DATABASE;
+  return REAL_JOB_DATABASE.map(j => ({ ...j, domain: classifyJobDomain(j) }));
 }
 
 /**
@@ -219,9 +266,9 @@ export function evaluateJobMatch(job, student) {
   const missingSkills = jobSkills.filter(s => !userSkillSet.has(s.toLowerCase()));
   
   const targetCareer = student?.targetCareer || "";
-  const isCareerMatch = targetCareer && job.category && (
-    job.category.toLowerCase().includes(targetCareer.toLowerCase()) || 
-    targetCareer.toLowerCase().includes(job.category.toLowerCase())
+  const isCareerMatch = targetCareer && (
+    (job.category && (job.category.toLowerCase().includes(targetCareer.toLowerCase()) || targetCareer.toLowerCase().includes(job.category.toLowerCase()))) ||
+    (job.domain && (job.domain.toLowerCase().includes(targetCareer.toLowerCase()) || targetCareer.toLowerCase().includes(job.domain.toLowerCase())))
   );
 
   let matchScore = 0;
@@ -237,6 +284,20 @@ export function evaluateJobMatch(job, student) {
     matchedSkills,
     missingSkills,
     isCareerMatch,
-    matchScore
+    matchScore,
+    domain: classifyJobDomain(job)
   };
+}
+
+/**
+ * Groups jobs domain-wise.
+ */
+export function groupJobsByDomain(jobs) {
+  const map = {};
+  jobs.forEach(job => {
+    const d = classifyJobDomain(job);
+    if (!map[d]) map[d] = [];
+    map[d].push(job);
+  });
+  return map;
 }

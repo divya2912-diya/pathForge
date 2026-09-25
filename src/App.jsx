@@ -256,7 +256,7 @@ export default function App() {
             go={go}
           />
           <main className="px-5 md:px-8 py-7 max-w-7xl mx-auto">
-            {active === "dashboard" && <DashboardView go={go} student={student} />}
+            {active === "dashboard" && <DashboardView go={go} student={student} onUpdateStudent={handleUpdateStudent} />}
             {active === "roadmap" && <RoadmapView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
             {active === "resources" && <ResourcesView student={student} added={added} toggleAdded={toggleAdded} go={go} />}
             {active === "resume" && <ResumeView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
