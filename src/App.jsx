@@ -19,7 +19,10 @@ import CertificationsView from "./components/views/CertificationsView";
 import CareerView from "./components/views/CareerView";
 import ProfileView from "./components/views/ProfileView";
 import SettingsView from "./components/views/SettingsView";
+import LearningAnalyticsView from "./components/views/LearningAnalyticsView";
 import ChatWidget from "./components/ChatWidget";
+
+import { registerServiceWorker } from "./services/offlineSyncService";
 
 import { NAV_MENU } from "./data/mockData";
 import {
@@ -42,6 +45,7 @@ export default function App() {
 
   useEffect(() => {
     let mounted = true;
+    registerServiceWorker();
 
     // Timeout safety fallback: if session check takes > 3s, fallback to login view
     const timeout = setTimeout(() => {
@@ -266,6 +270,7 @@ export default function App() {
             {active === "projects" && <ProjectsView student={student} added={added} toggleAdded={toggleAdded} go={go} />}
             {active === "certifications" && <CertificationsView student={student} onUpdateStudent={handleUpdateStudent} added={added} toggleAdded={toggleAdded} go={go} />}
             {active === "career" && <CareerView student={student} onUpdateStudent={handleUpdateStudent} />}
+            {active === "analytics" && <LearningAnalyticsView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
             {active === "profile" && (
               <ProfileView
                 student={student}

@@ -13,6 +13,8 @@ import { SKILL_REQUIREMENTS } from "../../data/userProfile";
 import { loadMilestoneProgress } from "../../data/supabaseAuth";
 import { CareerJourneyMap } from "./CareerJourneyMap";
 import { HomeJobCarousel } from "./HomeJobCarousel";
+import { SyncStatusBadge } from "../ui/SyncStatusBadge";
+import { buildUserLearningContext } from "../../services/userContextService";
 
 export function DashboardView({ go, student, onUpdateStudent }) {
   const [dbProgress, setDbProgress] = useState(null);
@@ -157,10 +159,13 @@ export function DashboardView({ go, student, onUpdateStudent }) {
       {/* 1. Greeting Banner */}
       <GlassCard strong className="p-6 md:p-7 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="lp-display text-xl md:text-2xl font-semibold">
-            {greeting}{userName ? `, ${userName.split(" ")[0]}` : ""} 👋
-          </h2>
-          <p className="text-sm mt-1" style={{ color: "var(--text-dim)" }}>
+          <div className="flex items-center gap-3 mb-1">
+            <h2 className="lp-display text-xl md:text-2xl font-semibold">
+              {greeting}{userName ? `, ${userName.split(" ")[0]}` : ""} 👋
+            </h2>
+            <SyncStatusBadge />
+          </div>
+          <p className="text-sm" style={{ color: "var(--text-dim)" }}>
             Your current career goal: <strong className="text-cyan-300 font-medium">{targetCareer}</strong>
           </p>
         </div>
@@ -197,6 +202,95 @@ export function DashboardView({ go, student, onUpdateStudent }) {
           </GlassCard>
         ))}
       </div>
+
+      {/* 2.1 YOUR LEARNING INTELLIGENCE CARDS (Clickable Navigation) */}
+      <GlassCard className="p-6 space-y-4" hover>
+        <SectionHeader 
+          eyebrow="LIVE LEARNING METRICS" 
+          title="Your Learning Intelligence" 
+          subtitle="Real-time analytics computed directly from your active progress and assessments." 
+        />
+
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          {/* Card 1: Career Readiness -> Career Analysis */}
+          <div 
+            onClick={() => go?.("career")} 
+            className="p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-cyan-500/20 hover:border-cyan-400/50 cursor-pointer transition-all space-y-2 group"
+          >
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span className="font-semibold text-cyan-300">Career Readiness</span>
+              <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform text-cyan-400" />
+            </div>
+            <p className="text-2xl font-bold text-white">{careerReadiness}%</p>
+            <p className="text-[11px] text-slate-400 truncate">Target: {targetCareer}</p>
+          </div>
+
+          {/* Card 2: Learning Progress -> Learning Roadmap */}
+          <div 
+            onClick={() => go?.("roadmap")} 
+            className="p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-purple-500/20 hover:border-purple-400/50 cursor-pointer transition-all space-y-2 group"
+          >
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span className="font-semibold text-purple-300">Learning Progress</span>
+              <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform text-purple-400" />
+            </div>
+            <p className="text-2xl font-bold text-white">{learningProgress}%</p>
+            <p className="text-[11px] text-slate-400 truncate">Roadmap completion</p>
+          </div>
+
+          {/* Card 3: Skills Developed -> Profile & Skills */}
+          <div 
+            onClick={() => go?.("profile")} 
+            className="p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-emerald-500/20 hover:border-emerald-400/50 cursor-pointer transition-all space-y-2 group"
+          >
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span className="font-semibold text-emerald-300">Skills Listed</span>
+              <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform text-emerald-400" />
+            </div>
+            <p className="text-2xl font-bold text-white">{totalSkillsCount}</p>
+            <p className="text-[11px] text-slate-400 truncate">{actualStrengths.length} matched to target</p>
+          </div>
+
+          {/* Card 4: Study Consistency -> Analytics */}
+          <div 
+            onClick={() => go?.("analytics")} 
+            className="p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-amber-500/20 hover:border-amber-400/50 cursor-pointer transition-all space-y-2 group"
+          >
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span className="font-semibold text-amber-300">Study Consistency</span>
+              <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform text-amber-400" />
+            </div>
+            <p className="text-2xl font-bold text-white">{student?.learningActivity?.length || 0} Sessions</p>
+            <p className="text-[11px] text-slate-400 truncate">View detailed analytics</p>
+          </div>
+
+          {/* Card 5: Assessment Performance -> Assessments */}
+          <div 
+            onClick={() => go?.("roadmap")} 
+            className="p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-blue-500/20 hover:border-blue-400/50 cursor-pointer transition-all space-y-2 group"
+          >
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span className="font-semibold text-blue-300">Assessments</span>
+              <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform text-blue-400" />
+            </div>
+            <p className="text-2xl font-bold text-white">{totalAssessments}</p>
+            <p className="text-[11px] text-slate-400 truncate">Taken by student</p>
+          </div>
+
+          {/* Card 6: Topic Completion -> Roadmap */}
+          <div 
+            onClick={() => go?.("roadmap")} 
+            className="p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-pink-500/20 hover:border-pink-400/50 cursor-pointer transition-all space-y-2 group"
+          >
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span className="font-semibold text-pink-300">Topic Completion</span>
+              <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform text-pink-400" />
+            </div>
+            <p className="text-2xl font-bold text-white">{completedLearningSteps} / {totalRequired || 6}</p>
+            <p className="text-[11px] text-slate-400 truncate">Roadmap milestones done</p>
+          </div>
+        </div>
+      </GlassCard>
 
       {/* 2.5 Dynamic Career Intelligence Journey Map */}
       <CareerJourneyMap student={student} onNavigate={go} />

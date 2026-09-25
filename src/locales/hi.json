@@ -1,0 +1,67 @@
+{
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "roadmap": "लर्निंग रोडमैप",
+    "resources": "संसाधन",
+    "resume": "रेज्यूमे इंटेलिजेंस",
+    "jobs": "जॉब नोटिफिकेशन",
+    "projects": "प्रोजेक्ट्स",
+    "certifications": "सर्टिफिकेशन्स",
+    "career": "करियर विश्लेषण",
+    "profile": "प्रोफ़ाइल और कौशल",
+    "settings": "सेटिंग्स"
+  },
+  "dashboard": {
+    "welcome": "स्वागत है",
+    "learningIntelligence": "आपकी लर्निंग इंटेलिजेंस",
+    "careerReadiness": "करियर की तैयारी (Career Readiness)",
+    "learningProgress": "सीखने की प्रगति (Learning Progress)",
+    "skillsDeveloped": "कौशल (Skills)",
+    "assessmentsTaken": "पूरे किए गए मूल्यांकन",
+    "studyConsistency": "अध्ययन की निरंतरता (Consistency)",
+    "topicCompletion": "विषय की पूर्णता",
+    "assessmentPerformance": "मूल्यांकन प्रदर्शन",
+    "emptyStateTitle": "डैशबोर्ड उपलब्ध नहीं है",
+    "emptyStateDesc": "अपनी व्यक्तिगत करियर यात्रा शुरू करने के लिए अपनी प्रोफ़ाइल पूरी करें।",
+    "completeProfile": "प्रोफ़ाइल पूरी करें"
+  },
+  "aiMentor": {
+    "title": "पाथफोर्ज AI इंटेलिजेंस असिस्टेंट",
+    "subtitle": "आपके लाइव प्रोफ़ाइल डेटा द्वारा संचालित आपका व्यक्तिगत शैक्षणिक और करियर मेंटर।",
+    "inputPlaceholder": "अपने कौशल अंतराल, रोडमैप या इंटरव्यू की तैयारी के बारे में पूछें...",
+    "send": "भेजें"
+  },
+  "analytics": {
+    "title": "लर्निंग एनालिटिक्स और प्रगति ट्रैकिंग",
+    "subtitle": "आपके वास्तविक सीखने के सत्रों और रोडमैप प्रगति से गणना किए गए विश्लेषण।",
+    "noData": "अभी तक कोई सीखने की गतिविधि दर्ज नहीं की गई है।",
+    "noAssessments": "अभी तक कोई मूल्यांकन पूरा नहीं हुआ है।",
+    "streak": "वर्तमान स्ट्राइक (Streak)",
+    "activeDays": "सक्रिय सीखने के दिन",
+    "sessionsThisWeek": "इस सप्ताह के सत्र",
+    "avgScore": "औसत मूल्यांकन स्कोर"
+  },
+  "learningStyle": {
+    "title": "अनुकूली शिक्षण शैली (Adaptive Learning Style)",
+    "inferred": "आपकी पसंदीदा शिक्षण शैली",
+    "discovering": "जैसे-जैसे आप पाथफोर्ज का उपयोग करते हैं, आपकी प्राथमिकताएँ पाई जा रही हैं।",
+    "visual": "विज़ुअल (आरेख और वीडियो)",
+    "reading": "पढ़ना (दस्तावेज़ और लेख)",
+    "practice": "अभ्यास (कोडिंग और क्विज़)",
+    "auditory": "ऑडियो (व्याख्यान और ऑडियो)"
+  },
+  "offline": {
+    "online": "ऑनलाइन",
+    "offline": "ऑफ़लाइन मोड",
+    "syncing": "सिंक हो रहा है...",
+    "synced": "सिंक हो गया"
+  },
+  "common": {
+    "learnMore": "अधिक जानें",
+    "viewDetails": "विवरण देखें",
+    "save": "सहेजें",
+    "saved": "सहेजा गया",
+    "cancel": "रद्द करें",
+    "loading": "आपका डेटा लोड हो रहा है..."
+  }
+}

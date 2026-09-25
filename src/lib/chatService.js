@@ -1,21 +1,16 @@
 // ============================================================
-//  PathForge — AI Mentor Chat Service (OpenRouter)
-//  Connects directly to OpenRouter API with full student context.
-//  No mock/offline generic fallback responses.
+//  PathForge — AI Academic & Career Intelligence Assistant
+//  Uses OpenRouter API + Centralized Student Context.
 // ============================================================
 
-import { calculateDynamicReadiness, getStrengthsAndGaps } from "../data/userProfile";
+import { buildUserLearningContext } from "../services/userContextService";
 
 const OR_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-/**
- * Read the API key from the build-time env variable.
- */
 function getApiKey() {
   const envKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   if (envKey && envKey.trim()) return envKey.trim();
   try {
-    // Base64 fallback so deployed builds (e.g. Vercel) work out-of-the-box
     return atob("c2stb3ItdjEtZTMyMzMwZTI5NWY1ZmZiMTdkMDQxYTY4NjdkN2E3ODVjYzIwNWVhYzRhOWIyNDY0Nzg3ZTYwYzMzMTc4ZDJkMA==");
   } catch {
     return "";
@@ -23,113 +18,58 @@ function getApiKey() {
 }
 
 /**
- * Build a rich, personalized system prompt using the student's actual PathForge profile data.
- * Does NOT invent or hardcode fake data.
+ * Build rich system prompt incorporating centralized user context & preferred language.
  */
 function buildSystemPrompt(student) {
-  if (!student) {
-    return `You are PathForge AI Mentor, an expert career mentor and technical tutor.
-Note: Student profile is currently loading or guest state. Provide helpful, structured answers to questions.`;
+  const ctx = buildUserLearningContext(student);
+  const lang = ctx.preferredLanguage || "en";
+
+  let languageInstruction = "Respond in English.";
+  if (lang === "te") {
+    languageInstruction = "Respond entirely in TELUGU (తెలుగు), keeping technical terms and code examples in English for clarity.";
+  } else if (lang === "hi") {
+    languageInstruction = "Respond entirely in HINDI (हिन्दी), keeping technical terms and code examples in English for clarity.";
   }
 
-  const name = student.name ? student.name.split(" ")[0] : "Student";
-  const degree = student.degree || "Not specified";
-  const year = student.year || "";
-  const targetCareer = student.targetCareer || "Career goal not set";
+  const skillsStr = ctx.masteredSkills.length > 0 ? ctx.masteredSkills.join(", ") : "No assessed skills recorded yet";
+  const gapsStr = ctx.skillGaps.length > 0 ? ctx.skillGaps.join(", ") : "No skill gaps detected";
+  const strengthsStr = ctx.assessmentSummary.strengths.length > 0 ? ctx.assessmentSummary.strengths.join(", ") : "No strengths assessed yet";
+  const weakTopicsStr = ctx.assessmentSummary.weakTopics.length > 0 ? ctx.assessmentSummary.weakTopics.join(", ") : "No weak topics identified yet";
+  const projectsStr = ctx.projects.length > 0 ? ctx.projects.map(p => typeof p === "string" ? p : p.title || p.name).join(", ") : "No projects added yet";
+  const certsStr = ctx.certifications.length > 0 ? ctx.certifications.map(c => typeof c === "string" ? c : c.name || c.title).join(", ") : "No certifications added yet";
 
-  // Normalize current skills
-  const plainSkills = student.skills || [];
-  const structSkills = student.userSkillsList || [];
-  const allSkillsList = [
-    ...structSkills.map((s) => (typeof s === "string" ? s : s?.name || "")),
-    ...plainSkills,
-  ].filter((v, i, a) => v && a.indexOf(v) === i);
+  return `You are PathForge Academic & Career Intelligence Assistant, an expert personalized mentor and tutor embedded in the PathForge platform.
 
-  const currentSkillsStr =
-    allSkillsList.length > 0 ? allSkillsList.join(", ") : "None specified in profile";
-
-  // Calculate readiness & strengths/gaps
-  let readinessStr = "Not calculated";
-  let strengthsStr = "None specified";
-  let gapsStr = "None specified";
-
-  if (targetCareer && targetCareer !== "Career goal not set") {
-    const score = calculateDynamicReadiness(student);
-    if (score !== null && score !== undefined) {
-      readinessStr = `${score}%`;
-    }
-    const { strengths, gaps } = getStrengthsAndGaps(allSkillsList, targetCareer);
-    if (strengths.length > 0) strengthsStr = strengths.join(", ");
-    if (gaps.length > 0) gapsStr = gaps.join(", ");
-  }
-
-  // Projects
-  const projects = student.projectsList || [];
-  const projectsStr =
-    projects.length > 0
-      ? projects
-          .map((p) => (typeof p === "string" ? p : p.title || p.name))
-          .filter(Boolean)
-          .join("; ")
-      : "None added yet";
-
-  // Certifications
-  const certs = student.certificationsList || [];
-  const certsStr =
-    certs.length > 0
-      ? certs
-          .map((c) => (typeof c === "string" ? c : c.name || c.title))
-          .filter(Boolean)
-          .join("; ")
-      : "None added yet";
-
-  const paceStr =
-    student.pace || (student.learningPreferences?.hoursPerWeek
-      ? `${student.learningPreferences.hoursPerWeek} hrs/week`
-      : "Balanced");
-
-  const githubStr = student.github || "Not linked";
-
-  return `You are PathForge AI Mentor, an expert personalized career guide and technical tutor embedded in the PathForge learning platform.
-
-AUTHENTICATED STUDENT PROFILE:
-• Name: ${name}
-• Degree & Academic Year: ${degree} ${year ? `(${year})` : ""}
-• Target Career Goal: ${targetCareer}
-• Profile Readiness Score: ${readinessStr}
-• Current Skills: ${currentSkillsStr}
-• Verified Strengths (Matched to ${targetCareer}): ${strengthsStr}
-• High-Priority Skill Gaps (Needed for ${targetCareer}): ${gapsStr}
+AUTHENTICATED STUDENT CONTEXT (SINGLE SOURCE OF TRUTH):
+• Name: ${ctx.name}
+• Degree & Year: ${ctx.degree} ${ctx.year ? `(${ctx.year})` : ""}
+• Target Career Goal: ${ctx.targetCareer}
+• Dynamic Career Readiness Score: ${ctx.careerReadinessScore}%
+• Mastered Skills: ${skillsStr}
+• High-Priority Skill Gaps (Needed for ${ctx.targetCareer}): ${gapsStr}
+• Assessment Performance: ${ctx.assessmentSummary.totalCount} assessments taken, Avg Score: ${ctx.assessmentSummary.avgScore}%
+• Verified Strengths: ${strengthsStr}
+• Weak Academic Topics: ${weakTopicsStr}
+• Roadmap Progress: Node ${ctx.roadmapProgress.completed} of ${ctx.roadmapProgress.total} completed (${ctx.roadmapProgress.percent}%), Current Node: ${ctx.roadmapProgress.currentNode || "All completed"}
 • Portfolio Projects: ${projectsStr}
 • Certifications: ${certsStr}
-• Learning Pace / Weekly Hours: ${paceStr}
-• GitHub Profile: ${githubStr}
+• Study Consistency: ${ctx.learningActivity.totalSessions} sessions recorded, ${ctx.learningActivity.activeDays} active days, ${ctx.learningActivity.currentStreak}-day streak
+• Primary Learning Preference Style: ${ctx.learningPreferences.primaryStyle} (Visual: ${ctx.learningPreferences.visual}%, Reading: ${ctx.learningPreferences.reading}%, Practice: ${ctx.learningPreferences.practice}%, Auditory: ${ctx.learningPreferences.auditory}%)
 
-OPERATIONAL INSTRUCTIONS & RULES:
-1. ALWAYS prioritize and directly answer the student's CURRENT QUESTION.
-2. NEVER return generic boilerplate responses like "I'm ready to help with anything..." or "What would you like to work on today?".
-3. PROFILE & STATUS QUESTIONS ("what is my status?", "how am I doing?", "what are my strengths?"):
-   - Inspect the student profile above.
-   - Summarize their status: Target Role (${targetCareer}), Readiness Score (${readinessStr}), Strengths (${strengthsStr}), and Missing Skill Gaps (${gapsStr}).
-   - Give clear, practical next steps tied to their profile.
-4. CAREER & SKILL GAP QUESTIONS ("what skills am I missing?", "what should I learn next?"):
-   - Reference their target career (${targetCareer}) and missing skills (${gapsStr}).
-   - Provide a step-by-step roadmap for mastering those gaps.
-5. TECHNICAL & CODING QUESTIONS ("explain Java inheritance", "how do React hooks work?"):
-   - Explain the concept deeply and clearly.
-   - Provide code examples in markdown code blocks (\`\`\`language ... \`\`\`).
-6. STUDY PLAN QUESTIONS ("give me a study plan", "30-day roadmap"):
-   - Provide a realistic, structured study schedule targeting their skill gaps (${gapsStr}) for ${targetCareer}.
-7. PROJECT & INTERVIEW QUESTIONS ("suggest a project", "prepare me for an interview"):
-   - Suggest projects that build their missing skills.
-   - For interview prep, provide technical & behavioral interview questions tailored to ${targetCareer}.
-8. DATA ACCURACY:
-   - Use strictly the student profile data provided above.
-   - NEVER invent fake skills, scores, or certifications not listed in their profile.
-   - If a piece of profile data is not available, state that it is not specified in their profile rather than making it up.
-9. RESPONSE FORMATTING:
-   - Use Markdown: **bolding**, bullet points (•), numbered lists, and \`\`\`code blocks\`\`\`.
-   - Be practical, concise, and structured.`;
+LANGUAGE INSTRUCTION:
+${languageInstruction}
+
+CRITICAL OPERATIONAL RULES & REASONING:
+1. ANSWER WITH SPECIFIC REASONING:
+   - When recommending a skill, certification, project, or study topic, ALWAYS explain WHY based on the student's actual gaps (${gapsStr}) and target career (${ctx.targetCareer}).
+   - Example: "SQL is recommended because your selected career (${ctx.targetCareer}) requires database knowledge and your current skills show a gap in SQL."
+2. INSUFFICIENT DATA SAFETY:
+   - If the student asks about assessment performance or gaps and has no assessment data (${ctx.assessmentSummary.totalCount} === 0), state: "I don't have enough assessment data yet to identify your weak topics. Complete your first assessment to generate detailed gap analysis."
+3. STRICT DATA INTEGRITY:
+   - Do NOT invent fake scores, fake skills, or fake certifications not present in the profile.
+   - Do NOT send unrelated users' information.
+4. STRUCTURED FORMATTING:
+   - Use standard Markdown: bolding, bullet points, and code blocks (\`\`\`language ... \`\`\`).`;
 }
 
 /**
@@ -143,13 +83,11 @@ export async function sendMessage(messages, student) {
   const apiKey = getApiKey();
 
   if (!apiKey || apiKey.trim() === "") {
-    console.error("OpenRouter API Key is missing from .env (VITE_OPENROUTER_API_KEY).");
-    return "Sorry, I couldn't reach the AI Mentor right now. Please check your API key configuration in `.env`.";
+    console.error("OpenRouter API Key is missing.");
+    return "Sorry, I couldn't reach the AI Mentor right now. Please check your API key configuration.";
   }
 
   const systemPrompt = buildSystemPrompt(student);
-
-  // Take recent messages (up to 15) to maintain history
   const recentMessages = messages.slice(-15);
 
   const chatMessages = [
@@ -160,14 +98,11 @@ export async function sendMessage(messages, student) {
     })),
   ];
 
-  // Candidates for free model routing
   const candidateModels = [
     "openrouter/auto",
     "openrouter/free",
     "qwen/qwen3.8-27b:free",
   ];
-
-  let lastErrorMsg = null;
 
   for (const model of candidateModels) {
     const payload = {
@@ -190,13 +125,8 @@ export async function sendMessage(messages, student) {
       });
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        const msg = errData?.error?.message || `HTTP ${res.status}`;
-        lastErrorMsg = msg;
-        console.error(`OpenRouter API model ${model} failed:`, res.status, msg);
-
         if (res.status === 401) {
-          return "⚠️ **Invalid OpenRouter API Key.** Please verify your `VITE_OPENROUTER_API_KEY` in `.env`.";
+          return "⚠️ **Invalid OpenRouter API Key.** Please verify your API key.";
         }
         continue;
       }
@@ -207,10 +137,8 @@ export async function sendMessage(messages, student) {
       if (reply && reply.trim()) {
         return reply.trim();
       }
-      console.warn(`OpenRouter model ${model} returned empty content.`);
     } catch (err) {
-      console.error(`Network error calling OpenRouter model ${model}:`, err);
-      lastErrorMsg = err.message;
+      console.error(`Error calling OpenRouter model ${model}:`, err);
     }
   }
 

@@ -1,0 +1,67 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "roadmap": "Learning Roadmap",
+    "resources": "Resources",
+    "resume": "Resume Intelligence",
+    "jobs": "Job Notifications",
+    "projects": "Projects",
+    "certifications": "Certifications",
+    "career": "Career Analysis",
+    "profile": "Profile & Skills",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "welcome": "Welcome back",
+    "learningIntelligence": "Your Learning Intelligence",
+    "careerReadiness": "Career Readiness",
+    "learningProgress": "Learning Progress",
+    "skillsDeveloped": "Skills Listed",
+    "assessmentsTaken": "Assessments Taken",
+    "studyConsistency": "Study Consistency",
+    "topicCompletion": "Topic Completion",
+    "assessmentPerformance": "Assessment Performance",
+    "emptyStateTitle": "Dashboard Not Available",
+    "emptyStateDesc": "Complete your profile and set your career goal to begin your personalized career journey.",
+    "completeProfile": "Complete Profile"
+  },
+  "aiMentor": {
+    "title": "PathForge AI Intelligence Assistant",
+    "subtitle": "Your personalized academic and career mentor powered by your live profile data.",
+    "inputPlaceholder": "Ask me anything about your skill gaps, roadmap, or interview prep...",
+    "send": "Send"
+  },
+  "analytics": {
+    "title": "Learning Analytics & Progress Tracking",
+    "subtitle": "Real-time analytics computed from your actual learning sessions, assessments, and roadmap progress.",
+    "noData": "No learning activity recorded yet.",
+    "noAssessments": "No assessments completed yet.",
+    "streak": "Current Streak",
+    "activeDays": "Active Learning Days",
+    "sessionsThisWeek": "Sessions This Week",
+    "avgScore": "Average Assessment Score"
+  },
+  "learningStyle": {
+    "title": "Adaptive Learning Style",
+    "inferred": "Inferred Learning Preference",
+    "discovering": "Learning preferences are being discovered as you use PathForge.",
+    "visual": "Visual (Diagrams & Videos)",
+    "reading": "Reading (Docs & Articles)",
+    "practice": "Practice (Coding & Quizzes)",
+    "auditory": "Auditory (Lectures & Audio)"
+  },
+  "offline": {
+    "online": "Online",
+    "offline": "Offline Mode",
+    "syncing": "Syncing...",
+    "synced": "Synced"
+  },
+  "common": {
+    "learnMore": "Learn More",
+    "viewDetails": "View Details",
+    "save": "Save",
+    "saved": "Saved",
+    "cancel": "Cancel",
+    "loading": "Loading your learning data..."
+  }
+}

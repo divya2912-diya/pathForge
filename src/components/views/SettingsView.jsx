@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { LogOut, Shield, Bell, Gauge, User, KeyRound, AlertCircle, Check } from "lucide-react";
+import { LogOut, Shield, Bell, Gauge, User, KeyRound, AlertCircle, Check, Globe } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import SectionHeader from "../ui/SectionHeader";
-import { changePassword } from "../../data/supabaseAuth";
+import { changePassword, updateCurrentUser } from "../../data/supabaseAuth";
+import { SUPPORTED_LANGUAGES } from "../../services/i18nService";
 
 export function SettingsView({ student, onLogout, onUpdateStudent }) {
+  const [selectedLang, setSelectedLang] = useState(student?.preferredLanguage || "en");
   const [prefs, setPrefs] = useState({
     dailyReminders: true,
     weeklyDigest: true,
@@ -45,6 +47,12 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
     onUpdateStudent?.({ pace }, "Learning pace updated!");
   };
 
+  const handleLanguageChange = async (code) => {
+    setSelectedLang(code);
+    onUpdateStudent?.({ preferredLanguage: code }, `Language changed to ${code.toUpperCase()}`);
+    await updateCurrentUser({ preferred_language: code });
+  };
+
   const memberSince = student?.createdAt
     ? new Date(student.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
     : "Unknown";
@@ -72,6 +80,31 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
               <span style={{ color: "var(--text-dim)" }}>{label}</span>
               <span className={label === "Target Career" ? "text-cyan-300 font-medium" : ""}>{value}</span>
             </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      {/* Multilingual Support */}
+      <GlassCard className="p-6" hover>
+        <div className="flex items-center gap-2 mb-4">
+          <Globe size={16} color="#67e8f9" />
+          <SectionHeader title="Language & Multilingual Preference" subtitle="Controls interface language and AI Mentor language" />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {SUPPORTED_LANGUAGES.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => handleLanguageChange(lang.code)}
+              className="py-3 px-2 rounded-xl text-sm transition-all cursor-pointer text-center"
+              style={
+                selectedLang === lang.code
+                  ? { background: "rgba(34,211,238,0.12)", border: "1px solid rgba(34,211,238,0.4)", color: "#67e8f9" }
+                  : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)" }
+              }
+            >
+              <p className="font-bold">{lang.name}</p>
+              <p className="text-[11px] opacity-60 mt-0.5">{lang.label}</p>
+            </button>
           ))}
         </div>
       </GlassCard>

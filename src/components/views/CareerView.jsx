@@ -5,6 +5,8 @@ import SectionHeader from "../ui/SectionHeader";
 import ProgressRing from "../ui/ProgressRing";
 import { SKILL_REQUIREMENTS, getStrengthsAndGaps } from "../../data/userProfile";
 import { getCatalogProjects, getCatalogCertifications } from "../../data/supabaseAuth";
+import { ONBOARD_CAREERS } from "../../data/mockData";
+import { handleCareerChange } from "../../services/careerService";
 
 export function CareerView({ student, onUpdateStudent }) {
   const [projects, setProjects] = useState([]);
@@ -23,6 +25,10 @@ export function CareerView({ student, onUpdateStudent }) {
   }, []);
 
   const targetCareer = student?.targetCareer || "Software Engineer";
+
+  const onSelectCareer = (newCareer) => {
+    handleCareerChange(newCareer, student, onUpdateStudent);
+  };
   const userSkills = student?.skills || [];
   
   const required = SKILL_REQUIREMENTS[targetCareer] || [];
@@ -88,11 +94,27 @@ export function CareerView({ student, onUpdateStudent }) {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
-        eyebrow="Career intelligence"
-        title={`Target career: ${targetCareer}`}
-        subtitle="Your current readiness compared against industry requirements."
-      />
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <SectionHeader
+          eyebrow="Career intelligence"
+          title={`Target career: ${targetCareer}`}
+          subtitle="Your current readiness compared against industry requirements."
+        />
+        <div className="flex items-center gap-2 shrink-0">
+          <label className="text-xs text-slate-400 font-semibold">Change Career:</label>
+          <select
+            value={targetCareer}
+            onChange={(e) => onSelectCareer(e.target.value)}
+            className="px-3 py-2 bg-slate-900 border border-cyan-500/30 rounded-xl text-xs font-bold text-cyan-300 focus:outline-none focus:border-cyan-400 cursor-pointer"
+          >
+            {ONBOARD_CAREERS.map((c) => (
+              <option key={c} value={c} className="bg-slate-900 text-white">
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {/* Key Metrics */}
       <div className="grid sm:grid-cols-3 gap-4">
