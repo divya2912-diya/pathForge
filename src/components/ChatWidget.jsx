@@ -290,7 +290,7 @@ export function ChatWidget({ student }) {
               <div className="cw-header-name">PathForge AI</div>
               <div className="cw-header-sub">
                 <span className="cw-status-dot" />
-                Online · {student?.targetCareer || "Career Mentor"}
+                Online · {student?.targetCareer || "Career goal not set"}
               </div>
             </div>
           </div>
@@ -331,6 +331,58 @@ export function ChatWidget({ student }) {
 
         {/* ── Input ── */}
         <div className="cw-input-area">
+          {/* Quick Action Chips */}
+          <div className="cw-quick-chips">
+            <button
+              onClick={() => send("what is my status?")}
+              disabled={loading}
+              className="cw-chip"
+              title="What is my status?"
+            >
+              🎯 What is my status?
+            </button>
+            <button
+              onClick={() => send("Analyze my current PathForge progress and tell me what I have completed, what is pending, and what I should focus on next.")}
+              disabled={loading}
+              className="cw-chip"
+              title="Analyze my progress"
+            >
+              📊 Analyze progress
+            </button>
+            <button
+              onClick={() => send("Create a personalized study plan based on my current skills, target career, skill gaps and roadmap progress.")}
+              disabled={loading}
+              className="cw-chip"
+              title="Create study plan"
+            >
+              📅 Study plan
+            </button>
+            <button
+              onClick={() => send("What high-priority skills am I missing for my target career?")}
+              disabled={loading}
+              className="cw-chip"
+              title="Missing skills"
+            >
+              ⚡ Missing skills
+            </button>
+            <button
+              onClick={() => send("Recommend learning resources for my highest-priority skill gaps.")}
+              disabled={loading}
+              className="cw-chip"
+              title="Recommend resources"
+            >
+              📚 Recommend resources
+            </button>
+            <button
+              onClick={() => send("Start an interactive quiz or ask me knowledge assessment questions based on my target career and current skill gaps.")}
+              disabled={loading}
+              className="cw-chip"
+              title="Test my knowledge"
+            >
+              🧪 Test knowledge
+            </button>
+          </div>
+
           <div className="cw-input-box">
             <textarea
               ref={textareaRef}
@@ -691,6 +743,27 @@ const cwStyles = `
   .cw-typing span:nth-child(2) { animation-delay: 0.17s; }
   .cw-typing span:nth-child(3) { animation-delay: 0.34s; }
   .cw-thinking { font-size: 12px; color: #475569; font-style: italic; }
+
+  /* Quick Chips */
+  .cw-quick-chips {
+    display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 4px;
+    scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+  .cw-quick-chips::-webkit-scrollbar { height: 3px; }
+  .cw-quick-chips::-webkit-scrollbar-thumb { background: rgba(34,211,238,0.2); border-radius: 4px; }
+  .cw-chip {
+    white-space: nowrap; font-size: 11px; font-weight: 600;
+    color: #94a3b8; background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;
+    padding: 4px 10px; cursor: pointer; transition: all 0.2s ease;
+    display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+  .cw-chip:hover:not(:disabled) {
+    background: rgba(34, 211, 238, 0.12); border-color: rgba(34, 211, 238, 0.35);
+    color: #38bdf8; transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(34, 211, 238, 0.15);
+  }
+  .cw-chip:disabled { opacity: 0.4; cursor: not-allowed; }
 
   /* Input area */
   .cw-input-area {
