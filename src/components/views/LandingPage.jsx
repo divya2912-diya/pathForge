@@ -1,14 +1,78 @@
 import React from "react";
 import {
   Flame, Sparkles, ArrowRight, Radar, Route, LayoutGrid, FileText,
-  Compass, ShieldCheck, AlertTriangle, User, LogIn
+  Compass, ShieldCheck, AlertTriangle, User, LogIn, CheckCircle2
 } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import FloatingCard from "../ui/FloatingCard";
 import SectionHeader from "../ui/SectionHeader";
 import Pill from "../ui/Pill";
+import { SKILL_REQUIREMENTS, CAREER_ROADMAPS } from "../../data/userProfile";
+
+function getRequiredSkillsForCareer(targetCareer) {
+  if (!targetCareer) return [];
+  if (SKILL_REQUIREMENTS[targetCareer]) return SKILL_REQUIREMENTS[targetCareer];
+  
+  const careerLower = targetCareer.toLowerCase();
+  if (careerLower.includes("react") || careerLower.includes("frontend")) {
+    return ["JavaScript", "React", "HTML/CSS", "Git", "TypeScript", "REST APIs"];
+  }
+  if (careerLower.includes("node") || careerLower.includes("backend") || careerLower.includes("python")) {
+    return ["Python", "Node.js", "SQL", "REST APIs", "Git", "System Design", "Docker"];
+  }
+  if (careerLower.includes("ai") || careerLower.includes("ml") || careerLower.includes("data")) {
+    return ["Python", "Machine Learning", "Statistics", "SQL", "Deep Learning", "Docker"];
+  }
+  if (careerLower.includes("full") || careerLower.includes("web")) {
+    return ["JavaScript", "React", "Node.js", "SQL", "Git", "HTML/CSS"];
+  }
+  return ["Problem Solving", "Git", "Data Structures", "System Design", "SQL"];
+}
 
 export function LandingPage({ onStart, onExplore, onProfile, student, onLogin }) {
+  // Extract real dynamic user data (Single Source of Truth)
+  const userSkills = Array.isArray(student?.skills) ? student.skills : [];
+  
+  // Box 1: Top-Left Skill
+  const skill1 = userSkills[0];
+  const skill1Mastery = student?.skillMastery?.[skill1] ?? student?.assessments?.[skill1]?.score;
+
+  // Box 2: Top-Right Skill
+  const skill2 = userSkills[1];
+  const skill2Mastery = student?.skillMastery?.[skill2] ?? student?.assessments?.[skill2]?.score;
+
+  // Box 3: Roadmap Node
+  let nextRoadmapStep = null;
+  if (student?.targetCareer) {
+    const roadmapList = student?.roadmap || CAREER_ROADMAPS[student.targetCareer] || [];
+    const activeStep = roadmapList.find(r => r.status === "in-progress" || r.status === "upcoming");
+    if (activeStep) {
+      nextRoadmapStep = activeStep.title;
+    } else if (roadmapList.length > 0) {
+      nextRoadmapStep = roadmapList[0].title;
+    }
+  }
+
+  // Box 4: Skill Gap Analysis
+  let topSkillGap = null;
+  let hasNoGaps = false;
+  if (student?.targetCareer) {
+    const reqSkills = getRequiredSkillsForCareer(student.targetCareer);
+    const userSkillSet = new Set(userSkills.map(s => String(s).toLowerCase().trim()));
+    const missing = reqSkills.filter(req => !userSkillSet.has(req.toLowerCase().trim()));
+    if (missing.length > 0) {
+      topSkillGap = missing[0];
+    } else if (reqSkills.length > 0) {
+      hasNoGaps = true;
+    }
+  }
+
+  // Box 5: Career Match / Goal
+  const targetCareer = student?.targetCareer;
+  const realReadinessScore = typeof student?.readinessScore === "number" 
+    ? student.readinessScore 
+    : (typeof student?.readiness === "number" ? student.readiness : null);
+
   return (
     <div className="relative overflow-hidden">
       <div className="lp-noise" />
@@ -141,27 +205,113 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin })
             <line x1="85%" y1="80%" x2="55%" y2="56%" stroke="#c4b5fd" strokeWidth="1" strokeDasharray="4 5" />
           </svg>
 
-          <FloatingCard className="lp-float-1" style={{ top: "6%", left: "2%" }}>
-            <p className="text-xs" style={{ color: "var(--text-dim)" }}>Python</p>
-            <p className="lp-display text-lg font-semibold text-cyan-300">92% Mastery</p>
+          {/* 1. TOP-LEFT BOX: USER SKILL 1 */}
+          <FloatingCard onClick={onStart} className="lp-float-1 cursor-pointer hover:scale-105 transition-all" style={{ top: "6%", left: "2%" }}>
+            {skill1 ? (
+              <>
+                <p className="text-xs text-slate-400 font-medium">{skill1}</p>
+                <p className="lp-display text-base sm:text-lg font-semibold text-cyan-300">
+                  {typeof skill1Mastery === "number" ? `${skill1Mastery}% Mastery` : "Skill added"}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-slate-400 font-medium">No skills yet</p>
+                <p className="lp-display text-xs sm:text-sm font-semibold text-cyan-300">Complete your profile</p>
+              </>
+            )}
           </FloatingCard>
-          <FloatingCard className="lp-float-2" style={{ top: "2%", right: "0%" }}>
-            <p className="text-xs" style={{ color: "var(--text-dim)" }}>Machine Learning</p>
-            <p className="lp-display text-lg font-semibold text-blue-300">67% Mastery</p>
+
+          {/* 2. TOP-RIGHT BOX: USER SKILL 2 */}
+          <FloatingCard onClick={onStart} className="lp-float-2 cursor-pointer hover:scale-105 transition-all" style={{ top: "2%", right: "0%" }}>
+            {skill2 ? (
+              <>
+                <p className="text-xs text-slate-400 font-medium">{skill2}</p>
+                <p className="lp-display text-base sm:text-lg font-semibold text-blue-300">
+                  {typeof skill2Mastery === "number" ? `${skill2Mastery}% Mastery` : "Skill added"}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-slate-400 font-medium">Add more skills</p>
+                <p className="lp-display text-xs sm:text-sm font-semibold text-blue-300">Update your profile</p>
+              </>
+            )}
           </FloatingCard>
-          <FloatingCard className="lp-float-3" style={{ bottom: "20%", left: "-2%" }}>
-            <div className="flex items-center gap-1.5 text-amber-300 text-xs mb-1"><AlertTriangle size={12} /> Skill gap detected</div>
-            <p className="lp-display text-sm font-medium">→ Deep Learning</p>
+
+          {/* 3. LEFT-MIDDLE BOX: ROADMAP NODE (CLICKABLE) */}
+          <FloatingCard onClick={onStart} className="lp-float-2 cursor-pointer hover:scale-105 transition-all" style={{ top: "42%", left: "-4%", animationDelay: ".6s" }}>
+            {nextRoadmapStep ? (
+              <>
+                <div className="flex items-center gap-1.5 text-xs text-cyan-300 font-medium">
+                  <Route size={12} color="#67e8f9" /> Next roadmap step
+                </div>
+                <p className="lp-display text-xs sm:text-sm font-semibold text-white mt-0.5">
+                  {nextRoadmapStep}
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+                  <Route size={12} color="#94a3b8" /> Roadmap
+                </div>
+                <p className="text-xs mt-0.5 text-slate-300 font-medium">
+                  {student ? "Complete onboarding to generate" : "Complete your profile to generate your roadmap"}
+                </p>
+              </>
+            )}
           </FloatingCard>
-          <FloatingCard className="lp-float-1" style={{ bottom: "8%", right: "2%", animationDelay: "1.2s" }}>
-            <p className="text-xs" style={{ color: "var(--text-dim)" }}>Career match</p>
-            <p className="lp-display text-lg font-semibold" style={{ color: "#c4b5fd" }}>
-              {student?.targetCareer ? student.targetCareer.split(" ").slice(0, 2).join(" ") : "AI Engineer"} · 94%
-            </p>
+
+          {/* 4. LEFT-BOTTOM BOX: SKILL GAP */}
+          <FloatingCard onClick={onStart} className="lp-float-3 cursor-pointer hover:scale-105 transition-all" style={{ bottom: "20%", left: "-2%" }}>
+            {topSkillGap ? (
+              <>
+                <div className="flex items-center gap-1.5 text-amber-300 text-xs mb-1 font-medium">
+                  <AlertTriangle size={12} /> Skill gap detected
+                </div>
+                <p className="lp-display text-xs sm:text-sm font-medium text-white">
+                  → {topSkillGap}
+                </p>
+              </>
+            ) : hasNoGaps ? (
+              <>
+                <div className="flex items-center gap-1.5 text-emerald-400 text-xs mb-1 font-medium">
+                  <CheckCircle2 size={12} /> No critical gaps
+                </div>
+                <p className="lp-display text-xs sm:text-sm font-medium text-emerald-300">
+                  You're on track
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1 font-medium">
+                  <AlertTriangle size={12} /> Skill gap analysis
+                </div>
+                <p className="text-xs text-slate-300 font-medium">
+                  Waiting for profile setup
+                </p>
+              </>
+            )}
           </FloatingCard>
-          <FloatingCard className="lp-float-2" style={{ top: "42%", left: "-4%", animationDelay: ".6s" }}>
-            <div className="flex items-center gap-1.5 text-xs"><Route size={12} color="#67e8f9" /> Roadmap node</div>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-dim)" }}>Statistics → ML</p>
+
+          {/* 5. BOTTOM-RIGHT BOX: CAREER MATCH */}
+          <FloatingCard onClick={onStart} className="lp-float-1 cursor-pointer hover:scale-105 transition-all" style={{ bottom: "8%", right: "2%", animationDelay: "1.2s" }}>
+            {targetCareer ? (
+              <>
+                <p className="text-xs text-slate-400 font-medium">
+                  {typeof realReadinessScore === "number" ? "Career readiness" : "Career goal"}
+                </p>
+                <p className="lp-display text-xs sm:text-sm font-semibold" style={{ color: "#c4b5fd" }}>
+                  {targetCareer}
+                  {typeof realReadinessScore === "number" && ` · ${realReadinessScore}%`}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-slate-400 font-medium">Target career</p>
+                <p className="lp-display text-xs sm:text-sm font-semibold text-purple-300">Not set</p>
+              </>
+            )}
           </FloatingCard>
         </div>
       </div>
