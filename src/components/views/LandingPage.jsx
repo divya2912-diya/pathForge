@@ -24,10 +24,38 @@ function getRequiredSkillsForCareer(targetCareer) {
   if (careerLower.includes("ai") || careerLower.includes("ml") || careerLower.includes("data")) {
     return ["Python", "Machine Learning", "Statistics", "SQL", "Deep Learning", "Docker"];
   }
-  if (careerLower.includes("full") || careerLower.includes("web")) {
-    return ["JavaScript", "React", "Node.js", "SQL", "Git", "HTML/CSS"];
-  }
   return ["Problem Solving", "Git", "Data Structures", "System Design", "SQL"];
+}
+
+function RevealSection({ children, className = "" }) {
+  const ref = React.useRef(null);
+  const [isVisible, setIsVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.12 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        isVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-[0.98]"
+      } ${className}`}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, onUpdateStudent, go }) {
@@ -318,7 +346,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
       </div>
 
       {/* WHAT THE PLATFORM DOES */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-24">
+      <RevealSection className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-24">
         <SectionHeader eyebrow="What PathForge does" title="Everything between your last course and your first job" subtitle="One system that reads your profile and keeps every recommendation current as you learn." />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[
@@ -338,19 +366,19 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
             </GlassCard>
           ))}
         </div>
-      </div>
+      </RevealSection>
 
       {/* LIVE JOB NOTIFICATIONS CAROUSEL */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-24">
+      <RevealSection className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-24">
         <HomeJobCarousel 
           student={student} 
           onUpdateStudent={onUpdateStudent} 
           go={go || onExplore} 
         />
-      </div>
+      </RevealSection>
 
       {/* TRUSTED AI */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-28">
+      <RevealSection className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-28">
         <GlassCard strong className="p-8 md:p-10">
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck size={18} color="#34d399" />
@@ -374,7 +402,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
             {["Documentation", "Academic Resources", "Verified Courses", "Industry Resources"].map(s => <Pill key={s}>{s}</Pill>)}
           </div>
         </GlassCard>
-      </div>
+      </RevealSection>
     </div>
   );
 }
