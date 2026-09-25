@@ -23,7 +23,7 @@ import SettingsView from "./components/views/SettingsView";
 import LearningAnalyticsView from "./components/views/LearningAnalyticsView";
 import ChatWidget from "./components/ChatWidget";
 
-import { registerServiceWorker } from "./services/offlineSyncService";
+import { registerServiceWorker, handleLogoutCacheClear } from "./services/offlineSyncService";
 
 import { NAV_MENU } from "./data/mockData";
 import {
@@ -35,6 +35,7 @@ import {
 } from "./data/supabaseAuth";
 import { supabase } from "./lib/supabaseClient";
 import { buildInitialProfile } from "./data/userProfile";
+import { getTranslation } from "./services/i18nService";
 
 export default function App() {
   const [stage, setStage] = useState("loading"); // loading | login | landing | onboarding | analyzing | app
@@ -43,6 +44,7 @@ export default function App() {
   const [added, setAdded] = useState(new Set());
   const [toast, setToast] = useState(null);
   const [student, setStudent] = useState(null);
+  const [language, setLanguage] = useState(() => localStorage.getItem("pathforge_language") || "en");
 
   useEffect(() => {
     let mounted = true;
@@ -59,6 +61,10 @@ export default function App() {
         if (!mounted) return;
         if (user) {
           setStudent(user);
+          if (user.preferredLanguage) {
+            setLanguage(user.preferredLanguage);
+            localStorage.setItem("pathforge_language", user.preferredLanguage);
+          }
           setStage(user.onboardingComplete ? "landing" : "onboarding");
         } else {
           setStage("login");
@@ -86,6 +92,25 @@ export default function App() {
     };
   }, []);
 
+  // Sync language if student profile updates
+  useEffect(() => {
+    if (student?.preferredLanguage && student.preferredLanguage !== language) {
+      setLanguage(student.preferredLanguage);
+      localStorage.setItem("pathforge_language", student.preferredLanguage);
+    }
+  }, [student?.preferredLanguage]);
+
+  // ── Language Change Handler ──────────────────────────────────
+
+  const handleLanguageChange = async (newLang) => {
+    setLanguage(newLang);
+    localStorage.setItem("pathforge_language", newLang);
+    if (student) {
+      setStudent(prev => prev ? { ...prev, preferredLanguage: newLang } : prev);
+      await updateCurrentUser({ preferredLanguage: newLang, preferred_language: newLang });
+    }
+  };
+
   // ── Auth handlers ─────────────────────────────────────────
 
   const handleRegister = async ({ name, email, password, degree, year, targetCareer }) => {
@@ -104,6 +129,10 @@ export default function App() {
     const result = await loginUser({ email, password, remember });
     if (result.success) {
       setStudent(result.user);
+      if (result.user.preferredLanguage) {
+        setLanguage(result.user.preferredLanguage);
+        localStorage.setItem("pathforge_language", result.user.preferredLanguage);
+      }
       setToast(`Welcome back, ${result.user.name}!`);
       setStage(result.user.onboardingComplete ? "landing" : "onboarding");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -113,6 +142,9 @@ export default function App() {
   };
 
   const handleLogout = async () => {
+    if (student?.id) {
+      await handleLogoutCacheClear(student.id);
+    }
     await logoutUser();
     setStudent(null);
     setStage("login");
@@ -137,11 +169,14 @@ export default function App() {
   // ── Profile update (from ProfileView / Settings) ──────────
 
   const handleUpdateStudent = async (updates, msg = "Profile updated successfully") => {
-    // Optimistic UI state update so picture/edits show instantly
     setStudent((prev) => ({ ...(prev || {}), ...updates }));
     const result = await updateCurrentUser(updates);
     if (result?.success && result.user) {
       setStudent(result.user);
+      if (result.user.preferredLanguage) {
+        setLanguage(result.user.preferredLanguage);
+        localStorage.setItem("pathforge_language", result.user.preferredLanguage);
+      }
       setToast(msg);
     } else {
       setToast(msg);
@@ -179,7 +214,13 @@ export default function App() {
 
   // ── Derived ───────────────────────────────────────────────
 
-  const titleMap = Object.fromEntries(NAV_MENU.map((n) => [n.id, n.label]));
+  const titleMap = Object.fromEntries(
+    NAV_MENU.map((n) => [
+      n.id, 
+      getTranslation(`nav.${n.id}`, language) !== `nav.${n.id}` ? getTranslation(`nav.${n.id}`, language) : n.label
+    ])
+  );
+
   const activeDrawerId =
     stage === "landing"
       ? "home"
@@ -200,7 +241,7 @@ export default function App() {
             className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg animate-pulse"
             style={{ background: "linear-gradient(135deg, #22d3ee, #3b82f6 50%, #f97316)" }}
           />
-          <p className="text-slate-500 text-sm">Loading PathForge…</p>
+          <p className="text-slate-500 text-sm">{getTranslation("common.loading", language)}</p>
         </div>
       </div>
     );
@@ -217,6 +258,8 @@ export default function App() {
         onClose={() => setDrawerOpen(false)}
         active={activeDrawerId}
         onNavigate={navigate}
+        language={language}
+        onLanguageChange={handleLanguageChange}
       />
 
       {stage === "login" && (
@@ -235,6 +278,8 @@ export default function App() {
           onLogin={() => setStage("login")}
           onUpdateStudent={handleUpdateStudent}
           go={go}
+          language={language}
+          onLanguageChange={handleLanguageChange}
         />
       )}
 
@@ -261,6 +306,8 @@ export default function App() {
             onProfileClick={() => go("profile")}
             student={student}
             go={go}
+            language={language}
+            onLanguageChange={handleLanguageChange}
           />
           <main className="px-5 md:px-8 py-7 max-w-7xl mx-auto">
             {active === "dashboard" && <DashboardView go={go} student={student} onUpdateStudent={handleUpdateStudent} />}
@@ -273,6 +320,7 @@ export default function App() {
             {active === "career" && <CareerView student={student} onUpdateStudent={handleUpdateStudent} />}
             {active === "analytics" && <LearningAnalyticsView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
             {active === "assessment" && <AssessmentView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
+            {active === "skills" && <SkillsView />}
             {active === "profile" && (
               <ProfileView
                 student={student}

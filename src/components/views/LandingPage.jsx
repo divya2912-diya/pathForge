@@ -9,6 +9,7 @@ import SectionHeader from "../ui/SectionHeader";
 import Pill from "../ui/Pill";
 import { SKILL_REQUIREMENTS, CAREER_ROADMAPS } from "../../data/userProfile";
 import { HomeJobCarousel } from "./HomeJobCarousel";
+import { LanguageSelector } from "../ui/LanguageSelector";
 
 function getRequiredSkillsForCareer(targetCareer) {
   if (!targetCareer) return [];
@@ -58,7 +59,7 @@ function RevealSection({ children, className = "" }) {
   );
 }
 
-export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, onUpdateStudent, go }) {
+export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, onUpdateStudent, go, language = "en", onLanguageChange }) {
   // Extract real dynamic user data (Single Source of Truth)
   const userSkills = Array.isArray(student?.skills) ? student.skills : [];
   
@@ -134,6 +135,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
           </span>
         </div>
         <div className="flex items-center gap-3">
+          <LanguageSelector currentLang={language} onLanguageChange={onLanguageChange} />
           {student ? (
             <>
               <span className="hidden sm:inline text-xs text-slate-400">

@@ -2,12 +2,15 @@ import React, { useState, useRef, useEffect } from "react";
 import { Search, Route, LayoutGrid, Award, FolderKanban, BookOpen, Compass, ChevronRight, X, Sparkles, Wifi, WifiOff, RefreshCw } from "lucide-react";
 import { syncOfflineQueue } from "../../services/offlineSyncService";
 import { getTranslation } from "../../services/i18nService";
+import { LanguageSelector } from "../ui/LanguageSelector";
+import { OfflineStatusModal } from "../ui/OfflineStatusModal";
 
-export function TopBar({ title, onProfileClick, student, go }) {
+export function TopBar({ title, onProfileClick, student, go, language = "en", onLanguageChange }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [syncStatus, setSyncStatus] = useState("Online");
+  const [syncStatus, setSyncStatus] = useState(navigator.onLine ? "Online" : "Offline");
+  const [modalOpen, setModalOpen] = useState(false);
   const searchRef = useRef(null);
 
   useEffect(() => {
@@ -24,7 +27,7 @@ export function TopBar({ title, onProfileClick, student, go }) {
     const handleOnline = () => {
       setIsOnline(true);
       setSyncStatus("Syncing...");
-      syncOfflineQueue((status) => setSyncStatus(status));
+      syncOfflineQueue((status) => setSyncStatus(status), student?.id);
     };
     const handleOffline = () => {
       setIsOnline(false);
@@ -37,7 +40,7 @@ export function TopBar({ title, onProfileClick, student, go }) {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, []);
+  }, [student?.id]);
 
   const SEARCH_ITEMS = [
     { label: "Knowledge Assessment", cat: "Assessment", view: "assessment", icon: Award },
@@ -70,6 +73,12 @@ export function TopBar({ title, onProfileClick, student, go }) {
     setQuery("");
   };
 
+  const getLocalizedStatusText = () => {
+    if (syncStatus === "Syncing...") return getTranslation("offline.syncing", language);
+    if (syncStatus === "Synced") return getTranslation("offline.synced", language);
+    return isOnline ? getTranslation("offline.online", language) : getTranslation("offline.offline", language);
+  };
+
   return (
     <div
       className="flex items-center justify-between pl-20 sm:pl-24 pr-5 md:pr-8 py-5 sticky top-0 z-30"
@@ -80,28 +89,29 @@ export function TopBar({ title, onProfileClick, student, go }) {
       </h1>
       
       <div className="flex items-center gap-3">
+        {/* Multilingual Selector in Header */}
+        <LanguageSelector 
+          currentLang={language} 
+          onLanguageChange={onLanguageChange} 
+        />
+
         {/* Offline / Online Sync Indicator Badge */}
-        <div 
-          onClick={() => {
-            if (isOnline) {
-              setSyncStatus("Syncing...");
-              syncOfflineQueue((st) => setSyncStatus(st));
-            }
-          }}
+        <button 
+          onClick={() => setModalOpen(true)}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer transition-all border ${
             isOnline 
               ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20" 
               : "bg-amber-500/10 text-amber-300 border-amber-500/30"
           }`}
-          title={isOnline ? "Click to force sync offline queue" : "Offline mode — progress saved locally"}
+          title={isOnline ? "Online — click for details" : "Offline mode — click for details"}
         >
           {isOnline ? (
             <Wifi size={13} className="text-emerald-400" />
           ) : (
             <WifiOff size={13} className="text-amber-400" />
           )}
-          <span>{syncStatus}</span>
-        </div>
+          <span>{getLocalizedStatusText()}</span>
+        </button>
 
         {/* Global Search Container */}
         <div ref={searchRef} className="relative hidden sm:block">
@@ -111,8 +121,8 @@ export function TopBar({ title, onProfileClick, student, go }) {
               value={query}
               onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
               onFocus={() => setIsOpen(true)}
-              placeholder="Search resources, skills, careers..." 
-              className="bg-transparent text-xs outline-none w-52 text-slate-200 placeholder-slate-500" 
+              placeholder={getTranslation("common.search", language)}
+              className="bg-transparent text-xs outline-none w-48 text-slate-200 placeholder-slate-500" 
             />
             {query && (
               <button onClick={() => setQuery("")} className="text-slate-500 hover:text-white cursor-pointer">
@@ -169,6 +179,14 @@ export function TopBar({ title, onProfileClick, student, go }) {
           )}
         </button>
       </div>
+
+      <OfflineStatusModal 
+        open={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        isOnline={isOnline} 
+        syncStatus={syncStatus} 
+        lang={language} 
+      />
     </div>
   );
 }

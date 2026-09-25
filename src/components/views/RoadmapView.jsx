@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import {
-  Target, ChevronDown, CheckCircle2, Lock, ArrowRight, BookOpen, PlayCircle, ExternalLink, Activity, Trophy, Circle, Map, Compass, BrainCircuit, SearchCode, Send, Sparkles, MapPin, Layers, Award, ArrowLeft, Check
+  Target, ChevronDown, CheckCircle2, Lock, ArrowRight, BookOpen, PlayCircle, ExternalLink, Activity, Trophy, Circle, Map, Compass, BrainCircuit, SearchCode, Send, Sparkles, MapPin, Layers, Award, ArrowLeft, Check, WifiOff, CloudOff
 } from "lucide-react";
 import { loadMilestoneProgress, saveMilestoneProgress } from "../../data/supabaseAuth";
 import { getRequiredSkills, calculateDynamicReadiness } from "../../data/userProfile";
 import ModalShell from "../ui/ModalShell";
 import GlassCard from "../ui/GlassCard";
+import { cacheLearningContent, getCachedContent, enqueueOfflineAction } from "../../services/offlineSyncService";
+import { getTranslation } from "../../services/i18nService";
 
 export function RoadmapView({ student, onUpdateStudent, go }) {
   const [dbProgress, setDbProgress] = useState({});
@@ -13,11 +15,13 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
   const [isChangingCareer, setIsChangingCareer] = useState(false);
   const [viewMode, setViewMode] = useState("winding"); // 'winding' | 'tabs'
   const [activeTab, setActiveTab] = useState("foundation");
+  const [isOfflineMode, setIsOfflineMode] = useState(!navigator.onLine);
   
   // Active selected node modal & learning module modal
   const [selectedNode, setSelectedNode] = useState(null);
   const [activeLearningModule, setActiveLearningModule] = useState(null);
   const [learningCompleted, setLearningCompleted] = useState(false);
+  const [offlineNotice, setOfflineNotice] = useState(null);
 
   // Interview Prep State
   const [isInterviewing, setIsInterviewing] = useState(false);
@@ -25,15 +29,35 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
   const [interviewAnswer, setInterviewAnswer] = useState("");
   const [interviewFeedback, setInterviewFeedback] = useState(null);
 
-  // Load progress from Supabase
+  const lang = student?.preferredLanguage || "en";
+
+  useEffect(() => {
+    const handleOnline = () => setIsOfflineMode(false);
+    const handleOffline = () => setIsOfflineMode(true);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Load progress from Supabase or IndexedDB
   useEffect(() => {
     async function init() {
       if (!student) return;
       setIsLoading(true);
       const targetCareer = student.targetCareer;
       if (targetCareer) {
-        const loadedProgress = await loadMilestoneProgress(targetCareer);
-        setDbProgress(loadedProgress || {});
+        if (navigator.onLine) {
+          const loadedProgress = await loadMilestoneProgress(targetCareer);
+          const progressObj = loadedProgress || {};
+          setDbProgress(progressObj);
+          await cacheLearningContent(`user_${student.id}_roadmap`, progressObj, student.id);
+        } else {
+          const cachedProgress = await getCachedContent(`user_${student.id}_roadmap`);
+          setDbProgress(cachedProgress || {});
+        }
       }
       setIsLoading(false);
     }
@@ -44,7 +68,7 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-400">
         <Activity className="w-8 h-8 animate-spin mb-4 text-cyan-400" />
-        <p>Loading your personalized career path...</p>
+        <p>{getTranslation("common.loading", lang)}</p>
       </div>
     );
   }
@@ -67,6 +91,27 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
         >
           Choose Career Goal
         </button>
+      </div>
+    );
+  }
+
+  // Handle offline empty state if user goes offline with zero cached content
+  const hasLoadedContent = Object.keys(dbProgress).length > 0 || (student?.skills || []).length > 0;
+  if (isOfflineMode && !hasLoadedContent) {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto py-12">
+        <GlassCard strong className="p-8 text-center space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
+            <CloudOff size={28} />
+          </div>
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 border border-amber-500/30 text-amber-400 inline-block">
+            🟠 {getTranslation("offline.offline", lang)}
+          </span>
+          <h2 className="text-xl font-bold text-white">{getTranslation("offline.emptyNotice", lang)}</h2>
+          <p className="text-xs text-slate-400 max-w-md mx-auto">
+            {getTranslation("offline.emptyNoticeSub", lang)}
+          </p>
+        </GlassCard>
       </div>
     );
   }
@@ -98,20 +143,25 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
   const certs = student?.certificationsList || [];
   const assessments = student?.assessments || [];
 
-  // Toggle skill progress manually
+  // Toggle skill progress manually (Online or Offline IndexedDB Queue)
   const toggleSkill = async (skill) => {
     const key = `skill_${skill.replace(/\s+/g, "_").toLowerCase()}`;
     const currentVal = dbProgress[key] === 1 ? 0 : 1;
     setDbProgress((prev) => ({ ...prev, [key]: currentVal }));
-    await saveMilestoneProgress(targetCareer, key, currentVal);
+
+    if (!navigator.onLine) {
+      await enqueueOfflineAction("complete_node", { career: targetCareer, milestoneId: key }, student?.id, key);
+      setOfflineNotice("✓ Saved locally in IndexedDB — Will sync when online.");
+      setTimeout(() => setOfflineNotice(null), 4000);
+    } else {
+      await saveMilestoneProgress(targetCareer, key, currentVal);
+      await cacheLearningContent(`user_${student?.id}_roadmap`, { ...dbProgress, [key]: currentVal }, student?.id);
+    }
   };
 
-  // --------------------------------------------------------
-  // BUILD CANDY CRUSH / GOOGLE MAPS WINDING PATH NODES
-  // --------------------------------------------------------
+  // Build Roadmap Nodes
   const pathNodes = [];
 
-  // 1. Start Node
   pathNodes.push({
     id: "node_start",
     type: "start",
@@ -124,7 +174,6 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
     hours: "0 hrs",
   });
 
-  // 2. Foundation Nodes
   foundationSkills.forEach((skill, idx) => {
     const done = isMastered(skill) || isSkillDbCompleted(skill);
     const isCurrent = !done && (idx === 0 || isMastered(foundationSkills[idx - 1]) || isSkillDbCompleted(foundationSkills[idx - 1]));
@@ -144,7 +193,6 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
     });
   });
 
-  // 3. Specialization Nodes
   specSkills.forEach((skill, idx) => {
     const done = isMastered(skill) || isSkillDbCompleted(skill);
     const isCurrent = !done && (actualGaps.length > 0 && actualGaps[0] === skill);
@@ -164,7 +212,6 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
     });
   });
 
-  // 4. Portfolio Capstone Project Node
   const capstoneDone = projects.length > 0;
   pathNodes.push({
     id: "node_portfolio",
@@ -179,7 +226,6 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
     hours: "4 wks",
   });
 
-  // 5. Interview Prep Node
   const interviewDone = dbProgress["node_interview"] === 1;
   pathNodes.push({
     id: "node_interview",
@@ -194,7 +240,6 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
     hours: "2 wks",
   });
 
-  // 6. Career Ready Node
   const careerReady = progressPercent >= 90;
   pathNodes.push({
     id: "node_ready",
@@ -208,9 +253,6 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
     hours: "Goal",
   });
 
-  // Determine current active node index for progress
-  const activeNodeIdx = pathNodes.findIndex((n) => n.status === "current");
-
   // Handlers
   const handleMarkComplete = async (node) => {
     if (node.skillName) {
@@ -218,7 +260,13 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
     } else {
       const currentVal = dbProgress[node.id] === 1 ? 0 : 1;
       setDbProgress((prev) => ({ ...prev, [node.id]: currentVal }));
-      await saveMilestoneProgress(targetCareer, node.id, currentVal);
+      if (!navigator.onLine) {
+        await enqueueOfflineAction("complete_node", { career: targetCareer, milestoneId: node.id }, student?.id, node.id);
+        setOfflineNotice("✓ Saved locally in IndexedDB — Will sync when online.");
+        setTimeout(() => setOfflineNotice(null), 4000);
+      } else {
+        await saveMilestoneProgress(targetCareer, node.id, currentVal);
+      }
     }
     setLearningCompleted(true);
   };
@@ -246,18 +294,36 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
   return (
     <div className="space-y-8 animate-fade-in pb-20">
       
+      {/* Offline Mode Banner Notice */}
+      {isOfflineMode && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center justify-between shadow-lg">
+          <div className="flex items-center gap-2 font-bold">
+            <WifiOff size={16} />
+            <span>🟠 {getTranslation("offline.offlineNotice", lang)}</span>
+          </div>
+          <span className="text-[11px] font-semibold opacity-80">IndexedDB Cache Active</span>
+        </div>
+      )}
+
+      {/* Offline Progress Toast Notice */}
+      {offlineNotice && (
+        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-2xl animate-in slide-in-from-bottom-4">
+          {offlineNotice}
+        </div>
+      )}
+
       {/* 1. HEADER & CURRENT POSITION */}
       <GlassCard strong className="p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1">
-              <Compass size={14} /> Career Learning Path
+              <Compass size={14} /> {getTranslation("roadmap.title", lang)}
             </div>
             <h1 className="lp-display text-2xl font-bold text-white flex items-center gap-2">
               {targetCareer}
             </h1>
             <p className="text-xs text-slate-400 mt-1 max-w-xl">
-              A visual progression map connecting your current skills to full hire readiness.
+              {getTranslation("roadmap.subtitle", lang)}
             </p>
           </div>
 
@@ -337,14 +403,12 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
             }}
             className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-[#060911] font-bold text-xs rounded-xl transition-all shadow-md shadow-cyan-500/20 shrink-0 cursor-pointer flex items-center gap-1.5"
           >
-            Start Learning {nextStep} <ArrowRight size={14} />
+            {getTranslation("roadmap.startLearning", lang)} {nextStep} <ArrowRight size={14} />
           </button>
         </div>
       )}
 
-      {/* ============================================================ */}
-      {/* 3. GOOGLE MAPS / CANDY CRUSH WINDING SERPENTINE PATH         */}
-      {/* ============================================================ */}
+      {/* 3. WINDING SERPENTINE PATH */}
       {viewMode === "winding" && (
         <GlassCard strong className="p-6 md:p-10 relative overflow-hidden">
           <div className="text-center mb-8">
@@ -434,9 +498,7 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
         </GlassCard>
       )}
 
-      {/* ============================================================ */}
-      {/* 4. TABBED MILESTONES VIEW MODE                                */}
-      {/* ============================================================ */}
+      {/* 4. TABBED MILESTONES VIEW MODE */}
       {viewMode === "tabs" && (
         <div className="space-y-6">
           <div className="flex overflow-x-auto gap-2 border-b border-white/5 pb-px custom-scrollbar">
@@ -473,7 +535,7 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
 
                     <div className="pt-4 flex items-center justify-between border-t border-white/5">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${isCompleted ? "bg-emerald-500/15 text-emerald-300" : "bg-white/5 text-slate-400"}`}>
-                        {isCompleted ? "Completed" : "In Progress"}
+                        {isCompleted ? getTranslation("roadmap.completed", lang) : getTranslation("roadmap.inProgress", lang)}
                       </span>
                       <button
                         onClick={() => {
@@ -490,88 +552,10 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
               })}
             </div>
           )}
-
-          {activeTab === "projects" && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold text-white">Recommended Capstone Projects</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {projects.slice(0, 4).map((p) => (
-                  <GlassCard key={p.id || p.title} className="p-5 flex flex-col justify-between">
-                    <div>
-                      <h3 className="font-bold text-white text-base mb-1">{p.title}</h3>
-                      <p className="text-xs text-slate-400 line-clamp-2 mb-4">{p.description}</p>
-                    </div>
-                    <button onClick={() => go?.("projects")} className="px-4 py-2 bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 rounded-xl text-xs font-bold transition-all w-full flex items-center justify-center gap-2">
-                      <PlayCircle size={15} /> Open Project Workspace
-                    </button>
-                  </GlassCard>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "interview" && (
-            <GlassCard className="p-6">
-              {!isInterviewing ? (
-                <div className="text-center py-8">
-                  <BrainCircuit className="w-12 h-12 text-cyan-400/50 mx-auto mb-3" />
-                  <h3 className="text-xl font-bold text-white mb-1">{targetCareer} Interview Screen</h3>
-                  <p className="text-xs text-slate-400 mb-6 max-w-md mx-auto">Practice live technical questions tailored to your target career and skill gaps.</p>
-                  <button onClick={startInterview} className="px-6 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-[#060911] font-bold text-xs rounded-xl transition-all shadow-md">
-                    Start Interview Practice
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4 max-w-xl mx-auto">
-                  <h3 className="text-base font-bold text-white">{interviewQuestion}</h3>
-                  <textarea
-                    value={interviewAnswer}
-                    onChange={(e) => setInterviewAnswer(e.target.value)}
-                    placeholder="Type your answer here..."
-                    className="w-full h-32 bg-[#0a0f1d] border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-cyan-500 resize-none"
-                  />
-                  {!interviewFeedback ? (
-                    <button onClick={submitInterview} className="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-[#060911] font-bold text-xs rounded-xl flex items-center gap-1.5">
-                      <Send size={13} /> Submit Answer
-                    </button>
-                  ) : (
-                    <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-2 text-xs">
-                      <h4 className="font-bold text-emerald-300">Feedback Summary</h4>
-                      <p className="text-slate-300">{interviewFeedback.correctness}</p>
-                      <button onClick={startInterview} className="mt-2 px-3 py-1.5 bg-white/10 text-white rounded-lg font-semibold">Next Question</button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </GlassCard>
-          )}
-
-          {activeTab === "ready" && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <GlassCard className="p-5 text-center">
-                <div className="text-2xl font-bold text-cyan-400">{actualStrengths.length}</div>
-                <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">Skills Mastered</div>
-              </GlassCard>
-              <GlassCard className="p-5 text-center">
-                <div className="text-2xl font-bold text-white">{projects.length}</div>
-                <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">Projects</div>
-              </GlassCard>
-              <GlassCard className="p-5 text-center">
-                <div className="text-2xl font-bold text-white">{certs.length}</div>
-                <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">Certifications</div>
-              </GlassCard>
-              <GlassCard className="p-5 text-center">
-                <div className="text-2xl font-bold text-amber-400">{actualGaps.length}</div>
-                <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">Remaining Gaps</div>
-              </GlassCard>
-            </div>
-          )}
         </div>
       )}
 
-      {/* ============================================================ */}
-      {/* 5. MILESTONE NODE DETAILS MODAL                              */}
-      {/* ============================================================ */}
+      {/* 5. MILESTONE NODE DETAILS MODAL */}
       <ModalShell
         open={!!selectedNode}
         title={selectedNode?.title || "Milestone Details"}
@@ -602,7 +586,7 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
                 }}
                 className="flex-1 py-3 bg-cyan-500 hover:bg-cyan-400 text-[#060911] font-bold text-xs rounded-xl transition-all shadow-md shadow-cyan-500/20 cursor-pointer flex items-center justify-center gap-1.5"
               >
-                <BookOpen size={15} /> Start Learning Module
+                <BookOpen size={15} /> {getTranslation("roadmap.startLearning", lang)}
               </button>
 
               <button
@@ -610,22 +594,20 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
                   await handleMarkComplete(selectedNode);
                   setSelectedNode(null);
                 }}
-                className={`px-4 py-3 rounded-xl text-xs font-bold transition-all border ${
+                className={`px-4 py-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                   selectedNode.status === "completed"
                     ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
                     : "bg-white/5 hover:bg-white/10 text-white border-white/10"
                 }`}
               >
-                {selectedNode.status === "completed" ? "✓ Completed" : "Mark Complete"}
+                {selectedNode.status === "completed" ? `✓ ${getTranslation("roadmap.completed", lang)}` : getTranslation("roadmap.markComplete", lang)}
               </button>
             </div>
           </div>
         )}
       </ModalShell>
 
-      {/* ============================================================ */}
-      {/* 6. INTERACTIVE LEARNING MODULE VIEW (SECTION 8)               */}
-      {/* ============================================================ */}
+      {/* 6. INTERACTIVE LEARNING MODULE VIEW */}
       <ModalShell
         open={!!activeLearningModule}
         title={`Learning Module: ${activeLearningModule?.title || ""}`}
@@ -670,14 +652,8 @@ export async function initializeModule(config) {
                     : "bg-cyan-500 hover:bg-cyan-400 text-[#060911] shadow-lg shadow-cyan-500/20 cursor-pointer"
                 }`}
               >
-                {learningCompleted ? <><Check size={16} /> Progress Saved & Milestone Completed!</> : "Mark Complete"}
+                {learningCompleted ? <><Check size={16} /> Progress Saved & Milestone Completed!</> : getTranslation("roadmap.markComplete", lang)}
               </button>
-
-              {learningCompleted && (
-                <p className="text-[11px] text-emerald-400 text-center font-medium">
-                  ✓ Milestone saved to Supabase! Visual path position advanced.
-                </p>
-              )}
             </div>
           </div>
         )}
