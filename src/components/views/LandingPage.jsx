@@ -10,6 +10,7 @@ import Pill from "../ui/Pill";
 import { SKILL_REQUIREMENTS, CAREER_ROADMAPS } from "../../data/userProfile";
 import { HomeJobCarousel } from "./HomeJobCarousel";
 import { LanguageSelector } from "../ui/LanguageSelector";
+import { getTranslation } from "../../services/i18nService";
 
 function getRequiredSkillsForCareer(targetCareer) {
   if (!targetCareer) return [];
@@ -60,6 +61,8 @@ function RevealSection({ children, className = "" }) {
 }
 
 export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, onUpdateStudent, go, language = "en", onLanguageChange }) {
+  const t = (key) => getTranslation(key, language);
+
   // Extract real dynamic user data (Single Source of Truth)
   const userSkills = Array.isArray(student?.skills) ? student.skills : [];
   
@@ -139,12 +142,12 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
           {student ? (
             <>
               <span className="hidden sm:inline text-xs text-slate-400">
-                Hi, <span className="text-white font-medium">{student.name?.split(" ")[0]}</span>
+                {t("landing.welcomeBack")}, <span className="text-white font-medium">{student.name?.split(" ")[0]}</span>
               </span>
               <button
                 onClick={onProfile}
                 aria-label="View Profile"
-                title={`${student.name || "Profile"}`}
+                title={`${student.name || t("common.profile")}`}
                 className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative cursor-pointer group shrink-0 overflow-hidden"
                 style={{
                   background: student?.profilePicture ? "transparent" : "linear-gradient(135deg, rgba(34,211,238,0.18), rgba(139,92,246,0.18))",
@@ -153,7 +156,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
                 }}
               >
                 {student?.profilePicture ? (
-                  <img src={student.profilePicture} alt={student.name || "Profile"} className="w-full h-full object-cover rounded-full" />
+                  <img src={student.profilePicture} alt={student.name || t("common.profile")} className="w-full h-full object-cover rounded-full" />
                 ) : (
                   <span className="text-xs font-bold text-cyan-300 select-none">
                     {student?.name?.slice(0, 2).toUpperCase() || "ME"}
@@ -168,7 +171,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
               onClick={onLogin}
               className="lp-btn-ghost px-3.5 py-2 rounded-xl text-xs sm:text-sm text-cyan-300 hover:text-white border border-cyan-400/30 hover:border-cyan-400/60 flex items-center gap-1.5 cursor-pointer transition-all shadow-sm shadow-cyan-500/10"
             >
-              <LogIn size={15} /> Sign In
+              <LogIn size={15} /> {t("common.signIn")}
             </button>
           )}
         </div>
@@ -178,20 +181,20 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-10 md:pt-16 pb-28 grid md:grid-cols-2 gap-14 items-center">
         <div className="lp-fade-up">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs mb-6" style={{ background: "rgba(34,211,238,0.08)", border: "1px solid rgba(34,211,238,0.25)", color: "#67e8f9" }}>
-            <Sparkles size={13} /> AI-powered education to employment
+            <Sparkles size={13} /> {t("landing.badge")}
           </div>
           {student && (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs mb-4 ml-3" style={{ background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.25)", color: "#34d399" }}>
-              Welcome back, {student.name?.split(" ")[0]}! 👋
+              {t("landing.welcomeBack")}, {student.name?.split(" ")[0]}! 👋
             </div>
           )}
           <h1 className="lp-display text-4xl sm:text-5xl lg:text-[3.4rem] leading-[1.08] font-semibold tracking-tight">
-            Your learning path.
+            {t("landing.heroTitle1")}
             <br />
-            <span className="lp-gradient-text">Powered by intelligence.</span>
+            <span className="lp-gradient-text">{t("landing.heroTitle2")}</span>
           </h1>
           <p className="mt-6 text-base md:text-lg max-w-lg" style={{ color: "var(--text-dim)" }}>
-            Discover what you know, understand what you're missing, and follow an AI-guided path from learning to career readiness.
+            {t("landing.heroSubtitle")}
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3.5">
             <button
@@ -199,14 +202,14 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
               onClick={onStart}
               className="lp-btn-primary px-6 py-3.5 rounded-xl flex items-center gap-2 text-[15px] cursor-pointer"
             >
-              {student?.onboardingComplete ? "Continue my journey" : "Build my learning path"} <ArrowRight size={17} />
+              {student?.onboardingComplete ? t("landing.continueJourney") : t("landing.buildPath")} <ArrowRight size={17} />
             </button>
             <button
               id="btn-landing-explore"
               onClick={onExplore}
               className="lp-btn-ghost px-5 py-3.5 rounded-xl text-[14px] text-slate-300 hover:text-white cursor-pointer"
             >
-              Explore platform
+              {t("landing.explorePlatform")}
             </button>
           </div>
         </div>
@@ -242,13 +245,13 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
               <>
                 <p className="text-xs text-slate-400 font-medium">{skill1}</p>
                 <p className="lp-display text-base sm:text-lg font-semibold text-cyan-300">
-                  {typeof skill1Mastery === "number" ? `${skill1Mastery}% Mastery` : "Skill added"}
+                  {typeof skill1Mastery === "number" ? `${skill1Mastery}% ${t("landing.mastery")}` : t("landing.skillAdded")}
                 </p>
               </>
             ) : (
               <>
-                <p className="text-xs text-slate-400 font-medium">No skills yet</p>
-                <p className="lp-display text-xs sm:text-sm font-semibold text-cyan-300">Complete your profile</p>
+                <p className="text-xs text-slate-400 font-medium">{t("landing.noSkills")}</p>
+                <p className="lp-display text-xs sm:text-sm font-semibold text-cyan-300">{t("landing.completeProfile")}</p>
               </>
             )}
           </FloatingCard>
@@ -259,13 +262,13 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
               <>
                 <p className="text-xs text-slate-400 font-medium">{skill2}</p>
                 <p className="lp-display text-base sm:text-lg font-semibold text-blue-300">
-                  {typeof skill2Mastery === "number" ? `${skill2Mastery}% Mastery` : "Skill added"}
+                  {typeof skill2Mastery === "number" ? `${skill2Mastery}% ${t("landing.mastery")}` : t("landing.skillAdded")}
                 </p>
               </>
             ) : (
               <>
-                <p className="text-xs text-slate-400 font-medium">Add more skills</p>
-                <p className="lp-display text-xs sm:text-sm font-semibold text-blue-300">Update your profile</p>
+                <p className="text-xs text-slate-400 font-medium">{t("landing.addMoreSkills")}</p>
+                <p className="lp-display text-xs sm:text-sm font-semibold text-blue-300">{t("landing.updateProfile")}</p>
               </>
             )}
           </FloatingCard>
@@ -275,7 +278,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
             {nextRoadmapStep ? (
               <>
                 <div className="flex items-center gap-1.5 text-xs text-cyan-300 font-medium">
-                  <Route size={12} color="#67e8f9" /> Next roadmap step
+                  <Route size={12} color="#67e8f9" /> {t("landing.nextStep")}
                 </div>
                 <p className="lp-display text-xs sm:text-sm font-semibold text-white mt-0.5">
                   {nextRoadmapStep}
@@ -284,10 +287,10 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
             ) : (
               <>
                 <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-                  <Route size={12} color="#94a3b8" /> Roadmap
+                  <Route size={12} color="#94a3b8" /> {t("landing.roadmap")}
                 </div>
                 <p className="text-xs mt-0.5 text-slate-300 font-medium">
-                  {student ? "Complete onboarding to generate" : "Complete your profile to generate your roadmap"}
+                  {student ? t("landing.completeOnboarding") : t("landing.completeProfile")}
                 </p>
               </>
             )}
@@ -298,7 +301,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
             {topSkillGap ? (
               <>
                 <div className="flex items-center gap-1.5 text-amber-300 text-xs mb-1 font-medium">
-                  <AlertTriangle size={12} /> Skill gap detected
+                  <AlertTriangle size={12} /> {t("landing.skillGapDetected")}
                 </div>
                 <p className="lp-display text-xs sm:text-sm font-medium text-white">
                   → {topSkillGap}
@@ -307,19 +310,19 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
             ) : hasNoGaps ? (
               <>
                 <div className="flex items-center gap-1.5 text-emerald-400 text-xs mb-1 font-medium">
-                  <CheckCircle2 size={12} /> No critical gaps
+                  <CheckCircle2 size={12} /> {t("landing.noGaps")}
                 </div>
                 <p className="lp-display text-xs sm:text-sm font-medium text-emerald-300">
-                  You're on track
+                  {t("landing.onTrack")}
                 </p>
               </>
             ) : (
               <>
                 <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1 font-medium">
-                  <AlertTriangle size={12} /> Skill gap analysis
+                  <AlertTriangle size={12} /> {t("landing.skillGapAnalysis")}
                 </div>
                 <p className="text-xs text-slate-300 font-medium">
-                  Waiting for profile setup
+                  {t("landing.waitingProfile")}
                 </p>
               </>
             )}
@@ -330,7 +333,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
             {targetCareer ? (
               <>
                 <p className="text-xs text-slate-400 font-medium">
-                  {typeof realReadinessScore === "number" ? "Career readiness" : "Career goal"}
+                  {typeof realReadinessScore === "number" ? t("landing.careerReadiness") : t("landing.careerGoal")}
                 </p>
                 <p className="lp-display text-xs sm:text-sm font-semibold" style={{ color: "#c4b5fd" }}>
                   {targetCareer}
@@ -339,8 +342,8 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
               </>
             ) : (
               <>
-                <p className="text-xs text-slate-400 font-medium">Target career</p>
-                <p className="lp-display text-xs sm:text-sm font-semibold text-purple-300">Not set</p>
+                <p className="text-xs text-slate-400 font-medium">{t("landing.targetCareer")}</p>
+                <p className="lp-display text-xs sm:text-sm font-semibold text-purple-300">{t("landing.notSet")}</p>
               </>
             )}
           </FloatingCard>
@@ -349,15 +352,15 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
 
       {/* WHAT THE PLATFORM DOES */}
       <RevealSection className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-24">
-        <SectionHeader eyebrow="What PathForge does" title="Everything between your last course and your first job" subtitle="One system that reads your profile and keeps every recommendation current as you learn." />
+        <SectionHeader eyebrow={t("landing.eyebrow")} title={t("landing.sectionTitle")} subtitle={t("landing.sectionSubtitle")} />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[
-            { icon: Radar, title: "Skill profiling", desc: "Detects what you already know from courses, projects and certifications, then maps strengths and gaps." },
-            { icon: Route, title: "Adaptive roadmap", desc: "Sequences exactly what to learn next toward your target career, and reorders itself as you progress." },
-            { icon: LayoutGrid, title: "Resource matching", desc: "Surfaces the videos, docs and problem sets most likely to close your specific gaps — with a reason for each." },
-            { icon: Sparkles, title: "Adaptive assessments", desc: "Validates real understanding with difficulty that adjusts to you, not a fixed quiz bank." },
-            { icon: FileText, title: "Resume intelligence", desc: "Scores your resume against your target role and points out exactly what's missing." },
-            { icon: Compass, title: "Career matching", desc: "Compares your skills to real industry requirements and tells you what closes the gap fastest." },
+            { icon: Radar, title: t("landing.skillProfilingTitle"), desc: t("landing.skillProfilingDesc") },
+            { icon: Route, title: t("landing.adaptiveRoadmapTitle"), desc: t("landing.adaptiveRoadmapDesc") },
+            { icon: LayoutGrid, title: t("landing.resourceMatchingTitle"), desc: t("landing.resourceMatchingDesc") },
+            { icon: Sparkles, title: t("landing.adaptiveAssessmentsTitle"), desc: t("landing.adaptiveAssessmentsDesc") },
+            { icon: FileText, title: t("landing.resumeIntelligenceTitle"), desc: t("landing.resumeIntelligenceDesc") },
+            { icon: Compass, title: t("landing.careerMatchingTitle"), desc: t("landing.careerMatchingDesc") },
           ].map(({ icon: Icon, title, desc }) => (
             <GlassCard key={title} hover className="p-6">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: "rgba(34,211,238,0.1)" }}>
@@ -384,13 +387,13 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
         <GlassCard strong className="p-8 md:p-10">
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck size={18} color="#34d399" />
-            <span className="lp-display font-semibold">Trusted AI knowledge</span>
+            <span className="lp-display font-semibold">{t("landing.trustedTitle")}</span>
           </div>
           <p className="text-sm mb-8 max-w-xl" style={{ color: "var(--text-dim)" }}>
-            Every recommendation is grounded in retrieval over verified sources — not a hallucinated guess.
+            {t("landing.trustedSubtitle")}
           </p>
           <div className="flex flex-wrap items-center justify-between gap-6">
-            {["Student question", "AI retrieval", "Verified knowledge", "Personalized answer"].map((step, i, arr) => (
+            {[t("landing.step1"), t("landing.step2"), t("landing.step3"), t("landing.step4")].map((step, i, arr) => (
               <React.Fragment key={step}>
                 <div className="flex items-center gap-2 text-sm">
                   <div className="w-2 h-2 rounded-full" style={{ background: i === arr.length - 1 ? "#34d399" : "#67e8f9" }} />
@@ -401,7 +404,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
             ))}
           </div>
           <div className="flex flex-wrap gap-2 mt-8">
-            {["Documentation", "Academic Resources", "Verified Courses", "Industry Resources"].map(s => <Pill key={s}>{s}</Pill>)}
+            {[t("landing.pillDoc"), t("landing.pillAcademic"), t("landing.pillCourses"), t("landing.pillIndustry")].map(s => <Pill key={s}>{s}</Pill>)}
           </div>
         </GlassCard>
       </RevealSection>
