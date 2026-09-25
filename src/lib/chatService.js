@@ -1,23 +1,24 @@
 // ============================================================
-//  PathForge — Chat Service
-//  Calls Google Gemini API. Key is stored in .env only —
-//  never exposed in the UI.
+//  PathForge — Chat Service (OpenRouter)
+//  Uses OpenRouter API — supports free models like Llama, Mistral.
+//  Key is stored in .env only — never exposed in the UI.
 // ============================================================
 
-const GEMINI_MODEL = "gemini-2.0-flash";
+// Free model on OpenRouter — no billing required
+// Other free options: "mistralai/mistral-7b-instruct:free"
+//                     "google/gemma-2-9b-it:free"
+const OR_MODEL = "meta-llama/llama-3.1-8b-instruct:free";
+const OR_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 /**
  * Read the API key from the build-time env variable.
- * This is set in .env as VITE_GEMINI_API_KEY and bundled
- * at build time — it is NOT accessible via any UI.
  */
 function getApiKey() {
-  return import.meta.env.VITE_GEMINI_API_KEY || "";
+  return import.meta.env.VITE_OPENROUTER_API_KEY || "";
 }
 
 /**
- * Build the system prompt that instructs Gemini how to behave.
- * Personalised with the student's profile data.
+ * Build the system prompt personalised with the student's profile.
  */
 function buildSystemPrompt(student) {
   const name = student?.name?.split(" ")[0] || "there";
@@ -39,101 +40,131 @@ STUDENT PROFILE:
 - Current Skills: ${skills || "Not specified yet"}
 
 YOUR ROLE:
-1. Answer ANY question the student asks — technical concepts, coding problems, career advice, project ideas, interview prep, study plans, or general learning doubts.
-2. Always ground your advice in their target career (${career}) and current context.
-3. Be concise, clear, and practical. Avoid unnecessary filler text.
-4. Use markdown formatting: **bold**, bullet points (•), numbered lists, and \`\`\`code blocks\`\`\` where relevant.
-5. If a question is completely unrelated to learning, tech, or career (e.g. casual chat), keep your answer brief and redirect gently.
-6. Never mention your own API, model name, or internal configuration.
-7. Address the student by first name (${name}) occasionally to feel personal.`;
+1. Answer EVERY question the student asks thoroughly and specifically — do NOT give a generic response.
+2. For technical questions: give detailed explanations with code examples in markdown code blocks.
+3. For career questions: give specific, actionable advice tied to their target career (${career}).
+4. For general questions: answer them directly and helpfully.
+5. ALWAYS vary your response based on exactly what was asked — never give the same generic reply.
+6. Use markdown: **bold**, bullet points, numbered lists, and \`\`\`language code blocks\`\`\` where relevant.
+7. Be concise but complete. Address the student by first name (${name}) occasionally.
+8. Never mention your own API, model name, or internal configuration.`;
 }
 
 /**
- * Main function: send message history + student context to Gemini,
- * return the AI's reply as a string.
+ * Main function: send message history to OpenRouter, return AI reply.
  *
- * @param {Array<{from: "user"|"ai", text: string}>} messages - Full conversation history
- * @param {Object} student - Student profile object from Supabase
- * @returns {Promise<string>} - The AI reply text
+ * @param {Array<{from: "user"|"ai", text: string}>} messages
+ * @param {Object} student - Student profile from Supabase
+ * @returns {Promise<string>}
  */
 export async function sendMessage(messages, student) {
   const apiKey = getApiKey();
 
-  // No key configured — return a helpful prompt to the admin
+  // No key configured — use offline smart fallback
   if (!apiKey || apiKey.trim() === "") {
-    return buildOfflineReply(messages[messages.length - 1]?.text || "", student);
+    const lastQuery = messages[messages.length - 1]?.text || "";
+    return buildOfflineReply(lastQuery, student);
   }
 
   const systemPrompt = buildSystemPrompt(student);
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
 
-  // Map conversation history to Gemini's format
-  const contents = messages.map((m) => ({
-    role: m.from === "user" ? "user" : "model",
-    parts: [{ text: m.text || "" }],
-  }));
+  // Build OpenAI-compatible messages array (OpenRouter uses same format)
+  const chatMessages = [
+    { role: "system", content: systemPrompt },
+    ...messages.map((m) => ({
+      role: m.from === "user" ? "user" : "assistant",
+      content: m.text || "",
+    })),
+  ];
 
   const payload = {
-    system_instruction: {
-      parts: [{ text: systemPrompt }],
-    },
-    contents,
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 1024,
-      topP: 0.9,
-    },
+    model: OR_MODEL,
+    messages: chatMessages,
+    temperature: 0.8,
+    max_tokens: 1500,
+    top_p: 0.95,
   };
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(OR_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+        "HTTP-Referer": "https://pathforge.app",
+        "X-Title": "PathForge AI Mentor",
+      },
       body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
-      const errText = await res.text();
-      console.error("Gemini API error:", res.status, errText);
-      return "I'm having trouble connecting right now. Please try again in a moment.";
+      const errData = await res.json().catch(() => ({}));
+      const errMsg = errData?.error?.message || `HTTP ${res.status}`;
+      console.error("OpenRouter API error:", res.status, errMsg);
+
+      if (res.status === 401) {
+        return `⚠️ **Invalid API Key.** Make sure your \`VITE_OPENROUTER_API_KEY\` in \`.env\` is correct.\n\nGet a free key at [openrouter.ai/keys](https://openrouter.ai/keys).`;
+      }
+      if (res.status === 429) {
+        return "⚠️ **Rate limit reached.** Please wait a moment and try again.";
+      }
+      if (res.status === 402) {
+        return "⚠️ **Free quota exhausted.** Add credits at [openrouter.ai](https://openrouter.ai) or switch to another free model.";
+      }
+      return `⚠️ OpenRouter returned an error (${res.status}). Please try again.`;
     }
 
     const data = await res.json();
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    return reply || "I didn't get a response. Please try rephrasing your question.";
+    const reply = data?.choices?.[0]?.message?.content;
+
+    if (!reply) {
+      console.warn("OpenRouter: empty reply", data);
+      return "I didn't receive a valid response. Please try rephrasing your question.";
+    }
+
+    return reply;
   } catch (err) {
     console.error("Chat service error:", err);
-    return "Something went wrong. Please check your connection and try again.";
+    if (err.name === "TypeError") {
+      return "⚠️ **Network error.** Please check your internet connection and try again.";
+    }
+    return "Something went wrong. Please try again.";
   }
 }
 
 /**
- * Basic offline reply when no API key is set.
- * Gives a useful answer for common questions so the UI is never blank.
+ * Offline fallback — used only when NO API key is set.
+ * Gives topic-specific answers so the chat is never broken.
  */
 function buildOfflineReply(query = "", student) {
-  const q = query.toLowerCase();
+  const q = query.toLowerCase().trim();
   const career = student?.targetCareer || "Software Engineer";
   const name = student?.name?.split(" ")[0] || "there";
 
-  if (q.includes("react") || q.includes("hook") || q.includes("component")) {
-    return `### React Fundamentals\n\n**React** is a JavaScript library for building UIs from reusable components.\n\n**Key hooks:**\n• \`useState\` — local component state\n• \`useEffect\` — side effects (data fetch, subscriptions)\n• \`useRef\` — DOM references, mutable values\n• \`useContext\` — consume shared context\n\nFor **${career}**, React is often paired with Next.js or Vite for production apps.`;
+  if (/^(hi|hello|hey|howdy)[!\s]?$/.test(q)) {
+    return `Hey ${name}! 👋 I'm your PathForge AI. Ask me anything — coding, career, interviews, projects — I'm here to help!`;
   }
-  if (q.includes("python") || q.includes("django") || q.includes("fastapi")) {
-    return `### Python & Backend Development\n\n**Python** is the top language for AI/ML, data science, and backend APIs.\n\n**Essential areas:**\n• Data structures: lists, dicts, sets, tuples\n• OOP: classes, decorators, generators\n• Web: **FastAPI** (modern, async) or **Django** (full-featured)\n• ML: NumPy, Pandas, Scikit-learn, PyTorch\n\nGreat fit for your **${career}** target!`;
+  if (/react|jsx|hook|usestate|useeffect|component|vite|next\.?js|redux/.test(q)) {
+    return `### React & Frontend\n\n**React** is a component-based UI library.\n\n• \`useState\` — local state\n• \`useEffect\` — side effects after render\n• \`useRef\` — DOM access without re-render\n• \`useContext\` — global state sharing\n\n\`\`\`jsx\nconst [count, setCount] = useState(0);\nuseEffect(() => { document.title = \`Count: \${count}\`; }, [count]);\n\`\`\`\n\nFor **${career}**, React + TypeScript + Next.js is the industry standard.`;
   }
-  if (q.includes("sql") || q.includes("database") || q.includes("postgres")) {
-    return `### Databases & SQL\n\n**Relational databases** power most production applications.\n\n**Must-know concepts:**\n• SELECT, JOIN, GROUP BY, subqueries\n• Indexing for query performance\n• Transactions & ACID properties\n• ORMs: SQLAlchemy (Python), Prisma (JS)\n\nFor ${career}, understanding query optimisation is a key interview topic.`;
+  if (/python|django|fastapi|flask|numpy|pandas|pytorch|sklearn/.test(q)) {
+    return `### Python Development\n\nPython is the top language for **${career}**.\n\n• **Web:** FastAPI (async, modern) or Django (batteries-included)\n• **Data:** NumPy, Pandas, Matplotlib\n• **ML:** Scikit-learn, PyTorch, TensorFlow\n\n\`\`\`python\nasync def get_user(id: int) -> User:\n    return await db.users.find_one({"_id": id})\n\`\`\``;
   }
-  if (q.includes("system design") || q.includes("architecture")) {
-    return `### System Design Basics\n\n**Core pillars:**\n• **Scalability** — horizontal vs vertical scaling, load balancers\n• **Caching** — Redis, CDN edge caching\n• **Databases** — SQL vs NoSQL trade-offs, sharding\n• **Queues** — Kafka, RabbitMQ for async processing\n• **APIs** — REST vs GraphQL vs gRPC\n\nStart with the [System Design Primer](https://github.com/donnemartin/system-design-primer) — it's the gold standard resource.`;
+  if (/sql|database|postgres|mysql|mongodb|redis|query|join/.test(q)) {
+    return `### Databases & SQL\n\nEssentials for ${career}:\n\n• **SQL:** SELECT, JOIN, GROUP BY, indexes, transactions\n• **NoSQL:** MongoDB (documents), Redis (cache)\n\n\`\`\`sql\nSELECT u.name, COUNT(o.id) as orders\nFROM users u\nLEFT JOIN orders o ON u.id = o.user_id\nGROUP BY u.id ORDER BY orders DESC;\n\`\`\``;
   }
-  if (q.includes("study plan") || q.includes("roadmap") || q.includes("learn")) {
-    return `### Suggested Study Plan for ${name}\n\n**Target: ${career}**\n\n**Week 1–2:** Core fundamentals (data structures, algorithms basics)\n**Week 3–4:** Primary language deep-dive (Python / JavaScript)\n**Week 5–6:** Framework & tooling (React, FastAPI, or relevant stack)\n**Week 7–8:** Build a portfolio project end-to-end\n**Ongoing:** LeetCode 2–3 problems/day, mock interviews\n\nConsistency beats intensity — 2 focused hours daily > 8 hours on weekends.`;
+  if (/algorithm|dsa|array|tree|graph|dp|dynamic|sort|search|big.?o/.test(q)) {
+    return `### Data Structures & Algorithms\n\n**Big-O Complexity:**\n• O(1) → Hash map lookup\n• O(log n) → Binary search\n• O(n) → Single loop\n• O(n²) → Nested loops\n\n**Key patterns:** Two pointers, Sliding window, BFS/DFS, DP\n\n\`\`\`python\ndef binary_search(arr, target):\n    lo, hi = 0, len(arr) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if arr[mid] == target: return mid\n        elif arr[mid] < target: lo = mid + 1\n        else: hi = mid - 1\n    return -1\n\`\`\``;
   }
-  if (q.includes("interview") || q.includes("job") || q.includes("placement")) {
-    return `### Interview Preparation Guide\n\n**Technical Round:**\n• DSA: Arrays, strings, trees, graphs, DP\n• System design (for senior roles)\n• Language-specific concepts\n\n**Behavioural Round:**\n• STAR method: Situation, Task, Action, Result\n• Prepare 5–6 strong project stories\n\n**For ${career} roles specifically:**\n• Be ready to explain ML pipelines, model evaluation, or full-stack architecture depending on the company.\n\nWant me to run a mock interview question?`;
+  if (/system design|architecture|scalab|microservice|load balanc/.test(q)) {
+    return `### System Design\n\nCore pillars:\n\n1. **Scalability** — horizontal vs vertical scaling\n2. **Caching** — Redis, CDN for static assets\n3. **Load Balancing** — distribute traffic (Nginx, AWS ALB)\n4. **Databases** — read replicas, sharding\n5. **Message Queues** — Kafka/RabbitMQ for decoupling\n\n[System Design Primer](https://github.com/donnemartin/system-design-primer) is the best free resource.`;
+  }
+  if (/interview|placement|job|resume|coding round/.test(q)) {
+    return `### Interview Prep for ${career}\n\n**Technical:** DSA (LeetCode Easy→Medium), System Design, Language depth\n**Behavioural:** STAR method — Situation, Task, Action, Result\n\n**30-day plan:**\n• Week 1–2: DSA daily (2 problems/day)\n• Week 3: System design concepts\n• Week 4: Mock interviews + company research`;
+  }
+  if (/study plan|roadmap|how to learn|where to start|schedule/.test(q)) {
+    return `### Study Plan for ${name} → ${career}\n\n**Month 1:** Core language + DSA fundamentals\n**Month 2:** Framework + Databases + Build projects\n**Month 3:** Deploy + Interview prep + Apply\n\n**Daily habit:** 2 focused hours beats 8 distracted hours every time.`;
   }
 
-  return `Hi ${name}! 👋\n\nI'm your PathForge AI mentor. Ask me anything about:\n• **Concepts** — explain any tech topic\n• **Code** — debug or review your code\n• **Career** — job prep, interview tips, roadmaps\n• **Projects** — ideas tailored to **${career}**\n• **Study plans** — weekly learning schedules\n\nWhat would you like to explore today?`;
+  return `### PathForge AI\n\n**You asked:** "${query}"\n\nI'm ready to help with anything — coding concepts, career advice, project ideas, interview prep, or study plans for **${career}**.\n\nCould you give a bit more detail about what you need? That way I can give you a really specific and useful answer!`;
 }
