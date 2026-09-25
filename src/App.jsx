@@ -272,9 +272,13 @@ export default function App() {
               <SettingsView student={student} onLogout={handleLogout} onUpdateStudent={handleUpdateStudent} />
             )}
           </main>
-          <ChatWidget student={student} />
           {toast && <Toast message={toast} onClose={() => setToast(null)} />}
         </div>
+      )}
+
+      {/* AI Chatbot — visible on every page except login/loading */}
+      {stage !== "login" && stage !== "loading" && (
+        <ChatWidget student={student} />
       )}
     </div>
   );

@@ -244,15 +244,28 @@ export function ChatWidget({ student }) {
   if (!open) {
     return (
       <>
-        <button
-          onClick={() => setOpen(true)}
-          className="cw-fab"
-          aria-label="Open PathForge AI"
-          title="Ask PathForge AI"
-        >
-          <Bot size={22} />
-          <span className="cw-fab-pulse" />
-        </button>
+        <div className="cw-fab-wrap">
+          {/* Outer glow ring */}
+          <span className="cw-fab-ring cw-fab-ring-1" />
+          <span className="cw-fab-ring cw-fab-ring-2" />
+
+          {/* Floating label */}
+          <div className="cw-fab-label">Ask AI ✨</div>
+
+          {/* Main FAB button */}
+          <button
+            onClick={() => setOpen(true)}
+            className="cw-fab"
+            aria-label="Open PathForge AI"
+            title="Ask PathForge AI"
+          >
+            {/* Shimmer sweep */}
+            <span className="cw-fab-shimmer" />
+            <Bot size={24} className="cw-fab-icon" />
+            {/* Online dot */}
+            <span className="cw-fab-dot" />
+          </button>
+        </div>
         <style>{cwStyles}</style>
       </>
     );
@@ -359,24 +372,111 @@ export function ChatWidget({ student }) {
 // ─── All Styles (self-contained, no class conflicts) ─────────────────────────
 
 const cwStyles = `
-  /* FAB */
-  .cw-fab {
+  /* ── FAB Wrapper ── */
+  .cw-fab-wrap {
     position: fixed; bottom: 26px; right: 26px; z-index: 40;
-    width: 54px; height: 54px; border-radius: 16px;
-    background: linear-gradient(135deg, #22d3ee, #8b5cf6);
-    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    animation: cw-fab-bounceIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  /* Glowing orbital rings */
+  .cw-fab-ring {
+    position: absolute; border-radius: 50%;
+    border: 2px solid rgba(34,211,238,0.4);
+    pointer-events: none;
+  }
+  .cw-fab-ring-1 {
+    width: 76px; height: 76px;
+    animation: cw-ring-spin 3s linear infinite;
+    border-top-color: #22d3ee;
+    border-right-color: transparent;
+    border-bottom-color: #8b5cf6;
+    border-left-color: transparent;
+  }
+  .cw-fab-ring-2 {
+    width: 92px; height: 92px;
+    animation: cw-ring-spin 5s linear infinite reverse;
+    border-top-color: transparent;
+    border-right-color: rgba(139,92,246,0.5);
+    border-bottom-color: transparent;
+    border-left-color: rgba(34,211,238,0.3);
+  }
+
+  /* Floating "Ask AI" label */
+  .cw-fab-label {
+    position: absolute;
+    right: 68px; bottom: 14px;
+    background: linear-gradient(135deg, rgba(34,211,238,0.15), rgba(139,92,246,0.15));
+    border: 1px solid rgba(34,211,238,0.35);
+    backdrop-filter: blur(12px);
+    color: #67e8f9; font-size: 11.5px; font-weight: 700;
+    padding: 5px 11px; border-radius: 20px;
+    white-space: nowrap; pointer-events: none;
+    animation: cw-label-float 2.8s ease-in-out infinite;
+    box-shadow: 0 4px 16px rgba(34,211,238,0.18);
+    letter-spacing: 0.02em;
+  }
+  .cw-fab-label::after {
+    content: '';
+    position: absolute; right: -6px; top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 6px solid rgba(34,211,238,0.35);
+  }
+
+  /* Main FAB button */
+  .cw-fab {
+    position: relative;
+    width: 58px; height: 58px; border-radius: 18px;
+    background: linear-gradient(135deg, #22d3ee 0%, #8b5cf6 60%, #f472b6 100%);
+    border: none; cursor: pointer; overflow: hidden;
     display: flex; align-items: center; justify-content: center;
     color: #04121a;
-    box-shadow: 0 8px 30px rgba(34,211,238,0.38), 0 4px 14px rgba(0,0,0,0.45);
-    transition: transform 0.2s, box-shadow 0.2s;
-    position: fixed;
+    box-shadow:
+      0 0 0 3px rgba(34,211,238,0.2),
+      0 8px 32px rgba(34,211,238,0.45),
+      0 4px 16px rgba(139,92,246,0.3),
+      0 2px 8px rgba(0,0,0,0.5);
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+    animation: cw-fab-glow 3s ease-in-out infinite;
   }
-  .cw-fab:hover { transform: scale(1.08); box-shadow: 0 12px 40px rgba(34,211,238,0.55); }
-  .cw-fab-pulse {
+  .cw-fab:hover {
+    transform: scale(1.12) rotate(-3deg);
+    box-shadow:
+      0 0 0 4px rgba(34,211,238,0.35),
+      0 14px 45px rgba(34,211,238,0.6),
+      0 6px 20px rgba(139,92,246,0.4);
+  }
+  .cw-fab:active { transform: scale(0.96); }
+
+  /* Shimmer sweep across the button */
+  .cw-fab-shimmer {
+    position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      transparent 30%,
+      rgba(255,255,255,0.35) 50%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    animation: cw-shimmer 2.5s ease-in-out infinite;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  /* Bot icon inside FAB */
+  .cw-fab-icon { position: relative; z-index: 1; drop-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+
+  /* Online indicator dot */
+  .cw-fab-dot {
     position: absolute; top: -3px; right: -3px;
-    width: 12px; height: 12px; border-radius: 50%;
-    background: #34d399; border: 2.5px solid #060911;
-    animation: cw-pulse 2.2s infinite;
+    width: 13px; height: 13px; border-radius: 50%;
+    background: #34d399;
+    border: 2.5px solid #060911;
+    box-shadow: 0 0 8px #34d399, 0 0 16px rgba(52,211,153,0.5);
+    animation: cw-pulse 2s infinite;
+    z-index: 2;
   }
 
   /* Backdrop */
@@ -647,7 +747,34 @@ const cwStyles = `
   }
   @keyframes cw-pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.5) }
-    50% { box-shadow: 0 0 0 5px rgba(52,211,153,0) }
+    50% { box-shadow: 0 0 0 6px rgba(52,211,153,0) }
+  }
+
+  /* FAB-specific animations */
+  @keyframes cw-ring-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes cw-shimmer {
+    0% { background-position: 200% center; }
+    100% { background-position: -200% center; }
+  }
+  @keyframes cw-label-float {
+    0%, 100% { transform: translateY(0px); opacity: 1; }
+    50% { transform: translateY(-4px); opacity: 0.85; }
+  }
+  @keyframes cw-fab-bounceIn {
+    0% { opacity: 0; transform: scale(0.5) translateY(30px); }
+    70% { transform: scale(1.08) translateY(-4px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes cw-fab-glow {
+    0%, 100% {
+      box-shadow: 0 0 0 3px rgba(34,211,238,0.2), 0 8px 32px rgba(34,211,238,0.45), 0 4px 16px rgba(139,92,246,0.3);
+    }
+    50% {
+      box-shadow: 0 0 0 5px rgba(34,211,238,0.35), 0 12px 45px rgba(34,211,238,0.65), 0 6px 24px rgba(139,92,246,0.5);
+    }
   }
 
   /* Mobile: fullscreen */
@@ -657,7 +784,8 @@ const cwStyles = `
       height: 100dvh; border-radius: 0; border: none;
     }
     .cw-backdrop { display: none; }
-    .cw-fab { bottom: 18px; right: 16px; }
+    .cw-fab-wrap { bottom: 18px; right: 16px; }
+    .cw-fab-label { display: none; }
   }
 `;
 
