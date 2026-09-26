@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { Sparkles, Clock, CheckCircle2, AlertTriangle, Check, XCircle, RefreshCw, ArrowRight, Bot, Compass } from "lucide-react";
+import { Sparkles, Clock, CheckCircle2, AlertTriangle, Check, XCircle, RefreshCw, ArrowRight, Bot, Compass, ShieldCheck } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import SectionHeader from "../ui/SectionHeader";
 import Pill from "../ui/Pill";
 import ProgressRing from "../ui/ProgressRing";
 import { QUIZ } from "../../data/mockData";
+import { getRequiredSkills } from "../../data/userProfile";
 import { recordStyleInteraction } from "../../services/learningStyleService";
 import { updateCurrentUser } from "../../data/supabaseAuth";
+import SkillValidationModal from "../ui/SkillValidationModal";
+import { isSkillValidated } from "../../services/skillValidationService";
 
 export function AssessmentView({ student, onUpdateStudent, go }) {
   const [phase, setPhase] = useState("intro"); // intro | quiz | results
   const [qi, setQi] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [seconds, setSeconds] = useState(30);
+
+  // Skill Validation Modal state
+  const [validationSkill, setValidationSkill] = useState(null);
+
+  const requiredSkills = getRequiredSkills(student?.targetCareer || "Software Engineer");
 
   useEffect(() => {
     if (phase !== "quiz") return;
@@ -116,34 +124,99 @@ export function AssessmentView({ student, onUpdateStudent, go }) {
 
   if (phase === "intro") {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-8">
         <SectionHeader 
-          eyebrow="Adaptive Knowledge Assessment" 
-          title="Skill & Knowledge Assessment" 
-          subtitle="6 questions · MCQ & Conceptual · Analyzes skill gaps for your target career" 
+          eyebrow="Adaptive Knowledge & Skill Validation" 
+          title="Assessments & Skill Validation" 
+          subtitle="Test your knowledge or prove proficiency in specific roadmap skills to unlock milestones." 
         />
+
+        {/* ── 2-ROUND SKILL VALIDATION SECTION ── */}
+        <GlassCard strong className="p-6 md:p-8 space-y-5 border-l-4 border-l-emerald-400 bg-gradient-to-r from-emerald-950/20 via-slate-900/90 to-slate-900/90">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shrink-0">
+                <ShieldCheck size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  Validate Roadmap Skill (2-Round Assessment)
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-bold">
+                    Official Validation
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Prove proficiency through Round 1 (Conceptual) & Round 2 (Practical Challenge) to instantly unlock your next roadmap milestone.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Skill Selection Grid */}
+          <div className="space-y-2 pt-2">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+              Select a Skill for {student?.targetCareer || "Software Engineer"} to Validate:
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+              {requiredSkills.map((sk) => {
+                const validated = isSkillValidated(student, {}, sk);
+                return (
+                  <button
+                    key={sk}
+                    onClick={() => setValidationSkill(sk)}
+                    className={`p-3 rounded-xl border text-left text-xs font-semibold transition-all flex flex-col justify-between cursor-pointer ${
+                      validated
+                        ? "bg-emerald-500/20 border-emerald-400/40 text-emerald-300"
+                        : "bg-slate-900/80 border-slate-800 text-slate-200 hover:border-cyan-500/50 hover:bg-slate-800"
+                    }`}
+                  >
+                    <span>{sk}</span>
+                    <span className="text-[10px] mt-1 font-bold flex items-center gap-1">
+                      {validated ? (
+                        <span className="text-emerald-400 flex items-center gap-1"><ShieldCheck size={12} /> Validated</span>
+                      ) : (
+                        <span className="text-cyan-400 flex items-center gap-1">Validate →</span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* ── GENERAL TARGET CAREER QUIZ SECTION ── */}
         <GlassCard strong className="p-8 text-center space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mx-auto text-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
             <Sparkles size={28} />
           </div>
-          <h3 className="text-xl font-bold text-white">Target Career Validation Quiz</h3>
-          <p className="text-sm max-w-md mx-auto" style={{ color: "var(--text-dim)" }}>
-            This quiz covers Python, Object-Oriented Programming (OOP), SQL, Probability, and Machine Learning — testing the key skills required for <strong>{student?.targetCareer || "Software Engineer"}</strong>.
+          <h3 className="text-xl font-bold text-white">Target Career General Knowledge Quiz</h3>
+          <p className="text-sm max-w-md mx-auto text-slate-400">
+            This quiz tests core concepts across Python, OOP, SQL, and Machine Learning for <strong>{student?.targetCareer || "Software Engineer"}</strong>.
           </p>
           <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl text-left max-w-md mx-auto space-y-2 text-xs text-slate-300">
             <div className="flex items-center gap-2 text-cyan-400 font-bold">
               <Clock size={14} /> 30 Seconds Per Question
             </div>
             <p>• Immediate feedback & topic breakdown upon completion</p>
-            <p>• Automatically updates your skill gaps, analytics dashboard & AI mentor context</p>
+            <p>• Automatically updates your skill gaps & AI mentor context</p>
           </div>
           <button 
             onClick={start} 
             className="lp-btn-primary px-8 py-3.5 rounded-xl text-sm font-bold cursor-pointer inline-flex items-center gap-2 shadow-lg hover:scale-105 transition-all"
           >
-            Start Assessment Now <ArrowRight size={16} />
+            Start General Quiz Now <ArrowRight size={16} />
           </button>
         </GlassCard>
+
+        {/* Modal render */}
+        <SkillValidationModal
+          isOpen={!!validationSkill}
+          skill={validationSkill}
+          student={student}
+          onUpdateStudent={onUpdateStudent}
+          onClose={() => setValidationSkill(null)}
+        />
       </div>
     );
   }

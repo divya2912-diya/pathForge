@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import {
-  Target, ChevronDown, CheckCircle2, Lock, ArrowRight, BookOpen, PlayCircle, ExternalLink, Activity, Trophy, Circle, Map, Compass, BrainCircuit, SearchCode, Send, Sparkles, MapPin, Layers, Award, ArrowLeft, Check, WifiOff, CloudOff, FileText, TrendingUp, AlertTriangle
+  Target, ChevronDown, CheckCircle2, Lock, ArrowRight, BookOpen, PlayCircle, ExternalLink, Activity, Trophy, Circle, Map, Compass, BrainCircuit, SearchCode, Send, Sparkles, MapPin, Layers, Award, ArrowLeft, Check, WifiOff, CloudOff, FileText, TrendingUp, AlertTriangle, ShieldCheck, ShieldAlert
 } from "lucide-react";
 import { loadMilestoneProgress, saveMilestoneProgress } from "../../data/supabaseAuth";
 import { getRequiredSkills, calculateDynamicReadiness } from "../../data/userProfile";
 import ModalShell from "../ui/ModalShell";
 import GlassCard from "../ui/GlassCard";
+import SkillValidationModal from "../ui/SkillValidationModal";
+import { isSkillValidated } from "../../services/skillValidationService";
 import { cacheLearningContent, getCachedContent, enqueueOfflineAction } from "../../services/offlineSyncService";
 import { getTranslation } from "../../services/i18nService";
 
@@ -17,6 +19,9 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
   const [activeTab, setActiveTab] = useState("foundation");
   const [isOfflineMode, setIsOfflineMode] = useState(!navigator.onLine);
   
+  // Skill Validation Modal State
+  const [validationModalSkill, setValidationModalSkill] = useState(null);
+
   // Active selected node modal & learning module modal
   const [selectedNode, setSelectedNode] = useState(null);
   const [activeLearningModule, setActiveLearningModule] = useState(null);
@@ -209,32 +214,39 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
   });
 
   foundationSkills.forEach((skill, idx) => {
-    const done = isMastered(skill) || isSkillDbCompleted(skill);
+    const validated = isSkillValidated(student, dbProgress, skill);
+    const done = validated || isMastered(skill) || isSkillDbCompleted(skill);
     const resumeProven = isResumeProven(skill);
-    const isCurrent = !done && (idx === 0 || isMastered(foundationSkills[idx - 1]) || isSkillDbCompleted(foundationSkills[idx - 1]));
+    const isCurrent = !done && (idx === 0 || isMastered(foundationSkills[idx - 1]) || isSkillDbCompleted(foundationSkills[idx - 1]) || isSkillValidated(student, dbProgress, foundationSkills[idx - 1]));
     const positions = ["25%", "75%", "50%", "30%", "70%"];
     pathNodes.push({
       id: `skill_${skill.replace(/\s+/g, "_").toLowerCase()}`,
       type: "skill",
       title: skill,
-      stage: resumeProven ? "Already Demonstrated" : "Foundation",
-      desc: resumeProven
+      stage: validated ? "VALIDATED SKILL" : resumeProven ? "Already Demonstrated" : "Foundation",
+      desc: validated
+        ? `Skill verified via 2-round assessment — mastery proven!`
+        : resumeProven
         ? `Demonstrated in your resume — no need to repeat foundational learning.`
         : `Core concepts and practical application of ${skill} for ${targetCareer}.`,
-      relevance: resumeProven
+      relevance: validated
+        ? `✓ Officially validated via conceptual & practical testing.`
+        : resumeProven
         ? `✓ Evidence found in your uploaded resume.`
         : `Essential foundation skill for ${targetCareer} roles.`,
       status: done ? "completed" : isCurrent ? "current" : "upcoming",
       xPos: positions[idx % positions.length],
-      icon: resumeProven ? CheckCircle2 : BookOpen,
-      hours: resumeProven ? "✓ Done" : `${3 + idx} wks`,
+      icon: validated ? ShieldCheck : resumeProven ? CheckCircle2 : BookOpen,
+      hours: validated ? "✓ Validated" : resumeProven ? "✓ Done" : `${3 + idx} wks`,
       skillName: skill,
       resumeProven,
+      isValidated: validated,
     });
   });
 
   specSkills.forEach((skill, idx) => {
-    const done = isMastered(skill) || isSkillDbCompleted(skill);
+    const validated = isSkillValidated(student, dbProgress, skill);
+    const done = validated || isMastered(skill) || isSkillDbCompleted(skill);
     const resumeProven = isResumeProven(skill);
     const isCurrent = !done && (actualGaps.length > 0 && actualGaps[0] === skill);
     const positions = ["75%", "35%", "65%", "25%"];
@@ -242,19 +254,24 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
       id: `skill_${skill.replace(/\s+/g, "_").toLowerCase()}`,
       type: "specialization",
       title: skill,
-      stage: resumeProven ? "Already Demonstrated" : "Specialization",
-      desc: resumeProven
+      stage: validated ? "VALIDATED SKILL" : resumeProven ? "Already Demonstrated" : "Specialization",
+      desc: validated
+        ? `Skill verified via 2-round assessment — mastery proven!`
+        : resumeProven
         ? `Demonstrated in your resume — skip to advanced application.`
         : `Advanced frameworks, architecture patterns, and tools for ${skill}.`,
-      relevance: resumeProven
+      relevance: validated
+        ? `✓ Officially validated via conceptual & practical testing.`
+        : resumeProven
         ? `✓ Evidence found in your uploaded resume.`
         : `Key specialization requirement for ${targetCareer}.`,
       status: done ? "completed" : isCurrent ? "current" : "upcoming",
       xPos: positions[idx % positions.length],
-      icon: resumeProven ? CheckCircle2 : Layers,
-      hours: resumeProven ? "✓ Done" : `${2 + idx} wks`,
+      icon: validated ? ShieldCheck : resumeProven ? CheckCircle2 : Layers,
+      hours: validated ? "✓ Validated" : resumeProven ? "✓ Done" : `${2 + idx} wks`,
       skillName: skill,
       resumeProven,
+      isValidated: validated,
     });
   });
 
@@ -597,22 +614,31 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
           {(activeTab === "foundation" || activeTab === "specialization") && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {(activeTab === "foundation" ? foundationSkills : specSkills).map((skill) => {
+                const isValidated = isSkillValidated(student, dbProgress, skill);
                 const profileMastered = isMastered(skill);
                 const dbCompleted = isSkillDbCompleted(skill);
-                const isCompleted = profileMastered || dbCompleted;
+                const isCompleted = isValidated || profileMastered || dbCompleted;
                 const resumeProven = isResumeProven(skill);
 
                 return (
                   <GlassCard
                     key={skill}
                     className={`p-5 flex flex-col justify-between transition-all ${
+                      isValidated ? "border-emerald-400/50 bg-emerald-950/20 shadow-lg shadow-emerald-500/10" :
                       resumeProven ? "border-emerald-500/30 bg-emerald-950/10" : ""
                     }`}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className={`font-bold text-base ${isCompleted ? "text-slate-300" : "text-white"}`}>{skill}</h3>
-                        {resumeProven && (
+                        <div className="flex items-center gap-2">
+                          <h3 className={`font-bold text-base ${isCompleted ? "text-slate-300" : "text-white"}`}>{skill}</h3>
+                          {isValidated && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-bold flex items-center gap-1">
+                              <ShieldCheck size={11} /> VALIDATED
+                            </span>
+                          )}
+                        </div>
+                        {resumeProven && !isValidated && (
                           <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1 mt-0.5">
                             <CheckCircle2 size={9} /> Resume Demonstrated
                           </span>
@@ -623,22 +649,35 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
                       </button>
                     </div>
 
-                    <div className="pt-4 flex items-center justify-between border-t border-white/5">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                        resumeProven ? "bg-emerald-500/20 text-emerald-300" :
-                        isCompleted ? "bg-emerald-500/15 text-emerald-300" : "bg-white/5 text-slate-400"
-                      }`}>
-                        {resumeProven ? "✓ Already Demonstrated" : isCompleted ? getTranslation("roadmap.completed", lang) : getTranslation("roadmap.inProgress", lang)}
-                      </span>
-                      <button
-                        onClick={() => {
-                          const targetNode = pathNodes.find(n => n.title === skill);
-                          if (targetNode) setSelectedNode(targetNode);
-                        }}
-                        className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
-                      >
-                        Module Details <ArrowRight size={12} />
-                      </button>
+                    <div className="pt-4 flex flex-col gap-2 border-t border-white/5">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                          isValidated ? "bg-emerald-500/25 text-emerald-300 border border-emerald-500/30" :
+                          resumeProven ? "bg-emerald-500/20 text-emerald-300" :
+                          isCompleted ? "bg-emerald-500/15 text-emerald-300" : "bg-white/5 text-slate-400"
+                        }`}>
+                          {isValidated ? "✓ Skill Validated" : resumeProven ? "✓ Already Demonstrated" : isCompleted ? getTranslation("roadmap.completed", lang) : getTranslation("roadmap.inProgress", lang)}
+                        </span>
+                        
+                        <button
+                          onClick={() => {
+                            const targetNode = pathNodes.find(n => n.title === skill);
+                            if (targetNode) setSelectedNode(targetNode);
+                          }}
+                          className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                        >
+                          Module Details <ArrowRight size={12} />
+                        </button>
+                      </div>
+
+                      {!isValidated && (
+                        <button
+                          onClick={() => setValidationModalSkill(skill)}
+                          className="w-full py-1.5 px-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer mt-1"
+                        >
+                          <ShieldCheck size={13} /> Validate My Skill
+                        </button>
+                      )}
                     </div>
                   </GlassCard>
                 );
@@ -670,7 +709,7 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
               <p className="text-sm text-slate-200 leading-relaxed">{selectedNode.desc}</p>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-white/5">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/5">
               <button
                 onClick={() => {
                   setActiveLearningModule(selectedNode);
@@ -681,6 +720,19 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
               >
                 <BookOpen size={15} /> {getTranslation("roadmap.startLearning", lang)}
               </button>
+
+              {(selectedNode.skillName || selectedNode.type === "skill" || selectedNode.type === "specialization") && (
+                <button
+                  onClick={() => {
+                    const sName = selectedNode.skillName || selectedNode.title;
+                    setValidationModalSkill(sName);
+                    setSelectedNode(null);
+                  }}
+                  className="px-4 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer font-bold"
+                >
+                  <ShieldCheck size={16} /> Validate My Skill
+                </button>
+              )}
 
               <button
                 onClick={async () => {
@@ -751,6 +803,25 @@ export async function initializeModule(config) {
           </div>
         )}
       </ModalShell>
+
+      {/* 7. SKILL VALIDATION SYSTEM MODAL */}
+      <SkillValidationModal
+        isOpen={!!validationModalSkill}
+        skill={validationModalSkill}
+        student={student}
+        onUpdateStudent={onUpdateStudent}
+        onClose={() => setValidationModalSkill(null)}
+        onValidationComplete={(isSuccess, skillName) => {
+          if (isSuccess && skillName) {
+            const key = `skill_${skillName.replace(/\s+/g, "_").toLowerCase()}`;
+            setDbProgress(prev => ({
+              ...prev,
+              [key]: 1,
+              [`${key}_validated`]: 1
+            }));
+          }
+        }}
+      />
 
     </div>
   );
