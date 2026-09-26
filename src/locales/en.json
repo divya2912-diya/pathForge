@@ -1,17 +1,25 @@
 {
   "nav": {
+    "home": "Home",
     "dashboard": "Dashboard",
+    "analytics": "Learning Analytics",
+    "assessment": "Assess My Skills",
+    "build-path": "Create Learning Path",
     "roadmap": "Learning Roadmap",
     "resources": "Resources",
-    "resume": "Resume Intelligence",
-    "jobs": "Job Notifications",
+    "career": "Career Analysis",
+    "resume": "Resume Analyzer",
+    "jobs": "Job Opportunities",
     "projects": "Projects",
     "certifications": "Certifications",
-    "career": "Career Analysis",
     "profile": "Profile & Skills",
     "settings": "Settings",
     "login": "Sign In",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "group_my_progress": "MY PROGRESS",
+    "group_my_learning": "MY LEARNING",
+    "group_career": "CAREER",
+    "group_profile": "PROFILE"
   },
   "dashboard": {
     "welcome": "Welcome back",

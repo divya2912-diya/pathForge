@@ -1,6 +1,6 @@
 import {
   Home, LayoutDashboard, Radar, Route, LayoutGrid, Sparkles, FileText, FolderKanban, Award,
-  Compass, User, Settings, Video, BookOpen, FileCode2, Bell
+  Compass, User, Settings, Video, BookOpen, FileCode2, Bell, BarChart2, Target, Briefcase
 } from "lucide-react";
 
 export const SKILL_GROUPS = [
@@ -172,20 +172,64 @@ export const ONBOARD_CAREERS = [
   "Other / Custom Career",
 ];
 
+export const NAV_GROUPS = [
+  {
+    id: "my_progress",
+    label: "My Progress",
+    icon: BarChart2,
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { id: "analytics", label: "Learning Analytics", icon: Radar },
+      { id: "assessment", label: "Assess My Skills", icon: Award },
+    ],
+  },
+  {
+    id: "my_learning",
+    label: "My Learning",
+    icon: Target,
+    items: [
+      { id: "build-path", label: "Create Learning Path", icon: Sparkles },
+      { id: "roadmap", label: "Learning Roadmap", icon: Route },
+      { id: "resources", label: "Resources", icon: LayoutGrid },
+    ],
+  },
+  {
+    id: "career_group",
+    label: "Career",
+    icon: Briefcase,
+    items: [
+      { id: "career", label: "Career Analysis", icon: Compass },
+      { id: "resume", label: "Resume Analyzer", icon: FileText },
+      { id: "jobs", label: "Job Opportunities", icon: Bell },
+      { id: "projects", label: "Projects", icon: FolderKanban },
+      { id: "certifications", label: "Certifications", icon: Award },
+    ],
+  },
+  {
+    id: "profile_group",
+    label: "Profile",
+    icon: User,
+    items: [
+      { id: "profile", label: "Profile & Skills", icon: User },
+      { id: "settings", label: "Settings", icon: Settings },
+    ],
+  },
+];
+
 export const NAV_MENU = [
   { id: "home", label: "Home", icon: Home },
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "analytics", label: "Learning Analytics", icon: Radar },
-  { id: "assessment", label: "Knowledge Assessment", icon: Award },
-  { id: "build-path", label: "Build My Learning Path", icon: Sparkles },
+  { id: "assessment", label: "Assess My Skills", icon: Award },
+  { id: "build-path", label: "Create Learning Path", icon: Sparkles },
   { id: "roadmap", label: "Learning Roadmap", icon: Route },
   { id: "resources", label: "Resources", icon: LayoutGrid },
-  { id: "resume", label: "Resume Intelligence", icon: FileText },
-  { id: "career", label: "Career Intelligence", icon: Compass },
+  { id: "career", label: "Career Analysis", icon: Compass },
+  { id: "resume", label: "Resume Analyzer", icon: FileText },
+  { id: "jobs", label: "Job Opportunities", icon: Bell },
   { id: "projects", label: "Projects", icon: FolderKanban },
   { id: "certifications", label: "Certifications", icon: Award },
-  { id: "jobs", label: "Job Notifications", icon: Bell },
-  { id: "profile", label: "Profile", icon: User },
+  { id: "profile", label: "Profile & Skills", icon: User },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 

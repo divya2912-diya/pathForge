@@ -81,7 +81,7 @@ export function TopBar({ title, onProfileClick, student, go, language = "en", on
 
   return (
     <div
-      className="flex items-center justify-between pl-20 sm:pl-24 pr-5 md:pr-8 py-5 sticky top-0 z-30"
+      className="flex items-center justify-between pl-20 sm:pl-24 lg:pl-8 pr-5 md:pr-8 py-5 sticky top-0 z-30"
       style={{ background: "rgba(6,9,17,0.85)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
     >
       <h1 className="lp-display text-lg font-semibold text-white flex items-center gap-3">
