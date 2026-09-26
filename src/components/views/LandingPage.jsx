@@ -140,7 +140,7 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <LanguageSelector currentLang={language} onLanguageChange={onLanguageChange} />
+          <LanguageSelector currentLang={language} onLanguageChange={onLanguageChange} direction="down" align="right" />
           {student ? (
             <>
               <span className="hidden sm:inline text-xs text-slate-400">

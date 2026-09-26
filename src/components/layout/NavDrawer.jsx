@@ -168,7 +168,7 @@ export function NavDrawer({
         <div className="p-4 border-t border-white/10 space-y-3 overflow-visible">
           <div className="flex items-center justify-between overflow-visible">
             <span className="text-xs font-semibold text-slate-400">App Language:</span>
-            <LanguageSelector currentLang={language} onLanguageChange={onLanguageChange} />
+            <LanguageSelector currentLang={language} onLanguageChange={onLanguageChange} direction="up" />
           </div>
 
           {student ? (

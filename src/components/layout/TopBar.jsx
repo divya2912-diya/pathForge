@@ -93,6 +93,8 @@ export function TopBar({ title, onProfileClick, student, go, language = "en", on
         <LanguageSelector 
           currentLang={language} 
           onLanguageChange={onLanguageChange} 
+          direction="down"
+          align="right"
         />
 
         {/* Offline / Online Sync Indicator Badge */}
