@@ -15,8 +15,9 @@ import { CareerJourneyMap } from "./CareerJourneyMap";
 import { HomeJobCarousel } from "./HomeJobCarousel";
 import { SyncStatusBadge } from "../ui/SyncStatusBadge";
 import { buildUserLearningContext } from "../../services/userContextService";
+import { getTranslation } from "../../services/i18nService";
 
-export function DashboardView({ go, student, onUpdateStudent }) {
+export function DashboardView({ go, student, onUpdateStudent, language = "en" }) {
   const [dbProgress, setDbProgress] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 

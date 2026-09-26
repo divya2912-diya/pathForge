@@ -6,8 +6,9 @@ import Pill from "../ui/Pill";
 import ModalShell from "../ui/ModalShell";
 import { rankProjects } from "../../data/projectEngine";
 import { getCatalogProjects, getSavedProjects, toggleSavedProject } from "../../data/supabaseAuth";
+import { getTranslation } from "../../services/i18nService";
 
-export function ProjectsView({ student, added, toggleAdded, onAddToRoadmap, go }) {
+export function ProjectsView({ student, added, toggleAdded, onAddToRoadmap, go, language = "en" }) {
   const [selectedProject, setSelectedProject] = useState(null);
   const [activeDomain, setActiveDomain] = useState("Recommended");
   const [catalog, setCatalog] = useState([]);

@@ -10,8 +10,9 @@ import { recordStyleInteraction } from "../../services/learningStyleService";
 import { updateCurrentUser } from "../../data/supabaseAuth";
 import SkillValidationModal from "../ui/SkillValidationModal";
 import { isSkillValidated } from "../../services/skillValidationService";
+import { getTranslation } from "../../services/i18nService";
 
-export function AssessmentView({ student, onUpdateStudent, go }) {
+export function AssessmentView({ student, onUpdateStudent, go, language = "en" }) {
   const [phase, setPhase] = useState("intro"); // intro | quiz | results
   const [qi, setQi] = useState(0);
   const [answers, setAnswers] = useState([]);

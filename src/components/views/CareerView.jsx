@@ -11,8 +11,9 @@ import { getCatalogProjects, getCatalogCertifications } from "../../data/supabas
 import { ONBOARD_CAREERS } from "../../data/mockData";
 import { handleCareerChange } from "../../services/careerService";
 import { buildUserLearningContext } from "../../services/userContextService";
+import { getTranslation } from "../../services/i18nService";
 
-export function CareerView({ student, onUpdateStudent, onAddToRoadmap, go }) {
+export function CareerView({ student, onUpdateStudent, onAddToRoadmap, go, language = "en" }) {
   const [projects, setProjects] = useState([]);
   const [certifications, setCertifications] = useState([]);
   const [loadingResources, setLoadingResources] = useState(true);

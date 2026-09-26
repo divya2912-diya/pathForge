@@ -286,7 +286,9 @@ function getRequiredSkillsForCareer(targetCareer) {
   return ["Problem Solving", "Git", "Data Structures", "System Design", "SQL"];
 }
 
-export function CertificationsView({ student, onUpdateStudent, added, toggleAdded, onAddToRoadmap, go, onStart }) {
+import { getTranslation } from "../../services/i18nService";
+
+export function CertificationsView({ student, onUpdateStudent, added, toggleAdded, onAddToRoadmap, go, onStart, language = "en" }) {
   const [activeTab, setActiveTab] = useState("recommended"); // recommended | my-certs
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all"); // all | course | certification | professional

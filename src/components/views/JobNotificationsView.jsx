@@ -8,8 +8,9 @@ import GlassCard from "../ui/GlassCard";
 import SectionHeader from "../ui/SectionHeader";
 import ModalShell from "../ui/ModalShell";
 import { fetchLiveJobs, evaluateJobMatch } from "../../services/jobService";
+import { getTranslation } from "../../services/i18nService";
 
-export function JobNotificationsView({ student, onUpdateStudent, go }) {
+export function JobNotificationsView({ student, onUpdateStudent, go, language = "en" }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all"); // all | recommended | saved

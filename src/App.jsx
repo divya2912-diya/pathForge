@@ -336,7 +336,7 @@ export default function App() {
           <main className="px-5 md:px-8 py-7 max-w-7xl mx-auto">
             <GuidedJourneyNav active={active} go={go} language={language} />
 
-            {active === "dashboard" && <DashboardView go={go} student={student} onUpdateStudent={handleUpdateStudent} />}
+            {active === "dashboard" && <DashboardView go={go} student={student} onUpdateStudent={handleUpdateStudent} language={language} />}
             {active === "roadmap" && (
               <RoadmapView 
                 student={student} 
@@ -344,6 +344,7 @@ export default function App() {
                 go={go} 
                 highlightedItemId={highlightedRoadmapItemId}
                 onClearHighlight={() => setHighlightedRoadmapItemId(null)}
+                language={language}
               />
             )}
             {active === "resources" && (
@@ -353,10 +354,11 @@ export default function App() {
                 toggleAdded={toggleAdded} 
                 onAddToRoadmap={handleAddToRoadmap}
                 go={go} 
+                language={language}
               />
             )}
-            {active === "resume" && <ResumeView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
-            {active === "jobs" && <JobNotificationsView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
+            {active === "resume" && <ResumeView student={student} onUpdateStudent={handleUpdateStudent} go={go} language={language} />}
+            {active === "jobs" && <JobNotificationsView student={student} onUpdateStudent={handleUpdateStudent} go={go} language={language} />}
             {active === "projects" && (
               <ProjectsView 
                 student={student} 
@@ -364,6 +366,7 @@ export default function App() {
                 toggleAdded={toggleAdded} 
                 onAddToRoadmap={handleAddToRoadmap}
                 go={go} 
+                language={language}
               />
             )}
             {active === "certifications" && (
@@ -374,21 +377,23 @@ export default function App() {
                 toggleAdded={toggleAdded} 
                 onAddToRoadmap={handleAddToRoadmap}
                 go={go} 
+                language={language}
               />
             )}
-            {active === "career" && <CareerView student={student} onUpdateStudent={handleUpdateStudent} onAddToRoadmap={handleAddToRoadmap} go={go} />}
-            {active === "analytics" && <LearningAnalyticsView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
-            {active === "assessment" && <AssessmentView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
-            {active === "skills" && <SkillsView />}
+            {active === "career" && <CareerView student={student} onUpdateStudent={handleUpdateStudent} onAddToRoadmap={handleAddToRoadmap} go={go} language={language} />}
+            {active === "analytics" && <LearningAnalyticsView student={student} onUpdateStudent={handleUpdateStudent} go={go} language={language} />}
+            {active === "assessment" && <AssessmentView student={student} onUpdateStudent={handleUpdateStudent} go={go} language={language} />}
+            {active === "skills" && <SkillsView language={language} />}
             {active === "profile" && (
               <ProfileView
                 student={student}
                 onUpdateStudent={handleUpdateStudent}
                 onBack={() => go("dashboard")}
+                language={language}
               />
             )}
             {active === "settings" && (
-              <SettingsView student={student} onLogout={handleLogout} onUpdateStudent={handleUpdateStudent} />
+              <SettingsView student={student} onLogout={handleLogout} onUpdateStudent={handleUpdateStudent} language={language} />
             )}
 
             <GuidedJourneyFooter active={active} go={go} language={language} />

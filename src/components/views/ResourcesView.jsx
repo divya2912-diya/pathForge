@@ -4,8 +4,9 @@ import GlassCard from "../ui/GlassCard";
 import SectionHeader from "../ui/SectionHeader";
 import Pill from "../ui/Pill";
 import { RESOURCES, RESOURCE_ICONS } from "../../data/mockData";
+import { getTranslation } from "../../services/i18nService";
 
-export function ResourcesView({ student, added, toggleAdded, onAddToRoadmap, go }) {
+export function ResourcesView({ student, added, toggleAdded, onAddToRoadmap, go, language = "en" }) {
   const [filter, setFilter] = useState("All");
   const [domainFilter, setDomainFilter] = useState("All Domains");
   const [activeVideo, setActiveVideo] = useState(null);

@@ -9,8 +9,9 @@ import SectionHeader from "../ui/SectionHeader";
 import ProgressBar from "../ui/ProgressBar";
 import Pill from "../ui/Pill";
 import { SKILL_GROUPS, RADAR_DATA, STRENGTHS, GAPS } from "../../data/mockData";
+import { getTranslation } from "../../services/i18nService";
 
-export function SkillsView() {
+export function SkillsView({ language = "en" }) {
   return (
     <div className="space-y-6">
       <SectionHeader eyebrow="Skill intelligence" title="Your skill profile" subtitle="Detected from courses, projects, certifications and assessment results." />

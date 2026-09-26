@@ -12,9 +12,9 @@ import { buildUserLearningContext } from "../../services/userContextService";
 import { getTranslation } from "../../services/i18nService";
 import { recordStyleInteraction } from "../../services/learningStyleService";
 
-export function LearningAnalyticsView({ student, onUpdateStudent, go }) {
+export function LearningAnalyticsView({ student, onUpdateStudent, go, language = "en" }) {
   const ctx = buildUserLearningContext(student);
-  const lang = student?.preferredLanguage || "en";
+  const lang = language || student?.preferredLanguage || "en";
 
   const [activeTab, setActiveTab] = useState("overview"); // overview | skills | consistency | trends | style | educator
   const [viewRole, setViewRole] = useState("student"); // student | educator
