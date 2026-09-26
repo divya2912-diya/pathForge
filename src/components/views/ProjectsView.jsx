@@ -7,7 +7,7 @@ import ModalShell from "../ui/ModalShell";
 import { rankProjects } from "../../data/projectEngine";
 import { getCatalogProjects, getSavedProjects, toggleSavedProject } from "../../data/supabaseAuth";
 
-export function ProjectsView({ student, added, toggleAdded, go }) {
+export function ProjectsView({ student, added, toggleAdded, onAddToRoadmap, go }) {
   const [selectedProject, setSelectedProject] = useState(null);
   const [activeDomain, setActiveDomain] = useState("Recommended");
   const [catalog, setCatalog] = useState([]);
@@ -267,18 +267,24 @@ export function ProjectsView({ student, added, toggleAdded, go }) {
 
             <div className="flex flex-col gap-3 pt-4 border-t border-white/5">
               <button 
-                onClick={() => { toggleAdded(selectedProject.id); }} 
-                className={`w-full py-3 rounded-xl text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 ${
-                  added.has(selectedProject.id) ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" : 
+                onClick={async () => {
+                  if (onAddToRoadmap && selectedProject) {
+                    await onAddToRoadmap(selectedProject, "project");
+                  } else if (selectedProject) {
+                    toggleAdded(selectedProject.id);
+                  }
+                }} 
+                className={`w-full py-3 rounded-xl text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer ${
+                  added.has(selectedProject.id) || (student?.addedRoadmapItems || []).some(item => String(item.id) === String(selectedProject.id)) ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" : 
                   "bg-cyan-500 hover:bg-cyan-400 text-[#060911] border border-cyan-400 hover:shadow-cyan-500/20"
                 }`}
               >
-                {added.has(selectedProject.id) ? <><CheckCircle2 size={16} /> Added to Roadmap</> : <><Plus size={16} /> Add to Roadmap</>}
+                {added.has(selectedProject.id) || (student?.addedRoadmapItems || []).some(item => String(item.id) === String(selectedProject.id)) ? <><CheckCircle2 size={16} /> Added to Roadmap</> : <><Plus size={16} /> Add to Roadmap</>}
               </button>
-              {added.has(selectedProject.id) && (
+              {(added.has(selectedProject.id) || (student?.addedRoadmapItems || []).some(item => String(item.id) === String(selectedProject.id))) && (
                 <div className="flex items-center justify-between text-xs text-emerald-400 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20">
                   <span>✓ Project added to your roadmap.</span>
-                  <button onClick={() => { setSelectedProject(null); go?.("roadmap"); }} className="underline font-bold text-cyan-300 hover:text-cyan-200">
+                  <button onClick={() => { setSelectedProject(null); go?.("roadmap"); }} className="underline font-bold text-cyan-300 hover:text-cyan-200 cursor-pointer">
                     View Roadmap →
                   </button>
                 </div>

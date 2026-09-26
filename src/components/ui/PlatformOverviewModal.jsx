@@ -1,87 +1,112 @@
 import React from "react";
 import {
   X, LayoutDashboard, Target, Route, BookOpen, FileCheck,
-  Code2, Award, Rocket, FileText, Briefcase, ArrowRight, Compass
+  Code2, Award, Rocket, FileText, Briefcase, ArrowRight, Compass,
+  Globe, WifiOff, Bot
 } from "lucide-react";
 import { getTranslation } from "../../services/i18nService";
 
 const PAGES_OVERVIEW = [
   {
-    id: "dashboard",
-    icon: LayoutDashboard,
-    color: "#22d3ee",
-    title: "Dashboard",
-    desc: "Real-time command center monitoring your career readiness score, learning streaks, assessment average, and active study consistency."
+    id: "career",
+    icon: Rocket,
+    color: "#f97316",
+    title: "AI-Powered Career Analysis",
+    desc: "Analyze your profile, skills, and target career direction using real AI intelligence to map ideal software engineering outcomes.",
+    actionText: "Analyze Career"
   },
   {
     id: "skills",
     icon: Target,
     color: "#f59e0b",
-    title: "Skill Gap Analysis",
-    desc: "Compares your current mastered skills against target career requirements to pinpoint missing technical gaps needing attention."
+    title: "Personalized Learning Path",
+    desc: "Generates a customized skill progression blueprint based on your career goals, target role requirements, and current abilities.",
+    actionText: "View Learning Path"
   },
   {
     id: "roadmap",
     icon: Route,
     color: "#a855f7",
-    title: "Learning Roadmap",
-    desc: "Structured step-by-step learning nodes customized for your target career. Features offline caching and background progress syncing."
-  },
-  {
-    id: "resources",
-    icon: BookOpen,
-    color: "#3b82f6",
-    title: "Learning Resources",
-    desc: "Curated documentation, video lectures, and coding problem sets filtered to close your specific high-priority skill gaps."
+    title: "Adaptive Learning Roadmap",
+    desc: "Interactive visual roadmap with skill node progression, stage milestones, resource integration, and unlockable stages.",
+    actionText: "Explore Learning Roadmap"
   },
   {
     id: "assessment",
     icon: FileCheck,
     color: "#10b981",
-    title: "Knowledge Assessments",
-    desc: "Adaptive quizzes testing real topic understanding. Dynamically calculates scores and identifies weak academic topics."
+    title: "Skill Validation Assessments",
+    desc: "Prove proficiency through 2-round assessment rounds to validate existing knowledge and skip topics you already master.",
+    actionText: "Try Skill Assessment"
   },
   {
-    id: "projects",
-    icon: Code2,
-    color: "#ec4899",
-    title: "Portfolio Projects",
-    desc: "Hands-on project recommendations tailored to build a job-ready portfolio for your chosen career goal."
+    id: "analytics",
+    icon: LayoutDashboard,
+    color: "#3b82f6",
+    title: "Learning Analytics",
+    desc: "Track real-time learning progress, topic completion stats, assessment performance, and overall career readiness growth.",
+    actionText: "View Analytics"
   },
   {
-    id: "certifications",
-    icon: Award,
-    color: "#8b5cf6",
-    title: "Certifications",
-    desc: "Track verified course certificates and industry certifications to boost your dynamic career match score."
-  },
-  {
-    id: "career",
-    icon: Rocket,
-    color: "#f97316",
-    title: "Career Readiness",
-    desc: "AI-driven career intelligence tool analyzing career paths, supporting dynamic career switching and readiness evaluation."
+    id: "dashboard",
+    icon: Bot,
+    color: "#22d3ee",
+    title: "AI Mentor",
+    desc: "Context-aware academic and career mentor providing personalized recommendations based on your actual PathForge profile.",
+    actionText: "Ask AI Mentor"
   },
   {
     id: "resume",
     icon: FileText,
     color: "#06b6d4",
     title: "Resume Intelligence",
-    desc: "AI resume scanner evaluating your resume against job specifications and detailing exact missing skills."
+    desc: "Upload and analyze real resumes to extract skills, detect missing competencies, match job descriptions, and auto-update your profile.",
+    actionText: "Analyze Resume"
   },
   {
     id: "jobs",
     icon: Briefcase,
     color: "#84cc16",
-    title: "Job Notifications",
-    desc: "Live industry job openings matching your current skills and career readiness score with direct apply links."
+    title: "Job Opportunities",
+    desc: "Discover matching real-world job openings organized by domain, tailored to your readiness score with direct apply options.",
+    actionText: "Explore Jobs"
+  },
+  {
+    id: "resources",
+    icon: BookOpen,
+    color: "#6366f1",
+    title: "Certifications & Resources",
+    desc: "Discover verified courses, documentation, and certifications tailored to your gaps, and add them directly to your roadmap.",
+    actionText: "Explore Resources"
+  },
+  {
+    id: "projects",
+    icon: Code2,
+    color: "#ec4899",
+    title: "Portfolio Projects",
+    desc: "Discover and add real-world portfolio projects matching your target domain to prove hands-on expertise to recruiters.",
+    actionText: "Explore Projects"
+  },
+  {
+    id: "settings",
+    icon: Globe,
+    color: "#14b8a6",
+    title: "Multilingual Support",
+    desc: "Switch the application language anytime (English, Spanish, Hindi, French, German) with real-time dynamic interface translation.",
+    actionText: "Language & Settings"
+  },
+  {
+    id: "roadmap",
+    icon: WifiOff,
+    color: "#eab308",
+    title: "Offline Learning",
+    desc: "Access cached roadmap topics, saved resources, and milestone progress seamlessly even when internet connectivity is limited.",
+    actionText: "View Offline Roadmap"
   },
 ];
 
 export function PlatformOverviewModal({ open, onClose, onSelectPage, language = "en" }) {
   if (!open) return null;
-
-  const t = (key) => getTranslation(key, language);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fadeIn">
@@ -95,10 +120,10 @@ export function PlatformOverviewModal({ open, onClose, onSelectPage, language = 
             </div>
             <div>
               <h2 className="lp-display text-xl sm:text-2xl font-bold bg-gradient-to-r from-cyan-300 via-white to-blue-200 bg-clip-text text-transparent">
-                PathForge Platform Overview & Page Connectivity
+                PathForge Platform Overview & Capabilities
               </h2>
               <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-                Explore all 10 core pages and features before navigating your step-by-step learning journey.
+                Explore all 12 live platform capabilities. Every card opens its functional route directly.
               </p>
             </div>
           </div>
@@ -111,16 +136,13 @@ export function PlatformOverviewModal({ open, onClose, onSelectPage, language = 
         </div>
 
         {/* Scrollable Overview Grid */}
-        <div className="flex-1 overflow-y-auto lp-scrollbar py-6 grid sm:grid-cols-2 lg:grid-cols-2 gap-4 pr-1">
+        <div className="flex-1 overflow-y-auto lp-scrollbar py-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 pr-1">
           {PAGES_OVERVIEW.map((page, idx) => {
             const Icon = page.icon;
-            const title = getTranslation(`nav.${page.id}`, language) !== `nav.${page.id}`
-              ? getTranslation(`nav.${page.id}`, language)
-              : page.title;
 
             return (
               <div
-                key={page.id}
+                key={`${page.id}-${idx}`}
                 onClick={() => {
                   onSelectPage(page.id);
                   onClose();
@@ -136,21 +158,24 @@ export function PlatformOverviewModal({ open, onClose, onSelectPage, language = 
                       >
                         <Icon size={18} style={{ color: page.color }} />
                       </div>
-                      <span className="text-xs font-bold text-cyan-300 uppercase tracking-wider">
-                        Page {idx + 1}
+                      <span className="text-[11px] font-bold text-cyan-300 uppercase tracking-wider">
+                        Feature {idx + 1}
                       </span>
                     </div>
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 group-hover:bg-cyan-500 group-hover:text-black transition-colors flex items-center gap-1">
-                      Open Page <ArrowRight size={12} />
-                    </span>
                   </div>
 
-                  <h3 className="text-base font-bold text-white mb-1.5 group-hover:text-cyan-300 transition-colors">
-                    {title}
+                  <h3 className="text-sm font-bold text-white mb-1.5 group-hover:text-cyan-300 transition-colors">
+                    {page.title}
                   </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <p className="text-xs text-slate-400 leading-relaxed mb-4">
                     {page.desc}
                   </p>
+                </div>
+
+                <div className="pt-2 border-t border-white/5">
+                  <span className="w-full text-xs font-semibold px-3 py-2 rounded-xl bg-slate-800 text-cyan-300 group-hover:bg-cyan-500 group-hover:text-black transition-all flex items-center justify-center gap-1.5">
+                    {page.actionText} <ArrowRight size={13} />
+                  </span>
                 </div>
               </div>
             );
@@ -160,7 +185,7 @@ export function PlatformOverviewModal({ open, onClose, onSelectPage, language = 
         {/* Footer Actions */}
         <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
           <span className="text-xs text-slate-400">
-            Click any page card above to open it directly, or start the guided flow below.
+            Click any feature card above to navigate directly to that live section.
           </span>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
@@ -176,7 +201,7 @@ export function PlatformOverviewModal({ open, onClose, onSelectPage, language = 
               }}
               className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-[#04121a] bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-300 hover:brightness-110 shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Start Guided Flow (Dashboard)</span>
+              <span>Go to Dashboard</span>
               <ArrowRight size={16} />
             </button>
           </div>
@@ -188,3 +213,4 @@ export function PlatformOverviewModal({ open, onClose, onSelectPage, language = 
 }
 
 export default PlatformOverviewModal;
+

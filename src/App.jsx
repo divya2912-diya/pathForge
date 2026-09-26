@@ -3,6 +3,8 @@ import HamburgerButton from "./components/layout/HamburgerButton";
 import NavDrawer from "./components/layout/NavDrawer";
 import TopBar from "./components/layout/TopBar";
 import Toast from "./components/ui/Toast";
+import RoadmapAdditionToastModal from "./components/ui/RoadmapAdditionToastModal";
+import { addToRoadmap } from "./services/roadmapAdditionService";
 
 import LoginView from "./components/views/LoginView";
 import LandingPage from "./components/views/LandingPage";
@@ -43,6 +45,8 @@ export default function App() {
   const [stage, setStage] = useState("loading"); // loading | login | landing | onboarding | analyzing | app
   const [active, setActive] = useState("dashboard");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [roadmapAdditionResult, setRoadmapAdditionResult] = useState(null);
+  const [highlightedRoadmapItemId, setHighlightedRoadmapItemId] = useState(null);
   const [added, setAdded] = useState(new Set());
   const [toast, setToast] = useState(null);
   const [student, setStudent] = useState(null);
@@ -185,7 +189,23 @@ export default function App() {
     }
   };
 
-  // ── Navigation ────────────────────────────────────────────
+  const handleAddToRoadmap = async (item, itemType = "resource") => {
+    const res = await addToRoadmap({
+      student,
+      item,
+      itemType,
+      onUpdateStudent: handleUpdateStudent
+    });
+    setRoadmapAdditionResult(res);
+    return res;
+  };
+
+  const handleViewRoadmapFromToast = (itemId) => {
+    if (itemId) {
+      setHighlightedRoadmapItemId(String(itemId));
+    }
+    go("roadmap");
+  };
 
   const toggleAdded = (id) => {
     setAdded((prev) => {
@@ -317,13 +337,46 @@ export default function App() {
             <GuidedJourneyNav active={active} go={go} language={language} />
 
             {active === "dashboard" && <DashboardView go={go} student={student} onUpdateStudent={handleUpdateStudent} />}
-            {active === "roadmap" && <RoadmapView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
-            {active === "resources" && <ResourcesView student={student} added={added} toggleAdded={toggleAdded} go={go} />}
+            {active === "roadmap" && (
+              <RoadmapView 
+                student={student} 
+                onUpdateStudent={handleUpdateStudent} 
+                go={go} 
+                highlightedItemId={highlightedRoadmapItemId}
+                onClearHighlight={() => setHighlightedRoadmapItemId(null)}
+              />
+            )}
+            {active === "resources" && (
+              <ResourcesView 
+                student={student} 
+                added={added} 
+                toggleAdded={toggleAdded} 
+                onAddToRoadmap={handleAddToRoadmap}
+                go={go} 
+              />
+            )}
             {active === "resume" && <ResumeView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
             {active === "jobs" && <JobNotificationsView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
-            {active === "projects" && <ProjectsView student={student} added={added} toggleAdded={toggleAdded} go={go} />}
-            {active === "certifications" && <CertificationsView student={student} onUpdateStudent={handleUpdateStudent} added={added} toggleAdded={toggleAdded} go={go} />}
-            {active === "career" && <CareerView student={student} onUpdateStudent={handleUpdateStudent} />}
+            {active === "projects" && (
+              <ProjectsView 
+                student={student} 
+                added={added} 
+                toggleAdded={toggleAdded} 
+                onAddToRoadmap={handleAddToRoadmap}
+                go={go} 
+              />
+            )}
+            {active === "certifications" && (
+              <CertificationsView 
+                student={student} 
+                onUpdateStudent={handleUpdateStudent} 
+                added={added} 
+                toggleAdded={toggleAdded} 
+                onAddToRoadmap={handleAddToRoadmap}
+                go={go} 
+              />
+            )}
+            {active === "career" && <CareerView student={student} onUpdateStudent={handleUpdateStudent} onAddToRoadmap={handleAddToRoadmap} go={go} />}
             {active === "analytics" && <LearningAnalyticsView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
             {active === "assessment" && <AssessmentView student={student} onUpdateStudent={handleUpdateStudent} go={go} />}
             {active === "skills" && <SkillsView />}
@@ -341,6 +394,11 @@ export default function App() {
             <GuidedJourneyFooter active={active} go={go} language={language} />
           </main>
           {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+          <RoadmapAdditionToastModal
+            result={roadmapAdditionResult}
+            onClose={() => setRoadmapAdditionResult(null)}
+            onViewRoadmap={handleViewRoadmapFromToast}
+          />
         </div>
       )}
 

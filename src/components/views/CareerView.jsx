@@ -12,7 +12,7 @@ import { ONBOARD_CAREERS } from "../../data/mockData";
 import { handleCareerChange } from "../../services/careerService";
 import { buildUserLearningContext } from "../../services/userContextService";
 
-export function CareerView({ student, onUpdateStudent }) {
+export function CareerView({ student, onUpdateStudent, onAddToRoadmap, go }) {
   const [projects, setProjects] = useState([]);
   const [certifications, setCertifications] = useState([]);
   const [loadingResources, setLoadingResources] = useState(true);
@@ -244,21 +244,41 @@ export function CareerView({ student, onUpdateStudent }) {
                     ) : (
                       <div className="flex flex-col sm:flex-row gap-3 pt-1">
                         {recs.project && (
-                          <div className="flex-1 bg-white/[0.02] border border-white/10 p-3 rounded-xl hover:border-cyan-500/30 transition-colors cursor-pointer group">
-                            <div className="flex items-center gap-2 mb-1">
-                              <FolderKanban size={14} className="text-cyan-400" />
-                              <span className="text-xs font-bold text-cyan-400">Recommended Project</span>
+                          <div className="flex-1 bg-white/[0.02] border border-white/10 p-3 rounded-xl hover:border-cyan-500/30 transition-colors flex flex-col justify-between">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <FolderKanban size={14} className="text-cyan-400" />
+                                <span className="text-xs font-bold text-cyan-400">Recommended Project</span>
+                              </div>
+                              <p className="text-xs font-bold text-slate-200">{recs.project.title}</p>
                             </div>
-                            <p className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition-colors">{recs.project.title}</p>
+                            {onAddToRoadmap && (
+                              <button
+                                onClick={() => onAddToRoadmap(recs.project, "project")}
+                                className="mt-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 flex items-center gap-1 w-fit cursor-pointer transition-colors"
+                              >
+                                <Plus size={13} /> Add to Roadmap
+                              </button>
+                            )}
                           </div>
                         )}
                         {recs.cert && (
-                          <div className="flex-1 bg-white/[0.02] border border-white/10 p-3 rounded-xl hover:border-emerald-500/30 transition-colors cursor-pointer group">
-                            <div className="flex items-center gap-2 mb-1">
-                              <ShieldCheck size={14} className="text-emerald-400" />
-                              <span className="text-xs font-bold text-emerald-400">Recommended Cert</span>
+                          <div className="flex-1 bg-white/[0.02] border border-white/10 p-3 rounded-xl hover:border-emerald-500/30 transition-colors flex flex-col justify-between">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <ShieldCheck size={14} className="text-emerald-400" />
+                                <span className="text-xs font-bold text-emerald-400">Recommended Cert</span>
+                              </div>
+                              <p className="text-xs font-bold text-slate-200">{recs.cert.title}</p>
                             </div>
-                            <p className="text-xs font-bold text-slate-200 group-hover:text-emerald-300 transition-colors">{recs.cert.title}</p>
+                            {onAddToRoadmap && (
+                              <button
+                                onClick={() => onAddToRoadmap(recs.cert, "certification")}
+                                className="mt-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 flex items-center gap-1 w-fit cursor-pointer transition-colors"
+                              >
+                                <Plus size={13} /> Add to Roadmap
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>

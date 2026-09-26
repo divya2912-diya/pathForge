@@ -7,13 +7,15 @@ import { SUPPORTED_LANGUAGES } from "../../services/i18nService";
 
 export function SettingsView({ student, onLogout, onUpdateStudent }) {
   const [selectedLang, setSelectedLang] = useState(student?.preferredLanguage || "en");
-  const [prefs, setPrefs] = useState({
-    dailyReminders: true,
-    weeklyDigest: true,
-    aiSuggestions: true,
-    pace: student?.pace || "Balanced",
-  });
-  const toggle = (k) => setPrefs(p => ({ ...p, [k]: !p[k] }));
+  
+  // Notification Preferences state persisted in user profile
+  const [notificationPrefs, setNotificationPrefs] = useState(() => ({
+    dailyReminders: student?.notificationPrefs?.dailyReminders ?? true,
+    weeklyDigest: student?.notificationPrefs?.weeklyDigest ?? true,
+    aiSuggestions: student?.notificationPrefs?.aiSuggestions ?? true,
+  }));
+
+  const [pace, setPace] = useState(student?.pace || "Balanced");
 
   // Change password state
   const [cpCurrent, setCpCurrent] = useState("");
@@ -23,45 +25,75 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
   const [cpSuccess, setCpSuccess] = useState(false);
   const [cpLoading, setCpLoading] = useState(false);
 
+  // Toggle notification preference with real Supabase persistence
+  const handleToggleNotification = async (key) => {
+    const updated = {
+      ...notificationPrefs,
+      [key]: !notificationPrefs[key]
+    };
+    setNotificationPrefs(updated);
+    if (onUpdateStudent) {
+      onUpdateStudent({ notificationPrefs: updated }, "Notification preferences saved!");
+    }
+    await updateCurrentUser({ notification_prefs: updated, notificationPrefs: updated });
+  };
 
+  // Change learning pace with real Supabase persistence
+  const handlePaceChange = async (newPace) => {
+    setPace(newPace);
+    if (onUpdateStudent) {
+      onUpdateStudent({ pace: newPace }, `Learning pace updated to ${newPace}!`);
+    }
+    await updateCurrentUser({ pace: newPace });
+  };
 
+  // Change language preference with real Supabase persistence
+  const handleLanguageChange = async (code) => {
+    setSelectedLang(code);
+    if (onUpdateStudent) {
+      onUpdateStudent({ preferredLanguage: code }, `Language changed to ${code.toUpperCase()}!`);
+    }
+    await updateCurrentUser({ preferred_language: code, preferredLanguage: code });
+  };
+
+  // Handle password update via Supabase Auth
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setCpError("");
     setCpSuccess(false);
-    if (cpNew.length < 8) { setCpError("New password must be at least 8 characters."); return; }
-    if (cpNew !== cpConfirm) { setCpError("New passwords do not match."); return; }
+
+    if (cpNew.length < 8) { 
+      setCpError("New password must be at least 8 characters long."); 
+      return; 
+    }
+    if (cpNew !== cpConfirm) { 
+      setCpError("New passwords do not match."); 
+      return; 
+    }
+
     setCpLoading(true);
     const result = await changePassword({ newPassword: cpNew });
     setCpLoading(false);
+
     if (result.success) {
       setCpSuccess(true);
-      setCpCurrent(""); setCpNew(""); setCpConfirm("");
+      setCpCurrent(""); 
+      setCpNew(""); 
+      setCpConfirm("");
     } else {
-      setCpError(result.error || "Failed to change password.");
+      setCpError(result.error || "Unable to change password. Please try again.");
     }
-  };
-
-  const handlePaceChange = (pace) => {
-    setPrefs(p => ({ ...p, pace }));
-    onUpdateStudent?.({ pace }, "Learning pace updated!");
-  };
-
-  const handleLanguageChange = async (code) => {
-    setSelectedLang(code);
-    onUpdateStudent?.({ preferredLanguage: code }, `Language changed to ${code.toUpperCase()}`);
-    await updateCurrentUser({ preferred_language: code });
   };
 
   const memberSince = student?.createdAt
     ? new Date(student.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
-    : "Unknown";
+    : "Active Member";
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <SectionHeader eyebrow="Account" title="Settings" />
+      <SectionHeader eyebrow="Account" title="Settings" subtitle="Manage your authenticated profile, learning preferences, and security settings." />
 
-      {/* Account Info */}
+      {/* 1. Account Information */}
       <GlassCard className="p-6" hover>
         <div className="flex items-center gap-2 mb-4">
           <User size={16} color="#67e8f9" />
@@ -78,19 +110,19 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
           ].map(([label, value]) => (
             <div key={label} className="flex justify-between py-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
               <span style={{ color: "var(--text-dim)" }}>{label}</span>
-              <span className={label === "Target Career" ? "text-cyan-300 font-medium" : ""}>{value}</span>
+              <span className={label === "Target Career" ? "text-cyan-300 font-medium" : "text-white"}>{value}</span>
             </div>
           ))}
         </div>
       </GlassCard>
 
-      {/* Multilingual Support */}
+      {/* 2. Multilingual Preferences */}
       <GlassCard className="p-6" hover>
         <div className="flex items-center gap-2 mb-4">
           <Globe size={16} color="#67e8f9" />
-          <SectionHeader title="Language & Multilingual Preference" subtitle="Controls interface language and AI Mentor language" />
+          <SectionHeader title="Language Preference" subtitle="Interface and AI Mentor language" />
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {SUPPORTED_LANGUAGES.map((lang) => (
             <button
               key={lang.code}
@@ -99,7 +131,7 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
               style={
                 selectedLang === lang.code
                   ? { background: "rgba(34,211,238,0.12)", border: "1px solid rgba(34,211,238,0.4)", color: "#67e8f9" }
-                  : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)" }
+                  : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)", color: "#94a3b8" }
               }
             >
               <p className="font-bold">{lang.name}</p>
@@ -109,42 +141,42 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
         </div>
       </GlassCard>
 
-      {/* Notifications */}
+      {/* 3. Notification Preferences (Persisted) */}
       <GlassCard className="p-6" hover>
         <div className="flex items-center gap-2 mb-4">
           <Bell size={16} color="#67e8f9" />
-          <SectionHeader title="Notifications" />
+          <SectionHeader title="Notification Preferences" subtitle="Saved to your authenticated account" />
         </div>
         {[
-          ["dailyReminders", "Daily learning reminders", "A short nudge to keep your streak going."],
-          ["weeklyDigest", "Weekly progress digest", "A summary of roadmap progress and new recommendations."],
-          ["aiSuggestions", "AI Mentor proactive tips", "Let your AI Mentor message you when it detects a gap."],
+          ["dailyReminders", "Daily Learning Reminders", "Get nudged to keep your learning streak going."],
+          ["weeklyDigest", "Weekly Progress Digest", "Summary of roadmap progress and newly added resources."],
+          ["aiSuggestions", "AI Mentor Recommendations", "Proactive alerts when new skill gaps are identified."],
         ].map(([key, label, desc]) => (
           <div key={key} className="flex items-center justify-between py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
             <div>
-              <p className="text-sm">{label}</p>
-              <p className="text-xs" style={{ color: "var(--text-dim)" }}>{desc}</p>
+              <p className="text-sm text-white font-medium">{label}</p>
+              <p className="text-xs text-slate-400">{desc}</p>
             </div>
             <button
               id={`toggle-${key}`}
-              onClick={() => toggle(key)}
+              onClick={() => handleToggleNotification(key)}
               className="w-11 h-6 rounded-full relative shrink-0 transition-colors cursor-pointer"
-              style={{ background: prefs[key] ? "linear-gradient(90deg,#22d3ee,#3b82f6)" : "rgba(255,255,255,0.12)" }}
+              style={{ background: notificationPrefs[key] ? "linear-gradient(90deg,#22d3ee,#3b82f6)" : "rgba(255,255,255,0.12)" }}
             >
               <span
                 className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all"
-                style={{ left: prefs[key] ? 22 : 2 }}
+                style={{ left: notificationPrefs[key] ? 22 : 2 }}
               />
             </button>
           </div>
         ))}
       </GlassCard>
 
-      {/* Learning Pace */}
+      {/* 4. Learning Pace (Persisted) */}
       <GlassCard className="p-6" hover>
         <div className="flex items-center gap-2 mb-4">
           <Gauge size={16} color="#67e8f9" />
-          <SectionHeader title="Learning Pace" subtitle="Adjusts how densely your roadmap schedules new material" />
+          <SectionHeader title="Learning Pace" subtitle="Controls roadmap density and weekly target hours" />
         </div>
         <div className="grid grid-cols-3 gap-3">
           {[
@@ -158,23 +190,23 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
               onClick={() => handlePaceChange(label)}
               className="py-3 px-2 rounded-xl text-sm transition-all cursor-pointer text-center"
               style={
-                prefs.pace === label
+                pace === label
                   ? { background: "rgba(34,211,238,0.12)", border: "1px solid rgba(34,211,238,0.4)", color: "#67e8f9" }
-                  : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)" }
+                  : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.09)", color: "#94a3b8" }
               }
             >
-              <p className="font-medium">{label}</p>
+              <p className="font-medium text-white">{label}</p>
               <p className="text-xs opacity-60 mt-0.5">{sub}</p>
             </button>
           ))}
         </div>
       </GlassCard>
 
-      {/* Change Password */}
+      {/* 5. Change Password (Supabase Auth) */}
       <GlassCard className="p-6" hover>
         <div className="flex items-center gap-2 mb-4">
           <KeyRound size={16} color="#67e8f9" />
-          <SectionHeader title="Change Password" />
+          <SectionHeader title="Change Password" subtitle="Update your Supabase authentication password" />
         </div>
 
         {cpError && (
@@ -184,14 +216,13 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
         )}
         {cpSuccess && (
           <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-            <Check size={14} className="shrink-0" /> Password changed successfully!
+            <Check size={14} className="shrink-0" /> Password changed successfully in Supabase!
           </div>
         )}
 
         <form onSubmit={handleChangePassword} className="space-y-3">
           {[
-            { label: "Current Password", value: cpCurrent, onChange: setCpCurrent, id: "cp-current" },
-            { label: "New Password", value: cpNew, onChange: setCpNew, id: "cp-new" },
+            { label: "New Password (min 8 chars)", value: cpNew, onChange: setCpNew, id: "cp-new" },
             { label: "Confirm New Password", value: cpConfirm, onChange: setCpConfirm, id: "cp-confirm" },
           ].map(({ label, value, onChange, id }) => (
             <div key={id}>
@@ -201,8 +232,9 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
                 type="password"
                 value={value}
                 onChange={e => { onChange(e.target.value); setCpError(""); setCpSuccess(false); }}
-                className="lp-input w-full py-2.5 px-3 rounded-xl text-sm"
+                className="lp-input w-full py-2.5 px-3 rounded-xl text-sm bg-black/40 border border-white/10 text-white"
                 autoComplete="off"
+                required
               />
             </div>
           ))}
@@ -210,33 +242,26 @@ export function SettingsView({ student, onLogout, onUpdateStudent }) {
             id="btn-change-password"
             type="submit"
             disabled={cpLoading}
-            className="lp-btn-primary px-5 py-2.5 rounded-xl text-sm mt-2 cursor-pointer"
+            className="lp-btn-primary px-5 py-2.5 rounded-xl text-sm mt-2 cursor-pointer font-bold disabled:opacity-50"
           >
-            {cpLoading ? "Updating..." : "Update Password"}
+            {cpLoading ? "Updating in Supabase..." : "Update Password"}
           </button>
         </form>
       </GlassCard>
 
-      {/* Sign Out */}
+      {/* 6. Sign Out */}
       <GlassCard className="p-6" hover>
         <div className="flex items-center gap-2 mb-2">
           <Shield size={16} className="text-red-400" />
           <p className="font-semibold text-sm text-white">Sign Out</p>
         </div>
-        <p className="text-xs mb-4" style={{ color: "var(--text-dim)" }}>
-          You'll need to sign in again to access your PathForge account. Your data is safely stored on this device.
+        <p className="text-xs mb-4 text-slate-400">
+          Sign out of your active PathForge session. Your learning data and preferences are safely synced to your account.
         </p>
         <button
           id="btn-signout"
           onClick={onLogout}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all"
-          style={{
-            background: "rgba(239,68,68,0.1)",
-            border: "1px solid rgba(239,68,68,0.3)",
-            color: "#f87171",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.2)"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400"
         >
           <LogOut size={16} /> Sign Out of PathForge
         </button>

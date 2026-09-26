@@ -11,13 +11,27 @@ import { isSkillValidated } from "../../services/skillValidationService";
 import { cacheLearningContent, getCachedContent, enqueueOfflineAction } from "../../services/offlineSyncService";
 import { getTranslation } from "../../services/i18nService";
 
-export function RoadmapView({ student, onUpdateStudent, go }) {
+export function RoadmapView({ student, onUpdateStudent, go, highlightedItemId, onClearHighlight }) {
   const [dbProgress, setDbProgress] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isChangingCareer, setIsChangingCareer] = useState(false);
   const [viewMode, setViewMode] = useState("winding"); // 'winding' | 'tabs'
   const [activeTab, setActiveTab] = useState("foundation");
   const [isOfflineMode, setIsOfflineMode] = useState(!navigator.onLine);
+  
+  // Highlight / pulse effect for newly added items
+  const [pulseItemId, setPulseItemId] = useState(highlightedItemId);
+
+  useEffect(() => {
+    if (highlightedItemId) {
+      setPulseItemId(highlightedItemId);
+      const timer = setTimeout(() => {
+        setPulseItemId(null);
+        if (onClearHighlight) onClearHighlight();
+      }, 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightedItemId]);
   
   // Skill Validation Modal State
   const [validationModalSkill, setValidationModalSkill] = useState(null);
@@ -303,10 +317,28 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
     hours: "2 wks",
   });
 
+  // Custom items added by user from Resources / Projects / Certifications
+  const addedItemsList = Array.isArray(student?.addedRoadmapItems) ? student.addedRoadmapItems : [];
+  addedItemsList.forEach((addedItem, idx) => {
+    pathNodes.push({
+      id: String(addedItem.id),
+      type: "custom_added",
+      title: addedItem.title,
+      stage: addedItem.locationInfo?.stage || "Added Resource",
+      desc: `Custom added from ${addedItem.itemType || "resources"} — Topic: ${addedItem.locationInfo?.topic || "General"}.`,
+      relevance: `✓ Explicitly added to your ${targetCareer} roadmap.`,
+      status: "in-progress",
+      xPos: idx % 2 === 0 ? "40%" : "60%",
+      icon: BookOpen,
+      hours: "Custom",
+      isCustomAdded: true,
+      addedFrom: addedItem.itemType
+    });
+  });
+
   const careerReady = progressPercent >= 90;
   pathNodes.push({
     id: "node_ready",
-    type: "ready",
     title: `Hire Ready — ${targetCareer}`,
     stage: "Career Ready",
     desc: `Profile verified, skill gaps closed, portfolio ready for applications.`,
@@ -522,6 +554,7 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
                 const isDone = node.status === "completed";
                 const isCurrent = node.status === "current";
                 const isLocked = node.status === "locked";
+                const isPulsing = String(node.id) === String(pulseItemId);
 
                 return (
                   <div
@@ -532,7 +565,9 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
                     {/* Visual Connector Dot on Central Line */}
                     <div
                       className={`absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 transition-all ${
-                        isDone
+                        isPulsing
+                          ? "bg-cyan-400 border-white shadow-[0_0_20px_#22d3ee] animate-ping"
+                          : isDone
                           ? "bg-cyan-400 border-cyan-300 shadow-[0_0_10px_#22d3ee]"
                           : isCurrent
                           ? "bg-purple-500 border-white animate-ping"
@@ -544,7 +579,9 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
                     <div
                       onClick={() => setSelectedNode(node)}
                       className={`w-[85%] sm:w-[45%] p-4 rounded-2xl border transition-all cursor-pointer relative group ${
-                        isDone
+                        isPulsing
+                          ? "bg-cyan-950/80 border-2 border-cyan-400 text-white shadow-[0_0_35px_rgba(34,211,238,0.5)] scale-105"
+                          : isDone
                           ? "bg-emerald-950/20 border-emerald-500/40 text-emerald-100 hover:border-emerald-400"
                           : isCurrent
                           ? "bg-gradient-to-br from-cyan-950/60 to-purple-950/60 border-cyan-400 text-white shadow-[0_0_25px_rgba(34,211,238,0.25)] scale-105"
@@ -553,12 +590,16 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
                           : "bg-slate-900/60 border-white/10 text-slate-300 hover:border-cyan-500/40 hover:bg-slate-900/80"
                       }`}
                     >
-                      {/* Active "YOU ARE HERE" Floating Badge */}
-                      {isCurrent && (
+                      {/* Active "YOU ARE HERE" or "JUST ADDED" Floating Badge */}
+                      {isPulsing ? (
+                        <div className="absolute -top-3 left-4 px-2.5 py-0.5 bg-gradient-to-r from-emerald-400 to-cyan-400 text-[#04121a] font-black text-[10px] uppercase rounded-full shadow-lg animate-bounce">
+                          ✨ Newly Added to Roadmap!
+                        </div>
+                      ) : isCurrent ? (
                         <div className="absolute -top-3 left-4 px-2.5 py-0.5 bg-gradient-to-r from-cyan-400 to-indigo-500 text-[#04121a] font-black text-[10px] uppercase rounded-full shadow-md animate-bounce">
                           You are here ✨
                         </div>
-                      )}
+                      ) : null}
 
                       <div className="flex items-start gap-3">
                         <div

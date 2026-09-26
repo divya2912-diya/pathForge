@@ -5,10 +5,16 @@ import SectionHeader from "../ui/SectionHeader";
 import Pill from "../ui/Pill";
 import { RESOURCES, RESOURCE_ICONS } from "../../data/mockData";
 
-export function ResourcesView({ student, added, toggleAdded, go }) {
+export function ResourcesView({ student, added, toggleAdded, onAddToRoadmap, go }) {
   const [filter, setFilter] = useState("All");
   const [domainFilter, setDomainFilter] = useState("All Domains");
   const [activeVideo, setActiveVideo] = useState(null);
+
+  const addedItemsList = student?.addedRoadmapItems || [];
+  const isItemAdded = (r) => {
+    const rId = String(r.id);
+    return added?.has(r.id) || addedItemsList.some(item => String(item.id) === rId || item.title?.toLowerCase() === r.title?.toLowerCase());
+  };
 
   const types = ["All", "Course", "Documentation", "Practice Problems", "Book"];
   const domains = ["All Domains", "Data Science", "Web Development", "Cybersecurity", "Cloud Computing"];
@@ -85,20 +91,26 @@ export function ResourcesView({ student, added, toggleAdded, go }) {
                   Open resource
                 </button>
                 <button
-                  onClick={() => toggleAdded?.(r.id)}
-                  className={`text-xs py-2 px-3 rounded-lg border font-semibold flex items-center gap-1 transition-all ${
-                    added?.has(r.id) 
+                  onClick={async () => {
+                    if (onAddToRoadmap) {
+                      await onAddToRoadmap(r, "resource");
+                    } else {
+                      toggleAdded?.(r.id);
+                    }
+                  }}
+                  className={`text-xs py-2 px-3 rounded-lg border font-semibold flex items-center gap-1 transition-all cursor-pointer ${
+                    isItemAdded(r) 
                       ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
                       : "bg-white/5 hover:bg-white/10 text-slate-300 border-white/10"
                   }`}
                 >
-                  {added?.has(r.id) ? "✓ Added" : "+ Roadmap"}
+                  {isItemAdded(r) ? "✓ Added" : "+ Roadmap"}
                 </button>
               </div>
-              {added?.has(r.id) && (
+              {isItemAdded(r) && (
                 <div className="mt-2 text-[11px] text-emerald-400 flex items-center justify-between">
                   <span>✓ Added to your roadmap</span>
-                  <button onClick={() => go?.("roadmap")} className="underline font-semibold hover:text-cyan-300">View Roadmap</button>
+                  <button onClick={() => go?.("roadmap")} className="underline font-semibold hover:text-cyan-300 cursor-pointer">View Roadmap</button>
                 </div>
               )}
             </GlassCard>

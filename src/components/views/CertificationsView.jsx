@@ -286,7 +286,7 @@ function getRequiredSkillsForCareer(targetCareer) {
   return ["Problem Solving", "Git", "Data Structures", "System Design", "SQL"];
 }
 
-export function CertificationsView({ student, onUpdateStudent, added, toggleAdded, onStart }) {
+export function CertificationsView({ student, onUpdateStudent, added, toggleAdded, onAddToRoadmap, go, onStart }) {
   const [activeTab, setActiveTab] = useState("recommended"); // recommended | my-certs
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all"); // all | course | certification | professional
@@ -698,8 +698,14 @@ export function CertificationsView({ student, onUpdateStudent, added, toggleAdde
                       </a>
 
                       <button 
-                        onClick={() => toggleAdded?.(res.id)} 
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md ${
+                        onClick={async () => {
+                          if (onAddToRoadmap) {
+                            await onAddToRoadmap(res, "certification");
+                          } else {
+                            toggleAdded?.(res.id);
+                          }
+                        }} 
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer ${
                           isAddedToRoadmap 
                             ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" 
                             : "bg-cyan-500 hover:bg-cyan-400 text-[#060911] border border-cyan-400"

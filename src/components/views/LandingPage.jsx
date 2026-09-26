@@ -1,7 +1,7 @@
 import React from "react";
 import {
   Flame, Sparkles, ArrowRight, Radar, Route, LayoutGrid, FileText,
-  Compass, ShieldCheck, AlertTriangle, User, LogIn, CheckCircle2
+  Compass, ShieldCheck, AlertTriangle, User, LogIn, CheckCircle2, Rocket, Target
 } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import FloatingCard from "../ui/FloatingCard";
@@ -352,24 +352,114 @@ export function LandingPage({ onStart, onExplore, onProfile, student, onLogin, o
         </div>
       </div>
 
-      {/* WHAT THE PLATFORM DOES */}
+      {/* 10-STAGE CAREER READINESS WORKFLOW */}
       <RevealSection className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-24">
-        <SectionHeader eyebrow={t("landing.eyebrow")} title={t("landing.sectionTitle")} subtitle={t("landing.sectionSubtitle")} />
+        <SectionHeader 
+          eyebrow="END-TO-END METHODOLOGY" 
+          title="The PathForge 10-Stage Career Readiness Journey" 
+          subtitle="A complete adaptive ecosystem taking a student from initial skill discovery to verified job readiness." 
+        />
+        <div className="relative border border-cyan-500/20 bg-slate-950/60 backdrop-blur-xl p-6 sm:p-8 rounded-3xl overflow-hidden shadow-2xl">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 relative z-10">
+            {[
+              { step: "01", name: "PROFILE", route: "profile", label: "Student Profile", color: "from-cyan-500 to-blue-500" },
+              { step: "02", name: "CAREER ANALYSIS", route: "career", label: "AI Career Intelligence", color: "from-blue-500 to-indigo-500" },
+              { step: "03", name: "SKILL GAP IDENTIFICATION", route: "skills", label: "Gap Analysis Engine", color: "from-indigo-500 to-purple-500" },
+              { step: "04", name: "PERSONALIZED LEARNING PATH", route: "skills", label: "Path Blueprint", color: "from-purple-500 to-pink-500" },
+              { step: "05", name: "ADAPTIVE ROADMAP", route: "roadmap", label: "Interactive Roadmap", color: "from-pink-500 to-rose-500" },
+              { step: "06", name: "LEARNING + ASSESSMENT", route: "resources", label: "Resources & Quizzes", color: "from-amber-500 to-orange-500" },
+              { step: "07", name: "SKILL VALIDATION", route: "assessment", label: "2-Round Validation", color: "from-emerald-500 to-teal-500" },
+              { step: "08", name: "PROJECTS + CERTIFICATIONS", route: "projects", label: "Hands-on Portfolio", color: "from-teal-500 to-cyan-500" },
+              { step: "09", name: "RESUME + JOB OPPORTUNITIES", route: "resume", label: "Match & Direct Apply", color: "from-cyan-400 to-blue-600" },
+              { step: "10", name: "CAREER READINESS", route: "dashboard", label: "Production Verified", color: "from-emerald-400 to-teal-300" }
+            ].map((item, idx) => (
+              <div 
+                key={item.step}
+                onClick={() => {
+                  if (go) go(item.route);
+                  else if (onExplore) onExplore(item.route);
+                }}
+                className="group p-4 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 hover:border-cyan-400/50 transition-all duration-300 cursor-pointer flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-[11px] font-black px-2 py-0.5 rounded-md bg-gradient-to-r ${item.color} text-black font-mono`}>
+                      STAGE {item.step}
+                    </span>
+                    <ArrowRight size={13} className="text-slate-500 group-hover:text-cyan-300 group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                  <h4 className="text-xs font-bold text-white tracking-wider uppercase group-hover:text-cyan-300 transition-colors">
+                    {item.name}
+                  </h4>
+                  <p className="text-[11px] text-slate-400 mt-1 font-medium">
+                    {item.label}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+            <span>
+              Click any stage above to launch into that specific step of your PathForge journey.
+            </span>
+            <button
+              onClick={() => {
+                if (go) go("roadmap");
+                else if (onExplore) onExplore("roadmap");
+              }}
+              className="text-cyan-300 hover:text-white font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              Start Full Roadmap Progression <ArrowRight size={14} />
+            </button>
+          </div>
+        </div>
+      </RevealSection>
+
+      {/* WHAT THE PLATFORM DOES - 12 CURRENT CAPABILITIES */}
+      <RevealSection className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pb-24">
+        <SectionHeader 
+          eyebrow="PLATFORM CAPABILITIES" 
+          title="Current PathForge Capabilities & Features" 
+          subtitle="Explore all 12 active features driving personalized career progression." 
+        />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[
-            { icon: Radar, title: t("landing.skillProfilingTitle"), desc: t("landing.skillProfilingDesc") },
-            { icon: Route, title: t("landing.adaptiveRoadmapTitle"), desc: t("landing.adaptiveRoadmapDesc") },
-            { icon: LayoutGrid, title: t("landing.resourceMatchingTitle"), desc: t("landing.resourceMatchingDesc") },
-            { icon: Sparkles, title: t("landing.adaptiveAssessmentsTitle"), desc: t("landing.adaptiveAssessmentsDesc") },
-            { icon: FileText, title: t("landing.resumeIntelligenceTitle"), desc: t("landing.resumeIntelligenceDesc") },
-            { icon: Compass, title: t("landing.careerMatchingTitle"), desc: t("landing.careerMatchingDesc") },
-          ].map(({ icon: Icon, title, desc }) => (
-            <GlassCard key={title} hover className="p-6">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: "rgba(34,211,238,0.1)" }}>
-                <Icon size={18} color="#67e8f9" />
+            { route: "career", icon: Rocket, title: "AI-Powered Career Analysis", desc: "Analyze profile, skills, and target career direction using real AI intelligence to map ideal software engineering outcomes." },
+            { route: "skills", icon: Target, title: "Personalized Learning Path", desc: "Generates a customized skill progression blueprint based on your career goals, target role requirements, and current abilities." },
+            { route: "roadmap", icon: Route, title: "Adaptive Learning Roadmap", desc: "Interactive visual roadmap with skill node progression, stage milestones, resource integration, and unlockable stages." },
+            { route: "assessment", icon: Sparkles, title: "Skill Validation Assessments", desc: "Prove proficiency through 2-round assessment rounds to validate existing knowledge and skip topics you already master." },
+            { route: "analytics", icon: LayoutGrid, title: "Learning Analytics", desc: "Track real-time learning progress, topic completion stats, assessment performance, and overall career readiness growth." },
+            { route: "dashboard", icon: Compass, title: "AI Mentor", desc: "Context-aware academic and career mentor providing personalized recommendations based on your actual PathForge profile." },
+            { route: "resume", icon: FileText, title: "Resume Intelligence", desc: "Upload and analyze real resumes to extract skills, detect missing competencies, match job descriptions, and auto-update your profile." },
+            { route: "jobs", icon: Radar, title: "Job Opportunities", desc: "Discover matching real-world job openings organized by domain, tailored to your readiness score with direct apply options." },
+            { route: "resources", icon: LayoutGrid, title: "Certifications & Resources", desc: "Discover verified courses, documentation, and certifications tailored to your gaps, and add them directly to your roadmap." },
+            { route: "projects", icon: Route, title: "Portfolio Projects", desc: "Discover and add real-world portfolio projects matching your target domain to prove hands-on expertise to recruiters." },
+            { route: "settings", icon: Compass, title: "Multilingual Support", desc: "Switch the application language anytime (English, Spanish, Hindi, French, German) with real-time dynamic interface translation." },
+            { route: "roadmap", icon: ShieldCheck, title: "Offline Learning", desc: "Access cached roadmap topics, saved resources, and milestone progress seamlessly even when internet connectivity is limited." },
+          ].map(({ route, icon: Icon, title, desc }) => (
+            <GlassCard 
+              key={title} 
+              hover 
+              className="p-6 cursor-pointer group"
+              onClick={() => {
+                if (go) go(route);
+                else if (onExplore) onExplore(route);
+              }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-cyan-500/10 border border-cyan-400/20 group-hover:bg-cyan-500/20 transition-colors">
+                  <Icon size={18} color="#67e8f9" />
+                </div>
+                <span className="text-[11px] font-semibold text-cyan-300 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                  Explore <ArrowRight size={11} />
+                </span>
               </div>
-              <p className="text-sm font-semibold mb-1.5">{title}</p>
-              <p className="text-sm" style={{ color: "var(--text-dim)" }}>{desc}</p>
+              <p className="text-sm font-semibold mb-1.5 text-white group-hover:text-cyan-300 transition-colors">{title}</p>
+              <p className="text-xs leading-relaxed" style={{ color: "var(--text-dim)" }}>{desc}</p>
             </GlassCard>
           ))}
         </div>
