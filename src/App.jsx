@@ -304,7 +304,7 @@ export default function App() {
       )}
 
       {stage === "app" && (
-        <div className="lg:pl-72 transition-all">
+        <div className="min-h-screen">
           <TopBar
             title={titleMap[active]}
             onProfileClick={() => go("profile")}

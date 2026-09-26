@@ -57,14 +57,14 @@ export function NavDrawer({
     <>
       {open && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 lp-fade-up cursor-pointer lg:hidden"
+          className="fixed inset-0 bg-black/60 z-40 lp-fade-up cursor-pointer"
           style={{ animationDuration: ".25s" }}
           onClick={onClose}
         />
       )}
       <aside
         className={`fixed top-0 left-0 h-screen z-50 w-72 lp-glass-strong flex flex-col transition-transform duration-300 shadow-2xl border-r border-white/10 ${
-          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
@@ -84,7 +84,7 @@ export function NavDrawer({
               PathForge
             </span>
           </div>
-          <button onClick={onClose} className="lg:hidden cursor-pointer text-slate-400 hover:text-white p-1">
+          <button onClick={onClose} className="cursor-pointer text-slate-400 hover:text-white p-1">
             <X size={18} />
           </button>
         </div>
