@@ -430,6 +430,9 @@ export async function toggleSavedProject(projectId, isCurrentlySaved) {
 // ── Helpers ──────────────────────────────────────────────────
 
 function toFrontendUser(profile, authUser = null) {
+  // resume_info is a JSON column that stores all resume-related data per user
+  const resumeInfo = profile.resume_info || null;
+  
   return {
     id:                 profile.id,
     name:               profile.name || "",
@@ -457,7 +460,11 @@ function toFrontendUser(profile, authUser = null) {
     pace:               profile.pace || "Balanced",
     preferredLanguage:  profile.preferred_language || profile.preferredLanguage || "en",
     learningPreferences: profile.learning_preferences || null,
-    resumeInfo:         profile.resume_info || null,
+    // Resume info is a nested JSON object stored in one column
+    resumeInfo:         resumeInfo,
+    resumeFile:         resumeInfo?.resumeFile || null,
+    resumeText:         resumeInfo?.resumeText || null,
+    resumeAnalysis:     resumeInfo?.resumeAnalysis || null,
     onboardingComplete: profile.onboarding_complete || false,
     careerReadiness:    profile.career_readiness ?? null,
     assessmentScore:    profile.assessment_score ?? null,
@@ -487,9 +494,30 @@ function toSnakeCase(updates) {
     lastLogin:          "last_login",
     createdAt:          "created_at",
   };
+  
   const result = {};
+  
+  // Special handling: resumeFile, resumeText, resumeAnalysis are stored
+  // together inside the resume_info JSON column (not separate DB columns)
+  const resumeRelatedKeys = ["resumeFile", "resumeText", "resumeAnalysis"];
+  const resumeRelatedUpdates = {};
+  let hasResumeRelated = false;
+  
   for (const [key, val] of Object.entries(updates)) {
-    result[map[key] || key] = val;
+    if (resumeRelatedKeys.includes(key)) {
+      resumeRelatedUpdates[key] = val;
+      hasResumeRelated = true;
+    } else {
+      result[map[key] || key] = val;
+    }
   }
+  
+  // Merge resume-related keys into resume_info JSON
+  if (hasResumeRelated) {
+    // Preserve existing resume_info content and merge new keys
+    const existingResumeInfo = result["resume_info"] || {};
+    result["resume_info"] = { ...existingResumeInfo, ...resumeRelatedUpdates };
+  }
+  
   return result;
 }

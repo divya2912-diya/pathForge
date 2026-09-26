@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Target, ChevronDown, CheckCircle2, Lock, ArrowRight, BookOpen, PlayCircle, ExternalLink, Activity, Trophy, Circle, Map, Compass, BrainCircuit, SearchCode, Send, Sparkles, MapPin, Layers, Award, ArrowLeft, Check, WifiOff, CloudOff
+  Target, ChevronDown, CheckCircle2, Lock, ArrowRight, BookOpen, PlayCircle, ExternalLink, Activity, Trophy, Circle, Map, Compass, BrainCircuit, SearchCode, Send, Sparkles, MapPin, Layers, Award, ArrowLeft, Check, WifiOff, CloudOff, FileText, TrendingUp, AlertTriangle
 } from "lucide-react";
 import { loadMilestoneProgress, saveMilestoneProgress } from "../../data/supabaseAuth";
 import { getRequiredSkills, calculateDynamicReadiness } from "../../data/userProfile";
@@ -78,6 +78,23 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
   const userSkillsList = (student?.userSkillsList || []).map((s) => s.name.toLowerCase());
   const allUserSkills = new Set([...userSkills, ...userSkillsList]);
 
+  // ── RESUME ANALYSIS INTEGRATION ──────────────────────────────
+  // Pull adaptive roadmap data from the user's actual resume analysis
+  const resumeAnalysis = student?.resumeAnalysis;
+  const resumeEvidence = resumeAnalysis?.evidence;
+  const resumeGapAnalysis = resumeAnalysis?.gapAnalysis;
+  const resumeProfileLevel = resumeAnalysis?.profileLevel;
+  const hasResumeAnalysis = !!(resumeEvidence?.isValid);
+
+  // Skills demonstrated in resume (evidence-based) — shown as ALREADY DEMONSTRATED
+  const resumeDemonstratedSkills = new Set(
+    (resumeGapAnalysis?.demonstratedSkills || []).map((s) => s.skill.toLowerCase())
+  );
+  // Skills missing from resume (shown as priority gaps)
+  const resumeMissingSkills = new Set(
+    (resumeGapAnalysis?.missingSkills || []).map((s) => s.skill.toLowerCase())
+  );
+
   // Handle empty state if no target career is set
   if (!targetCareer) {
     return (
@@ -119,14 +136,31 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
   const requiredSkills = getRequiredSkills(targetCareer);
 
   const isMastered = (skill) => {
-    return Array.from(allUserSkills).some(
-      (s) => s.includes(skill.toLowerCase()) || skill.toLowerCase().includes(s)
+    const skillLow = skill.toLowerCase();
+    // Check profile skills
+    const profileMatch = Array.from(allUserSkills).some(
+      (s) => s.includes(skillLow) || skillLow.includes(s)
     );
+    // ALSO check resume-demonstrated skills (evidence-based)
+    const resumeMatch = resumeDemonstratedSkills.has(skillLow) ||
+      Array.from(resumeDemonstratedSkills).some(
+        (rs) => rs.includes(skillLow) || skillLow.includes(rs)
+      );
+    return profileMatch || resumeMatch;
   };
 
   const isSkillDbCompleted = (skill) => {
     const key = `skill_${skill.replace(/\s+/g, "_").toLowerCase()}`;
     return dbProgress[key] === 1;
+  };
+
+  // Is a skill demonstrated specifically via resume evidence?
+  const isResumeProven = (skill) => {
+    const skillLow = skill.toLowerCase();
+    return resumeDemonstratedSkills.has(skillLow) ||
+      Array.from(resumeDemonstratedSkills).some(
+        (rs) => rs.includes(skillLow) || skillLow.includes(rs)
+      );
   };
 
   const actualGaps = requiredSkills.filter((req) => !isMastered(req) && !isSkillDbCompleted(req));
@@ -176,39 +210,51 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
 
   foundationSkills.forEach((skill, idx) => {
     const done = isMastered(skill) || isSkillDbCompleted(skill);
+    const resumeProven = isResumeProven(skill);
     const isCurrent = !done && (idx === 0 || isMastered(foundationSkills[idx - 1]) || isSkillDbCompleted(foundationSkills[idx - 1]));
     const positions = ["25%", "75%", "50%", "30%", "70%"];
     pathNodes.push({
       id: `skill_${skill.replace(/\s+/g, "_").toLowerCase()}`,
       type: "skill",
       title: skill,
-      stage: "Foundation",
-      desc: `Core concepts and practical application of ${skill} for ${targetCareer}.`,
-      relevance: `Essential foundation skill for ${targetCareer} roles.`,
+      stage: resumeProven ? "Already Demonstrated" : "Foundation",
+      desc: resumeProven
+        ? `Demonstrated in your resume — no need to repeat foundational learning.`
+        : `Core concepts and practical application of ${skill} for ${targetCareer}.`,
+      relevance: resumeProven
+        ? `✓ Evidence found in your uploaded resume.`
+        : `Essential foundation skill for ${targetCareer} roles.`,
       status: done ? "completed" : isCurrent ? "current" : "upcoming",
       xPos: positions[idx % positions.length],
-      icon: BookOpen,
-      hours: `${3 + idx} wks`,
+      icon: resumeProven ? CheckCircle2 : BookOpen,
+      hours: resumeProven ? "✓ Done" : `${3 + idx} wks`,
       skillName: skill,
+      resumeProven,
     });
   });
 
   specSkills.forEach((skill, idx) => {
     const done = isMastered(skill) || isSkillDbCompleted(skill);
+    const resumeProven = isResumeProven(skill);
     const isCurrent = !done && (actualGaps.length > 0 && actualGaps[0] === skill);
     const positions = ["75%", "35%", "65%", "25%"];
     pathNodes.push({
       id: `skill_${skill.replace(/\s+/g, "_").toLowerCase()}`,
       type: "specialization",
       title: skill,
-      stage: "Specialization",
-      desc: `Advanced frameworks, architecture patterns, and tools for ${skill}.`,
-      relevance: `Key specialization requirement for ${targetCareer}.`,
+      stage: resumeProven ? "Already Demonstrated" : "Specialization",
+      desc: resumeProven
+        ? `Demonstrated in your resume — skip to advanced application.`
+        : `Advanced frameworks, architecture patterns, and tools for ${skill}.`,
+      relevance: resumeProven
+        ? `✓ Evidence found in your uploaded resume.`
+        : `Key specialization requirement for ${targetCareer}.`,
       status: done ? "completed" : isCurrent ? "current" : "upcoming",
       xPos: positions[idx % positions.length],
-      icon: Layers,
-      hours: `${2 + idx} wks`,
+      icon: resumeProven ? CheckCircle2 : Layers,
+      hours: resumeProven ? "✓ Done" : `${2 + idx} wks`,
       skillName: skill,
+      resumeProven,
     });
   });
 
@@ -309,6 +355,37 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
       {offlineNotice && (
         <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-2xl animate-in slide-in-from-bottom-4">
           {offlineNotice}
+        </div>
+      )}
+
+      {/* ── RESUME ANALYSIS BANNER ─────────────────────────────────── */}
+      {hasResumeAnalysis && resumeProfileLevel && (
+        <div
+          className="p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+          style={{
+            background: `${resumeProfileLevel.levelColor}08`,
+            borderColor: `${resumeProfileLevel.levelColor}30`,
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <FileText size={16} style={{ color: resumeProfileLevel.levelColor }} />
+            <div>
+              <p className="text-xs font-bold text-white">
+                Resume Analysis Active — Profile Level: <span style={{ color: resumeProfileLevel.levelColor }}>{resumeProfileLevel.level}</span>
+              </p>
+              <p className="text-[10px] text-slate-400">
+                {resumeGapAnalysis?.demonstratedCount || 0} skills already demonstrated in your resume are pre-marked completed.
+                {resumeGapAnalysis?.missingCount > 0 && ` ${resumeGapAnalysis.missingCount} gaps remain.`}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => go?.("resume")}
+            className="text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all cursor-pointer whitespace-nowrap"
+            style={{ borderColor: `${resumeProfileLevel.levelColor}40`, color: resumeProfileLevel.levelColor }}
+          >
+            View Full Analysis →
+          </button>
         </div>
       )}
 
@@ -523,19 +600,35 @@ export function RoadmapView({ student, onUpdateStudent, go }) {
                 const profileMastered = isMastered(skill);
                 const dbCompleted = isSkillDbCompleted(skill);
                 const isCompleted = profileMastered || dbCompleted;
+                const resumeProven = isResumeProven(skill);
 
                 return (
-                  <GlassCard key={skill} className="p-5 flex flex-col justify-between">
+                  <GlassCard
+                    key={skill}
+                    className={`p-5 flex flex-col justify-between transition-all ${
+                      resumeProven ? "border-emerald-500/30 bg-emerald-950/10" : ""
+                    }`}
+                  >
                     <div className="flex justify-between items-start mb-3">
-                      <h3 className={`font-bold text-base ${isCompleted ? "text-slate-300" : "text-white"}`}>{skill}</h3>
+                      <div>
+                        <h3 className={`font-bold text-base ${isCompleted ? "text-slate-300" : "text-white"}`}>{skill}</h3>
+                        {resumeProven && (
+                          <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1 mt-0.5">
+                            <CheckCircle2 size={9} /> Resume Demonstrated
+                          </span>
+                        )}
+                      </div>
                       <button onClick={() => toggleSkill(skill)} className="cursor-pointer" title={isCompleted ? "Mark as in-progress" : "Mark completed"}>
                         {isCompleted ? <CheckCircle2 className="w-6 h-6 text-emerald-400" /> : <Circle className="w-6 h-6 text-slate-600 hover:text-cyan-400" />}
                       </button>
                     </div>
 
                     <div className="pt-4 flex items-center justify-between border-t border-white/5">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${isCompleted ? "bg-emerald-500/15 text-emerald-300" : "bg-white/5 text-slate-400"}`}>
-                        {isCompleted ? getTranslation("roadmap.completed", lang) : getTranslation("roadmap.inProgress", lang)}
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        resumeProven ? "bg-emerald-500/20 text-emerald-300" :
+                        isCompleted ? "bg-emerald-500/15 text-emerald-300" : "bg-white/5 text-slate-400"
+                      }`}>
+                        {resumeProven ? "✓ Already Demonstrated" : isCompleted ? getTranslation("roadmap.completed", lang) : getTranslation("roadmap.inProgress", lang)}
                       </span>
                       <button
                         onClick={() => {

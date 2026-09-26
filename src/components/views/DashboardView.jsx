@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Compass, TrendingUp, Radar, Flame, ChevronRight, CheckCircle2, AlertTriangle, Sparkles,
-  Target, Zap, FolderKanban, Activity, TargetIcon, LayoutDashboard, BrainCircuit, ExternalLink
+  Target, Zap, FolderKanban, Activity, TargetIcon, LayoutDashboard, BrainCircuit, ExternalLink, FileText, Award
 } from "lucide-react";
 import GlassCard from "../ui/GlassCard";
 import SectionHeader from "../ui/SectionHeader";
@@ -29,8 +29,22 @@ export function DashboardView({ go, student, onUpdateStudent }) {
 
   const requiredSkills = targetCareer ? (SKILL_REQUIREMENTS[targetCareer] || []) : [];
   
+  // Resume analysis integration
+  const resumeAnalysis = student?.resumeAnalysis;
+  const resumeProfileLevel = resumeAnalysis?.profileLevel;
+  const resumeGapAnalysis = resumeAnalysis?.gapAnalysis;
+  const hasResumeAnalysis = !!(resumeAnalysis?.evidence?.isValid);
+
+  // Resume-demonstrated skills count toward readiness
+  const resumeDemonstratedSkillsSet = new Set(
+    (resumeGapAnalysis?.demonstratedSkills || []).map(s => s.skill.toLowerCase())
+  );
+
   const isMastered = (skill) => {
-    return Array.from(allUserSkills).some(s => s.includes(skill.toLowerCase()) || skill.toLowerCase().includes(s));
+    const profileMatch = Array.from(allUserSkills).some(s => s.includes(skill.toLowerCase()) || skill.toLowerCase().includes(s));
+    const resumeMatch = resumeDemonstratedSkillsSet.has(skill.toLowerCase()) ||
+      Array.from(resumeDemonstratedSkillsSet).some(rs => rs.includes(skill.toLowerCase()) || skill.toLowerCase().includes(rs));
+    return profileMatch || resumeMatch;
   };
 
   const actualGaps = requiredSkills.filter(req => !isMastered(req));
@@ -38,8 +52,10 @@ export function DashboardView({ go, student, onUpdateStudent }) {
 
   const totalRequired = requiredSkills.length;
   
-  // Base readiness derived from matched skills
-  const careerReadiness = totalRequired === 0 ? 0 : Math.round((actualStrengths.length / totalRequired) * 100);
+  // Career readiness: if resume analysis available, use its score; else compute from skills
+  const careerReadiness = hasResumeAnalysis && resumeProfileLevel
+    ? resumeProfileLevel.normalizedScore
+    : (totalRequired === 0 ? 0 : Math.round((actualStrengths.length / totalRequired) * 100));
   
   // Real metrics
   const totalSkillsCount = allUserSkills.size;
@@ -168,6 +184,15 @@ export function DashboardView({ go, student, onUpdateStudent }) {
           <p className="text-sm" style={{ color: "var(--text-dim)" }}>
             Your current career goal: <strong className="text-cyan-300 font-medium">{targetCareer}</strong>
           </p>
+          {hasResumeAnalysis && resumeProfileLevel && (
+            <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+              <FileText size={12} style={{ color: resumeProfileLevel.levelColor }} />
+              Resume analysis active · Profile Level: 
+              <span className="font-bold" style={{ color: resumeProfileLevel.levelColor }}>
+                {resumeProfileLevel.level}
+              </span>
+            </p>
+          )}
         </div>
         {actualGaps.length > 0 ? (
            <button
@@ -185,6 +210,27 @@ export function DashboardView({ go, student, onUpdateStudent }) {
            </button>
         )}
       </GlassCard>
+
+      {/* 1.5 Resume Upload CTA (if no resume analyzed yet) */}
+      {!hasResumeAnalysis && (
+        <div className="p-4 rounded-2xl border border-cyan-500/20 bg-gradient-to-r from-cyan-950/30 to-blue-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+              <FileText size={18} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Upload your resume for adaptive analysis</p>
+              <p className="text-xs text-slate-400">Get a personalized roadmap and skill gap analysis based on your actual resume — no fake data.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => go("resume")}
+            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-[#060911] font-bold rounded-xl text-xs transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+          >
+            <Sparkles size={13} /> Analyze Resume
+          </button>
+        </div>
+      )}
 
       {/* 2. Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
